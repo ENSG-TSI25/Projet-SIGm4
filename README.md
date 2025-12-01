@@ -19,7 +19,7 @@ Projet-SIGm4/
 
 ### 1. Cloner le projet
 ```bash
-git clone <repo-url>
+git clone https://github.com/ENSG-TSI25/Projet-SIGm4.git
 cd Projet-SIGm4
 ```
 
@@ -54,6 +54,7 @@ docker-compose down
 Pour supprimer aussi les volumes :
 ```bash
 docker-compose down -v
+```
 
 
 ## Dépannage
