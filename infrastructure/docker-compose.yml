@@ -33,6 +33,8 @@ services:
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
 
+    volumes:
+      - ../backend/data:/app/data
 
 volumes:
   pgdata:
