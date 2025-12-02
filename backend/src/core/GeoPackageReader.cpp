@@ -10,18 +10,20 @@
 
 GeoPackageReader::GeoPackageReader(const std::string& path)
     : filePath(path), dataset(nullptr), isOpen(false) {
-    GDALAllRegister();
+    GDALAllRegister(); // Initialisation GDAL
 }
 
 GeoPackageReader::~GeoPackageReader() { close(); }
 
 bool GeoPackageReader::open() {
+    // Ouverture du GeoPackage
     if (isOpen) return true;
     dataset = (GDALDataset*)GDALOpenEx(filePath.c_str(), GDAL_OF_VECTOR | GDAL_OF_READONLY, nullptr, nullptr, nullptr);
     return (isOpen = dataset != nullptr);
 }
 
 void GeoPackageReader::close() {
+    // Fermeture du dataset
     if (dataset) {
         GDALClose(dataset);
         dataset = nullptr;
@@ -30,8 +32,10 @@ void GeoPackageReader::close() {
 }
 
 std::vector<std::string> GeoPackageReader::listLayers() const {
+    // Récupère les noms des couches
     std::vector<std::string> layers;
     if (!isOpen) return layers;
+
     for (int i = 0; i < dataset->GetLayerCount(); ++i) {
         layers.push_back(dataset->GetLayer(i)->GetName());
     }
@@ -39,6 +43,7 @@ std::vector<std::string> GeoPackageReader::listLayers() const {
 }
 
 GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::string& layerName) const {
+    // Lit les métadonnées d'une couche
     LayerMetadata m{"", "", 0, 0, 0.0, wkbUnknown};
     if (!isOpen) return m;
     
@@ -59,6 +64,7 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
 }
 
 std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const std::string& layerName) const {
+    // Extraction des features
     std::vector<Feature> features;
     if (!isOpen) return features;
 
@@ -77,6 +83,7 @@ std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const s
 }
 
 std::string GeoPackageReader::detectTimestampField(const std::string& layerName) const {
+    // Cherche un champ temporel
     if (!isOpen) return "";
     OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
     if (!layer) return "";
@@ -96,6 +103,7 @@ std::string GeoPackageReader::detectTimestampField(const std::string& layerName)
 }
 
 GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, const std::string& tsField) const {
+    // Convertit un OGRFeature en structure interne
     Feature f;
     f.fid = ogrf->GetFID();
     f.timestamp = 0.0;
@@ -121,6 +129,7 @@ GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, 
 }
 
 Geometry4D GeoPackageReader::extractGeometry4D(OGRFeature* ogrf, double timestamp) const {
+    // Ajoute une valeur temporelle M aux géométries
     OGRGeometry* geom = ogrf->GetGeometryRef();
     if (!geom) return Geometry4D();
 
@@ -143,6 +152,7 @@ Geometry4D GeoPackageReader::extractGeometry4D(OGRFeature* ogrf, double timestam
 }
 
 double GeoPackageReader::parseTimestamp(const std::string& str) const {
+    // Convertit une date en timestamp
     struct tm tm = {};
     std::istringstream ss(str);
     

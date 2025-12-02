@@ -30,6 +30,7 @@ void Application::run() {
     VectorLayer* layer = dm.chargerVecteur("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
     
     
+
     if (layer) {
         std::cout << "Couche: " << layer->getNom() << std::endl;
         std::cout << "CRS: " << layer->getCrs() << std::endl;
