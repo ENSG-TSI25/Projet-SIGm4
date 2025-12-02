@@ -1,13 +1,14 @@
 FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
-    g++ cmake make \
+    g++ cmake make git \
+    pkg-config \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
     libproj-dev \
-    pkg-config \
     && apt-get clean
-
+    
+    
 WORKDIR /app
 
 COPY . .
