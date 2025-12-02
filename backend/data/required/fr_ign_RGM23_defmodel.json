@@ -1,0 +1,141 @@
+{
+  "file_type": "deformation_model_master_file",
+  "format_version": "1.0",
+  "name": "RGM23_defmodel",
+  "version": "20250217",
+"publication_date": "2024-06-07T00:00:00Z",
+"license": "Create Commons Attribution 4.0 International",
+"description": "Deformation model for Mayotte",
+"authority": {
+"name": "IPGP/IGN",
+"url": "https://doi.org/10.57932/41cf41f5-5a0c-47d0-b88d-a774e06e9012",
+"address": "1 Rue Jussieu, 75005 Paris / 73 avenue de Paris, 94165 Saint-Mandé",
+"email": "xavier.collilieux _at_ ign.fr"
+},
+"links": [
+{
+"href": "https://geodesie.ign.fr/index.php?page=mayottedeformation",
+"rel": "about",
+"type": "text/html",
+"title": "About the Mayotte deformation model"
+},
+{
+"href": "https://creativecommons.org/licenses/by/4.0/",
+"rel": "license",
+"type": "text/html",
+"title": "Creative Commons Attribution 4.0 International license"
+}
+],
+"source_crs": "EPSG:10670",
+"target_crs": "EPSG:10670",
+"definition_crs": "EPSG:10670",
+"reference_epoch": "2023-10-01T12:00:00Z",
+"uncertainty_reference_epoch": "2018-05-25T00:00:00Z",
+"horizontal_offset_unit": "metre",
+"vertical_offset_unit": "metre",
+"horizontal_uncertainty_type": "circular 95% confidence limit",
+"horizontal_uncertainty_unit": "metre",
+"vertical_uncertainty_type": "95% confidence limit",
+"vertical_uncertainty_unit": "metre",
+"horizontal_offset_method": "addition",
+"extent": {
+"type": "bbox",
+"parameters": {
+"bbox": [44.9397727272727323,-13.0661764705882373,45.4102272727272762,-12.4838235294117652]
+}
+},
+"time_extent": {
+"first": "1900-01-01T00:00:00Z",
+"last": "2050-01-01T00:00:00Z"
+},
+"components": [
+	{
+		"description": "exponential 1",
+		"displacement_type": "3d",
+		"uncertainty_type": "none",
+		"horizontal_uncertainty": 0.01,
+		"vertical_uncertainty": 0.01,
+		"extent": {
+			"type": "bbox",
+			"parameters": {
+			"bbox": [44.9397727272727323,-13.0661764705882373,45.4102272727272762,-12.4838235294117652]
+			}
+		},
+		"spatial_model": {
+			"type": "GeoTIFF",
+			"interpolation_method": "bilinear",
+			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
+		},
+		"time_function": {
+			"type": "exponential",
+			"parameters": {
+			"reference_epoch": "2018-05-25T00:00:00Z", 
+			"relaxation_constant": 0.5503080082135524,
+			"before_scale_factor": 0, 
+			"initial_scale_factor": 0, 
+			"final_scale_factor": -0.9852941176470589
+			}
+		}
+	},
+	{
+		"description": "exponential 2",
+		"displacement_type": "3d",
+		"uncertainty_type": "none",
+		"horizontal_uncertainty": 0.01,
+		"vertical_uncertainty": 0.01,
+		"extent": {
+			"type": "bbox",
+			"parameters": {
+			"bbox": [44.9397727272727323,-13.0661764705882373,45.4102272727272762,-12.4838235294117652]
+			}
+		},
+		"spatial_model": {
+			"type": "GeoTIFF",
+			"interpolation_method": "bilinear",
+			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
+		},
+		"time_function": {
+			"type": "exponential",
+			"parameters": {
+			"reference_epoch": "2018-12-15T00:00:00Z", 
+			"relaxation_constant": 0.5503080082135524,
+			"before_scale_factor": 0, 
+			"initial_scale_factor": 0, 
+			"final_scale_factor": 0.9852941176470589
+			}
+		}
+	}, 
+	{
+		"description": "Piecewise",
+		"displacement_type": "3d",
+		"uncertainty_type": "none",
+		"horizontal_uncertainty": 0.01,
+		"vertical_uncertainty": 0.01,
+		"extent": {
+			"type": "bbox",
+			"parameters": {
+			"bbox": [44.9397727272727323,-13.0661764705882373,45.4102272727272762,-12.4838235294117652]
+			}
+		},
+		"spatial_model": {
+			"type": "GeoTIFF",
+			"interpolation_method": "bilinear",
+			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
+		},
+		"time_function":{
+			"type": "piecewise",
+			"parameters": {
+			"before_first": "constant",
+			"after_last": "zero",
+			"model": [
+				{"epoch":"2018-05-25T00:00:00Z","scale_factor":-1.0},
+				{"epoch":"2018-12-15T00:00:00Z","scale_factor": 0.0} 
+			]
+			}
+		}
+	}		
+]
+}
