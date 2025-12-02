@@ -16,10 +16,20 @@ Projet-SIGm4/
 ```
 ## Tests 
 
+Construire le fichier build 
+
 ```bash
+cd Chemin/backend
+rm -rf build
 cmake -B build -DBUILD_TESTS=ON
 cmake --build build
 cd build
+ctest --output-on-failure
+```
+Lancer les tests après création du build :
+
+```bash
+cd ~/Bureau/Projet-SIGm4/backend/build
 ctest --output-on-failure
 ```
 

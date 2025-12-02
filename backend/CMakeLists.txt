@@ -18,7 +18,6 @@ file(GLOB_RECURSE SOURCES
 
 )
 
-
 add_executable(backend_app ${SOURCES})
 
 
