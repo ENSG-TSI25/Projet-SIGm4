@@ -30,11 +30,11 @@ jobs:
       #   run: cmake --build build
       
       - name: Run tests back end
-        working-directory: back-end
+        working-directory: backend
         run: ctest --test-dir build --output-on-failure
 
       - name: Run test front end
-        working-directory: front-end
+        working-directory: frontend
         run: ctest --test-dir build --output-on-failure
 
       
