@@ -20,9 +20,4 @@ docker run -it --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     qgis_cpp_app
 
-cd frontend
-mkdir build && cd build
-cmake .. -DCMAKE_CXX_FLAGS="-I/usr/include/qgis -I/usr/include/qgis/qgis" 
-make -j$(nproc) 
-./frontend 
 ```

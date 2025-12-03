@@ -1,12 +1,18 @@
 #include "src/mainwindow.h"
-
-#include <QApplication>
+#include <qgsapplication.h>
+#include "src/mainwindow.h"
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QgsApplication a(argc, argv, true);
+    QgsApplication::setPrefixPath("/usr", true);
+    QgsApplication::initQgis();
+
     MainWindow w;
     w.show();
-    return a.exec();
 
+    int r = a.exec();
+    QgsApplication::exitQgis();
+
+    return r;
 }
