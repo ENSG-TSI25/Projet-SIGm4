@@ -16,22 +16,49 @@ Projet-SIGm4/
 ```
 ## Tests 
 
-Construire le fichier build 
+Installer les dépendances (tests en local)
 
 ```bash
-cd Chemin/backend
+
+```
+Configurer le projet avec CMake
+
+```bash
+cd backend
 rm -rf build
-cmake -B build -DBUILD_TESTS=ON
-cmake --build build
+mkdir build
 cd build
-ctest --output-on-failure
+cmake ..
+make
 ```
-Lancer les tests après création du build :
+Lancer tous les tests :
 
 ```bash
-cd ~/Bureau/Projet-SIGm4/backend/build
+ctest
+```
+Détails 
+
+```bash
+ctest --verbose
+```
+Sortie en cas d'échec
+
+```bash
 ctest --output-on-failure
 ```
+
+Lister les tests :
+```bash
+ctest -N
+```
+
+Lancer un test en particulier :
+
+```bash
+./tests/unit_tests
+```
+
+
 
 ## Installation
 
