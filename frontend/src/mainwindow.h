@@ -26,6 +26,7 @@ public:
     void listSourceSys();
     void listTargetSys();
     void addFileToWidget();
+    void openDialog();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();

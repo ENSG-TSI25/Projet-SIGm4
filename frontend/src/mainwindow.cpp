@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "dialog.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -10,6 +11,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QListWidget>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -25,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
     listSourceSys();
     listTargetSys();
     carte = new Carte(ui->carte);
-    // connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);
+    // //connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
       
@@ -45,12 +47,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-// void MainWindow::updateScaleLabel(double scaleValue)
-// {
-//     ui->scale->setText(QString("Échelle : 1:%1")
-//         .arg(QString::number(scaleValue, 'f', 0))
-//     );
-// }
+/*void MainWindow::updateScaleLabel(double scaleValue)
+{
+    ui->scale->setText(QString("Échelle : 1:%1")
+        .arg(QString::number(scaleValue, 'f', 0))
+    );
+}*/
 
 void MainWindow::zoomIn_button()
 {
