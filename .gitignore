@@ -4,3 +4,28 @@ infrastructure/.env
 # yml front et app
 .github/workflows/app.yml 
 .github/workflows/front-end.yml
+.env
+*.env.local
+.env.*.local
+
+*.log
+logs/
+
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+.vscode/
+.idea/
+*.sublime-*
+*.code-workspace
+
+*.pid
+*.seed
+*.sock
+
+tmp/
+temp/
+*.tmp
