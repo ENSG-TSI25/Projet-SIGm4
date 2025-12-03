@@ -25,3 +25,5 @@ target_include_directories(backend_app PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${PQXX_INCLUDE_DIRS}
 )
+
+add_subdirectory(tests/unit)
