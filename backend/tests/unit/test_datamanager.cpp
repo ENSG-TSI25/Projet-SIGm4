@@ -2,9 +2,10 @@
 #include <core/DataManager.hpp>
 #include <gdal/gdal.h>
 #include <gdal/gdal_priv.h>
-#include <gdal/ogr_geometry.h>
+#include <gdal/ogrsf_frmts.h>
 #include <fstream>
 
+// Initialise GDAL avant chaque test
 class DataManagerTest : public ::testing::Test {
 protected:
     void SetUp() override {
@@ -14,7 +15,6 @@ protected:
     // Crée un GeoPackage de test temporaire
     std::string createTestGpkg() {
         std::string path = "/tmp/test_data.gpkg";
-        
         std::remove(path.c_str());
         
         GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
@@ -42,12 +42,9 @@ TEST_F(DataManagerTest, Constructor) {
 TEST_F(DataManagerTest, ChargerVecteurValid) {
     std::string path = createTestGpkg();
     DataManager dm;
-    
     VectorLayer* layer = dm.chargerVecteur(path);
-    
     ASSERT_NE(layer, nullptr);
     EXPECT_FALSE(layer->getGeometries().empty());
-    
     std::remove(path.c_str());
 }
 
@@ -61,14 +58,11 @@ TEST_F(DataManagerTest, ChargerVecteurInvalid) {
 // Fichier vide
 TEST_F(DataManagerTest, ChargerVecteurEmpty) {
     std::string path = "/tmp/empty.gpkg";
-    
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
     GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
     GDALClose(ds);
-    
     DataManager dm;
     VectorLayer* layer = dm.chargerVecteur(path);
-    
     EXPECT_EQ(layer, nullptr);
     std::remove(path.c_str());
 }
