@@ -19,6 +19,10 @@ public:
     void listDimension();
     void listSourceSys();
     void listTargetSys();
+    std::string selectCRSsource();
+    std::string selectCRSdest();
+    double getDate();
+    std::tuple<std::string, std::string, double> transform();
 
 
 private:

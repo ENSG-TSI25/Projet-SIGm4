@@ -73,4 +73,5 @@ Thumbs.db
 
 CMakeLists.txt.user
 
-build 
+build
+/build-frontend-Desktop-Debug
