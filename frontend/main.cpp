@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
 
-    //on ajout les widgets
+    //on ajoute les widgets
     layout->addWidget(dialogText);
     layout->addWidget(acceptationButton);
 
