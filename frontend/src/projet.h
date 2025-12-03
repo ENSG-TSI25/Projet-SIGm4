@@ -5,8 +5,8 @@ class Projet {
         std::string projectCRS;
         double projectEpoch;
     public:
-        void setProjectCrs();
-        void setProjectEpoch();
+        void setProjectCrs(std::string CRS);
+        void setProjectEpoch(double epoch);
         std::string getProjectCrs();
         double getProjectEpoch();
 };
