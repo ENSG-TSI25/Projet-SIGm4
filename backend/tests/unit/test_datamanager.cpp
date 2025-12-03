@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 #include <core/DataManager.hpp>
+#include <gdal/gdal.h>
+#include <gdal/gdal_priv.h>
+#include <gdal/ogr_geometry.h>
 #include <fstream>
 
 class DataManagerTest : public ::testing::Test {
@@ -12,14 +15,11 @@ protected:
     std::string createTestGpkg() {
         std::string path = "/tmp/test_data.gpkg";
         
-        // Supprime si existe déjà
         std::remove(path.c_str());
         
-        // Crée un dataset GeoPackage
         GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
         GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
         
-        // Crée une couche avec un point
         OGRLayer* layer = ds->CreateLayer("test_layer", nullptr, wkbPoint, nullptr);
         OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
         OGRPoint point(2.0, 48.0);
@@ -38,7 +38,7 @@ TEST_F(DataManagerTest, Constructor) {
     SUCCEED();
 }
 
-// Chargement d'un fichier valide
+// Chargement fichier valide
 TEST_F(DataManagerTest, ChargerVecteurValid) {
     std::string path = createTestGpkg();
     DataManager dm;
@@ -62,7 +62,6 @@ TEST_F(DataManagerTest, ChargerVecteurInvalid) {
 TEST_F(DataManagerTest, ChargerVecteurEmpty) {
     std::string path = "/tmp/empty.gpkg";
     
-    // Crée un GeoPackage vide
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
     GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
     GDALClose(ds);
