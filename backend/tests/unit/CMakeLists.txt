@@ -16,6 +16,7 @@ file(GLOB_RECURSE TEST_SOURCES
 # Exécutable de test
 add_executable(unit_tests
     test_geometry4d.cpp
+    test_datamanager.cpp
     ${TEST_SOURCES}
 )
 
@@ -29,3 +30,4 @@ target_include_directories(unit_tests PRIVATE
 )
 
 add_test(NAME Geometry4DTests COMMAND unit_tests)
+
