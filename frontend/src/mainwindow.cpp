@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     listSourceSys();
     listTargetSys();
     carte = new Carte(ui->carte);
-    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);
+    // connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
       
@@ -35,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
 
     connect (ui->addToMapBtn, &QPushButton::clicked, this, &MainWindow::addFileToWidget);
+
+    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::clickNewProject);
 }
 
 MainWindow::~MainWindow()
@@ -42,12 +45,12 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::updateScaleLabel(double scaleValue)
-{
-    ui->scale->setText(QString("Échelle : 1:%1")
-        .arg(QString::number(scaleValue, 'f', 0))
-    );
-}
+// void MainWindow::updateScaleLabel(double scaleValue)
+// {
+//     ui->scale->setText(QString("Échelle : 1:%1")
+//         .arg(QString::number(scaleValue, 'f', 0))
+//     );
+// }
 
 void MainWindow::zoomIn_button()
 {
@@ -162,5 +165,36 @@ void MainWindow::addFileToWidget() {
         ui -> layersList -> addItem(filenameChar.last());
         fileName = "";
     }
+}
+
+void MainWindow::clickNewProject(){
+        //On crée la boîte de dialogue
+    QDialog chosingCRSDialog;
+    chosingCRSDialog.setWindowTitle("Choix du CRS");
+    QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
+    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+    QLineEdit *crsTextZone = new QLineEdit(&chosingCRSDialog);
+    crsTextZone->setPlaceholderText("Entrez le code EPSG du CRS");
+    QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
+    epochTextZone->setPlaceholderText("Entrez l'époque");
+
+    //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
+    QDoubleValidator *doubleValidator = new QDoubleValidator();
+    //La range et les décimales
+    doubleValidator->setRange(0, 2030, 3);
+    //On intègre le validateur à la zone de texte
+    epochTextZone->setValidator(doubleValidator);
+
+
+    //on ajoute les widgets
+    layout->addWidget(dialogText);
+    layout->addWidget(crsTextZone);
+    layout->addWidget(epochTextZone);
+    layout->addWidget(acceptationButton);
+
+    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
+
+    chosingCRSDialog.exec();
 }
 
