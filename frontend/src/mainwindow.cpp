@@ -9,11 +9,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect (ui->importBtn, &QPushButton::clicked, this, &MainWindow::listFiles);
-    listDimension(); //dimension pour afficher le contenu de la combobox
+    listDimension(); //dimension pour a fficher le contenu de la combobox
     listSourceSys();
     listTargetSys();
     carte = new Carte(ui->carte); // ui->frameCarte = ton QFrame dans Qt Designer
-
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::clickNewProject);
 }
 
 MainWindow::~MainWindow()
@@ -75,3 +75,34 @@ void MainWindow::listTargetSys(){
 
         ui->targetCRSCombo->addItems(items);
     }
+
+void MainWindow::clickNewProject(){
+        //On crée la boîte de dialogue
+    QDialog chosingCRSDialog;
+    chosingCRSDialog.setWindowTitle("Choix du CRS");
+    QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
+    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+    QLineEdit *crsTextZone = new QLineEdit(&chosingCRSDialog);
+    crsTextZone->setPlaceholderText("Entrez le code EPSG du CRS");
+    QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
+    epochTextZone->setPlaceholderText("Entrez l'époque");
+
+    //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
+    QDoubleValidator *doubleValidator = new QDoubleValidator();
+    //La range et les décimales
+    doubleValidator->setRange(0, 2030, 3);
+    //On intègre le validateur à la zone de texte
+    epochTextZone->setValidator(doubleValidator);
+
+
+    //on ajoute les widgets
+    layout->addWidget(dialogText);
+    layout->addWidget(crsTextZone);
+    layout->addWidget(epochTextZone);
+    layout->addWidget(acceptationButton);
+
+    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
+
+    chosingCRSDialog.exec();
+}
