@@ -17,6 +17,7 @@ file(GLOB_RECURSE TEST_SOURCES
 add_executable(unit_tests
     test_geometry4d.cpp
     test_datamanager.cpp
+    test_geopackagereader.cpp
     ${TEST_SOURCES}
 )
 
@@ -29,5 +30,4 @@ target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-add_test(NAME Geometry4DTests COMMAND unit_tests)
-
+add_test(NAME AllUnitTests COMMAND unit_tests)
