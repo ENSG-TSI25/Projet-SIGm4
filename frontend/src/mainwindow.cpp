@@ -2,12 +2,19 @@
 #include "./ui_mainwindow.h"
 #include <QFileDialog>
 #include <QComboBox>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QWheelEvent>
+#include <qgsmapcanvas.h>
+
+
 #include <QString>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    
 {
     ui->setupUi(this);
     connect (ui->importBtn, &QPushButton::clicked, this, &MainWindow::listFiles);
@@ -15,9 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
     listDimension(); //dimension pour afficher le contenu de la combobox
     listSourceSys();
     listTargetSys();
-    carte = new Carte(ui->carte); // ui->frameCarte = ton QFrame dans Qt Designer
-
-    
+    carte = new Carte(ui->carte); 
+    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+      
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSdest);
 
     connect (ui->epochEdit, &QLineEdit::textEdited, this, &MainWindow::getDate);
@@ -28,6 +36,17 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::zoomIn_button()
+{
+    carte->getCanvas()->zoomIn();
+}
+
+void MainWindow::zoomOut_button()
+{
+    carte->getCanvas()->zoomOut();
+}
+
 
 void MainWindow::listFiles(){
        QString fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));}
