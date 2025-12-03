@@ -64,7 +64,7 @@
 		"spatial_model": {
 			"type": "GeoTIFF",
 			"interpolation_method": "bilinear",
-			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"filename": "data/required/fr_ign_lonlat_RGM23_deformation_model.tif",
 			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
 		},
 		"time_function": {
@@ -93,7 +93,7 @@
 		"spatial_model": {
 			"type": "GeoTIFF",
 			"interpolation_method": "bilinear",
-			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"filename": "data/required/fr_ign_lonlat_RGM23_deformation_model.tif",
 			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
 		},
 		"time_function": {
@@ -122,7 +122,7 @@
 		"spatial_model": {
 			"type": "GeoTIFF",
 			"interpolation_method": "bilinear",
-			"filename": "fr_ign_lonlat_RGM23_deformation_model.tif",
+			"filename": "data/required/fr_ign_lonlat_RGM23_deformation_model.tif",
 			"md5_checksum": "76989b76791e411570a844b9adebc5bf"
 		},
 		"time_function":{

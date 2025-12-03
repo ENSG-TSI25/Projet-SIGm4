@@ -1,7 +1,6 @@
 FROM ubuntu:22.04
 
 
-
 RUN apt-get update && apt-get install -y \
     g++ cmake make \
     gdal-bin libgdal-dev \
@@ -21,7 +20,7 @@ WORKDIR /opt
 
 RUN git clone https://github.com/OSGeo/PROJ.git && \
     cd PROJ && \
-    git checkout 9.5.1 && \
+    git checkout 9.7.1 && \
     mkdir build && cd build && \
     cmake .. -DCMAKE_BUILD_TYPE=Release \
              -DBUILD_SHARED_LIBS=ON \

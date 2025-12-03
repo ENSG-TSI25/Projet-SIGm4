@@ -1,2 +1,4 @@
 .env
 .vscode/
+./src/proj_test.cpp
+./include/proj_test.hpp
