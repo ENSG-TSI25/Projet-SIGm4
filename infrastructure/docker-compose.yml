@@ -34,5 +34,22 @@ services:
       DB_NAME: ${DB_NAME}
 
 
+  # Tests 
+  backend-tests:
+    build: 
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: backend_tests
+    command: /app/build/backend_tests
+    depends_on:
+      postgis:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgis
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+
 volumes:
   pgdata:
