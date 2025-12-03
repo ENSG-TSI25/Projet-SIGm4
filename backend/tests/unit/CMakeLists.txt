@@ -28,5 +28,4 @@ target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
 )
 
-# Ajouter les tests manuellement
 add_test(NAME Geometry4DTests COMMAND unit_tests)

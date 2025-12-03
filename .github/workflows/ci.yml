@@ -1,0 +1,40 @@
+name: CI Backend
+
+on:
+  push:
+    branches: [ main, dev, data-extraction ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker image
+      run: |
+        cd infrastructure
+        docker-compose build backend
+    
+    - name: Run tests
+      run: |
+        cd infrastructure
+        docker-compose run backend bash -c "cd /app/build && ctest --output-on-failure"
+    
+    - name: Start services
+      run: |
+        cd infrastructure
+        docker-compose up -d
+        sleep 10
+    
+    - name: Check backend health
+      run: |
+        docker logs backend_app
+    
+    - name: Cleanup
+      if: always()
+      run: |
+        cd infrastructure
+        docker-compose down -v

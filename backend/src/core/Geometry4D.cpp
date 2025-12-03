@@ -51,8 +51,11 @@ int Geometry4D::getSRID() const {
 
 void Geometry4D::setSRID(int srid) {
     if (!geometry) return;
-    OGRSpatialReference srs;
-    srs.importFromEPSG(srid);
-    geometry->assignSpatialReference(&srs);
+    
+    OGRSpatialReference* srs = new OGRSpatialReference();
+    srs->importFromEPSG(srid);
+    geometry->assignSpatialReference(srs);
+    srs->Release();
+    
     crs = "EPSG:" + std::to_string(srid);
 }

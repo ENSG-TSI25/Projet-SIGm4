@@ -6,8 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 file(GLOB_RECURSE SOURCES 
-    "src/*.cpp"
-    "src/**/*.cpp"
+    "src/core/*.cpp"
+    "src/db/*.cpp"
+    "src/main.cpp"
+    "src/Application.cpp"
 )
 
 add_executable(backend_app ${SOURCES})
@@ -26,4 +28,5 @@ target_include_directories(backend_app PRIVATE
     ${PQXX_INCLUDE_DIRS}
 )
 
+enable_testing()
 add_subdirectory(tests/unit)
