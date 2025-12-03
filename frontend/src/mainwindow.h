@@ -2,7 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
 #include "Carte.h"
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QWheelEvent>
+#include <qgsmapcanvas.h>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -19,12 +25,19 @@ public:
     void listDimension();
     void listSourceSys();
     void listTargetSys();
-
+    void addFileToWidget();
+    std::string selectCRSsource();
+    std::string selectCRSdest();
+    double getDate();
+    std::tuple<std::string, std::string, double> transform();
+    
 
 private:
     Ui::MainWindow *ui;
-
-
     Carte* carte;
+    QString fileName;
+    void zoomIn_button();
+    void zoomOut_button();
+
 };
 #endif // MAINWINDOW_H
