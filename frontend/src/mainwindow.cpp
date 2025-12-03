@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "dialog.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -10,6 +11,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QListWidget>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -34,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
 
     connect (ui->addToMapBtn, &QPushButton::clicked, this, &MainWindow::addFileToWidget);
+
+    connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
 }
 
 MainWindow::~MainWindow()
@@ -155,3 +159,7 @@ void MainWindow::addFileToWidget() {
     }
 }
 
+void MainWindow::openDialog() {
+    Dialog *dialog = new Dialog(this);
+    dialog -> show();
+}
