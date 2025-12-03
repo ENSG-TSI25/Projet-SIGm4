@@ -19,7 +19,8 @@ Projet-SIGm4/
 Installer les dépendances (tests en local)
 
 ```bash
-
+sudo apt-get update
+sudo apt-get install libgtest-dev libgmock-dev
 ```
 Configurer le projet avec CMake
 
