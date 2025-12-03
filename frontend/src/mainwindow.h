@@ -20,7 +20,6 @@ public:
     void listSourceSys();
     void listTargetSys();
 
-
 private:
     Ui::MainWindow *ui;
 
