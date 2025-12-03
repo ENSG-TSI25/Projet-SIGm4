@@ -23,5 +23,14 @@ RUN apt-get update && apt-get install -y \
 
 
 WORKDIR /app
-COPY . /app
-CMD ["/bin/bash"]
+COPY . /app/
+# Build your Qt/QGIS C++ application
+RUN mkdir -p /app/build && cd /app/build && \
+    cmake /app \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DCMAKE_CXX_FLAGS="-I/usr/include/qgis -I/usr/include/qgis/qgis" \
+    && make -j$(nproc)
+
+
+# Default command → run your GUI
+CMD ["/app/build/frontend"]

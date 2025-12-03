@@ -35,13 +35,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="dataTypeCombo">
-            <property name="placeholderText">
-             <string>Type de données...</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QComboBox" name="dimensionCombo">
             <property name="placeholderText">
              <string>Dimension...</string>
@@ -148,13 +141,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnMove">
-            <property name="text">
-             <string>Déplacer</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="btnSelect">
             <property name="text">
              <string>Sélectionner</string>
@@ -179,13 +165,6 @@
            <widget class="QPushButton" name="btnZoomMinus">
             <property name="text">
              <string>Zoom-</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnFit">
-            <property name="text">
-             <string>Ajuster</string>
             </property>
            </widget>
           </item>

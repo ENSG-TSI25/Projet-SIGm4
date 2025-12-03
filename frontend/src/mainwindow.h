@@ -31,6 +31,7 @@ public:
     std::string selectCRSdest();
     double getDate();
     std::tuple<std::string, std::string, double> transform();
+    //void updateScaleLabel(double scaleValue);
     
 
 private:
