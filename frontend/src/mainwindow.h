@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
 #include "Carte.h"
 
 QT_BEGIN_NAMESPACE
@@ -19,6 +20,7 @@ public:
     void listDimension();
     void listSourceSys();
     void listTargetSys();
+    void addFileToWidget();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();
@@ -30,5 +32,6 @@ private:
 
 
     Carte* carte;
+    QString fileName;
 };
 #endif // MAINWINDOW_H

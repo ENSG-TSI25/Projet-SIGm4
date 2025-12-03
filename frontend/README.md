@@ -11,7 +11,7 @@ Voici le git pour le développement de l'application SIGm4
 ### NE PAS TOUCHER A LA BRANCHE RELEASE SAUF A LA FIN DU PROJET
 
 ### AVANT DE MERGE SUR LA BRANCHE DEV, DEMANDER UNE REVIEW À D'AUTRES GENS
-
+cd frontend
 docker build -t qgis_cpp_app .
 
 xhost +local:root
@@ -20,7 +20,7 @@ docker run -it --rm \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     qgis_cpp_app
 
-cd frontend
+
 mkdir build && cd build
 cmake .. -DCMAKE_CXX_FLAGS="-I/usr/include/qgis -I/usr/include/qgis/qgis"
 make -j$(nproc)

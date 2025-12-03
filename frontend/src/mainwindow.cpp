@@ -3,11 +3,13 @@
 #include <QFileDialog>
 #include <QComboBox>
 #include <QString>
+#include <QStringList>
 #include <iostream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , fileName(" ") 
 {
     ui->setupUi(this);
     connect (ui->importBtn, &QPushButton::clicked, this, &MainWindow::listFiles);
@@ -22,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect (ui->epochEdit, &QLineEdit::textEdited, this, &MainWindow::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
+
+    connect (ui->addToMapBtn, &QPushButton::clicked, this, &MainWindow::addFileToWidget);
 }
 
 MainWindow::~MainWindow()
@@ -30,7 +34,8 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::listFiles(){
-       QString fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));}
+    fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));
+}
 
 
 void MainWindow::listDimension(){
@@ -121,5 +126,13 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
     std::cout<<std::get<1>(final);
     std::cout<<std::get<2>(final);
     return final;
+}
+
+void MainWindow::addFileToWidget() {
+    if (!fileName.isEmpty()) {
+        QStringList filenameChar = fileName.split(u'/');
+        ui -> layersList -> addItem(filenameChar.last());
+        fileName = "";
+    }
 }
 
