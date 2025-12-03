@@ -1,6 +1,9 @@
 .vscode/
 infrastructure/.env
 
+# yml front et app
+.github/workflows/app.yml 
+.github/workflows/front-end.yml
 .env
 *.env.local
 .env.*.local

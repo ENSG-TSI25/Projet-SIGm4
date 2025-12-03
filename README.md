@@ -14,6 +14,51 @@ Projet-SIGm4/
 │   └── .env
 └── README.md
 ```
+## Tests 
+
+Installer les dépendances (tests en local)
+
+```bash
+
+```
+Configurer le projet avec CMake
+
+```bash
+cd backend
+rm -rf build
+mkdir build
+cd build
+cmake ..
+make
+```
+Lancer tous les tests :
+
+```bash
+ctest
+```
+Détails 
+
+```bash
+ctest --verbose
+```
+Sortie en cas d'échec
+
+```bash
+ctest --output-on-failure
+```
+
+Lister les tests :
+```bash
+ctest -N
+```
+
+Lancer un test en particulier :
+
+```bash
+./tests/unit_tests
+```
+
+
 
 ## Installation
 
