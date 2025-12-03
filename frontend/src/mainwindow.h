@@ -19,10 +19,10 @@ public:
     void listDimension();
     void listSourceSys();
     void listTargetSys();
+    void clickNewProject();
 
 private:
     Ui::MainWindow *ui;
-
 
     Carte* carte;
 };
