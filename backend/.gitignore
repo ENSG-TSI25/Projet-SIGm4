@@ -1,8 +1,3 @@
-# yml front et app
-.github/workflows/app.yml 
-.github/workflows/front-end.yml
-
-
 # Build directories
 build/
 build-*/
