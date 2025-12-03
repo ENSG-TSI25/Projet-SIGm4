@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
 #include "Carte.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -24,6 +25,7 @@ public:
     void listDimension();
     void listSourceSys();
     void listTargetSys();
+    void addFileToWidget();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();
@@ -33,6 +35,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    QString fileName;
     void zoomIn_button();
     void zoomOut_button();
 
