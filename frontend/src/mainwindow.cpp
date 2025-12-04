@@ -34,8 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSdest);
     listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte);
-    // //connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);
-    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
       
     
@@ -54,12 +53,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-/*void MainWindow::updateScaleLabel(double scaleValue)
+void MainWindow::updateScaleLabel(int scaleValue)
 {
-    ui->scale->setText(QString("Échelle : 1:%1")
-        .arg(QString::number(scaleValue, 'f', 0))
-    );
-}*/
+    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue/100)*100), 'f', 0)));
+
+}
 
 void MainWindow::zoomIn_button()
 {

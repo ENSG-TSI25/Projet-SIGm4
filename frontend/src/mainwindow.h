@@ -30,9 +30,9 @@ public:
     std::string selectCRSdest();
     double getDate();
     std::tuple<std::string, std::string, double> transform();
-    // void updateScaleLabel(double scaleValue);
+    //void updateScaleLabel(double scaleValue);
     void setNewProject();
-    
+    void updateScaleLabel(int scaleValue);
 
 private:
     Ui::MainWindow *ui;
