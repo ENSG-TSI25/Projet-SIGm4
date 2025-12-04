@@ -3,6 +3,13 @@ project(BackendLib)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(PkgConfig REQUIRED)
+
+pkg_check_modules(PQXX REQUIRED libpqxx)
+pkg_check_modules(GDAL REQUIRED gdal)
+pkg_check_modules(PROJ REQUIRED proj)
+
+
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 # Collect all backend sources EXCEPT main.cpp
