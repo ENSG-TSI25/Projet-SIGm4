@@ -36,7 +36,7 @@ TEST_F(ProjectTest, ConstructorWithLayers) {
     EXPECT_EQ(project2->getCrs(), "EPSG:3857");
     EXPECT_EQ(project2->getLayers().size(), 2);
     EXPECT_EQ(project2->getLayers()[0].getName(), "Layer1");
-    EXPECT_EQ(project2->getLayers()[0].getName(), "Layer2");
+    EXPECT_EQ(project2->getLayers()[1].getName(), "Layer2");
 }
 
 TEST_F(ProjectTest, AddLayer) {
