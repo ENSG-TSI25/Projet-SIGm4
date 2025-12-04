@@ -24,6 +24,8 @@ services:
     depends_on:
       postgis:
         condition: service_healthy
+    volumes:
+      - ../backend/data:/app/data
     ports:
       - "3000:3000"
     environment:
@@ -55,4 +57,4 @@ services:
     network_mode: "host"
 
 volumes:
-  pgdata:
+  pgdata: 

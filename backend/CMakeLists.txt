@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(BackendLib)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(PkgConfig REQUIRED)
 
@@ -24,6 +25,7 @@ file(GLOB_RECURSE LIB_SOURCES
 # This generates libsigm4_backend.a
 add_library(sigm4_backend STATIC ${LIB_SOURCES})
 
+find_package(PROJ REQUIRED)
 find_package(GDAL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PQXX REQUIRED libpqxx)
@@ -33,14 +35,15 @@ pkg_check_modules(PQXX REQUIRED libpqxx)
 target_link_libraries(sigm4_backend PUBLIC
     ${GDAL_LIBRARIES}
     ${PQXX_LIBRARIES}
+    PROJ::proj
 )
 
 # Expose include directories as PUBLIC
 # Frontend can directly include <core/DataManager.hpp> etc.
 target_include_directories(sigm4_backend PUBLIC 
     ${CMAKE_SOURCE_DIR}/include
-    ${PQXX_INCLUDE_DIRS}
     ${GDAL_INCLUDE_DIRS}
+    ${PQXX_INCLUDE_DIRS}
 )
 
 # This uses main.cpp and links against our library
