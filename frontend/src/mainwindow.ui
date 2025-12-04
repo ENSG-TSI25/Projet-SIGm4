@@ -61,9 +61,28 @@
            </widget>
           </item>
           <item>
-           <widget class="QComboBox" name="dataTypeCombo">
-            <property name="placeholderText">
-             <string>Type de données...</string>
+           <widget class="QLabel" name="label">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Type de données</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Dimension</string>
             </property>
            </widget>
           </item>
@@ -226,13 +245,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnMove">
-            <property name="text">
-             <string>Déplacer</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="btnSelect">
             <property name="text">
              <string>Sélectionner</string>
@@ -257,13 +269,6 @@
            <widget class="QPushButton" name="btnZoomMinus">
             <property name="text">
              <string>Zoom-</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnFit">
-            <property name="text">
-             <string>Ajuster</string>
             </property>
            </widget>
           </item>

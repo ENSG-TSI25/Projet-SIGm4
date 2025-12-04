@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <QComboBox>
 #include "Carte.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
@@ -23,13 +24,14 @@ public:
     ~MainWindow();
     void listFiles();
     void listDimension();
-    void listSourceSys();
-    void listTargetSys();
     void addFileToWidget();
+    void openDialog();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();
     std::tuple<std::string, std::string, double> transform();
+    // void updateScaleLabel(double scaleValue);
+    void setNewProject();
     
 
 private:
@@ -38,6 +40,7 @@ private:
     QString fileName;
     void zoomIn_button();
     void zoomOut_button();
+    void setCrsList(QComboBox *comboBox);
 
 };
 #endif // MAINWINDOW_H
