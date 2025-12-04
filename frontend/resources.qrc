@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/styles">
+        <file>style.qss</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>icons/upload.png</file>
+    </qresource>
+</RCC>

@@ -30,6 +30,7 @@ set(PROJECT_SOURCES
     src/dialog.cpp
     src/dialog.h
     src/dialog.ui
+    resources.qrc
 )
 
 # Exécutable (nom correct)

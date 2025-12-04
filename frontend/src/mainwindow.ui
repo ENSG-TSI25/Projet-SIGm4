@@ -26,11 +26,50 @@
          <property name="title">
           <string>Import de données</string>
          </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
          <layout class="QVBoxLayout">
           <item>
            <widget class="QPushButton" name="importBtn">
             <property name="text">
              <string>Importer des fichiers</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../resources.qrc">
+              <normaloff>:/icons/icons/upload.png</normaloff>:/icons/icons/upload.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>45</width>
+              <height>45</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Type de données</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Dimension</string>
             </property>
            </widget>
           </item>
@@ -58,6 +97,19 @@
          </property>
          <layout class="QVBoxLayout">
           <item>
+           <widget class="QLabel" name="label_3">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Système source</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QComboBox" name="sourceCRSCombo">
             <property name="placeholderText">
              <string>Système source...</string>
@@ -65,9 +117,35 @@
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="label_4">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Système cible</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QComboBox" name="targetCRSCombo">
             <property name="placeholderText">
              <string>Système cible...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>20</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Époque</string>
             </property>
            </widget>
           </item>
@@ -220,6 +298,8 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

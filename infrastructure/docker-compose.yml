@@ -32,6 +32,22 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
+  frontend:
+    build:
+      context: ../frontend   
+      dockerfile: Dockerfile
+    container_name: qt_frontend
+    depends_on:
+      postgis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      DISPLAY: ${DISPLAY}
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 for GUI
+    # important: GUI must stay interactive
+    network_mode: "host"  # recommended for GUI apps on Linux
 
 
 volumes:
