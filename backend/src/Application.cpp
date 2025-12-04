@@ -20,42 +20,50 @@ void Application::initialize()
     dbClient->initExtensions();
 }
 
+
 void Application::run()
 {
     std::cout << "\n=== Running Application ===" << std::endl;
-
     pqxx::result r = dbClient->execute("SELECT PostGIS_Version();");
     std::cout << "PostGIS version: " << r[0][0].c_str() << std::endl;
-
+    
     std::cout << "\n=== Test GeoPackage ===" << std::endl;
     DataManager dm;
     VectorLayer *layer = dm.chargerVecteur("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
-
+    
     if (layer)
     {
         std::cout << "Couche: " << layer->getNom() << std::endl;
         std::cout << "CRS: " << layer->getCrs() << std::endl;
         std::cout << "Époque: " << layer->getEpoque() << std::endl;
         std::cout << "Nombre géométries: " << layer->getNombreGeometries() << std::endl;
-
-        const auto &geoms = layer->getGeometries(); 
-
+        
+        const auto &geoms = layer->getGeometries();
         if (!geoms.empty())
         {
             const auto &geom = geoms[0];
-
+            std::cout << "\n--- Première géométrie ---" << std::endl;
+            
             OGRGeometry *g = geom->getGeometry();
-            if (g && wkbFlatten(g->getGeometryType()) == wkbPolygon)
+            OGRwkbGeometryType type = wkbFlatten(g->getGeometryType());
+            
+            OGRPoint pt;
+            double t = geom->getT();
+            
+            if (type == wkbPolygon)
             {
-                OGRPolygon *poly = g->toPolygon();
-                OGRPoint pt;
-                poly->getExteriorRing()->getPoint(0, &pt);
-
-                std::cout << "Premier point: " << pt.getX() << " "
-                          << pt.getY() << " " << pt.getZ() << std::endl;
+                g->toPolygon()->getExteriorRing()->getPoint(0, &pt);
             }
+            else if (type == wkbMultiPolygon)
+            {
+                g->toMultiPolygon()->getGeometryRef(0)->getExteriorRing()->getPoint(0, &pt);
+            }
+            
+            std::cout << "Premier point (X, Y, Z, T): ("
+                      << pt.getX() << ", " << pt.getY() << ", "
+                      << pt.getZ() << ", " << t << ")" << std::endl;
         }
     }
-
+    
     std::cout << "\n✓ Application running successfully!" << std::endl;
 }

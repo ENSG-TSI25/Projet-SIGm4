@@ -26,7 +26,6 @@ VectorLayer *DataManager::chargerVecteur(const std::string &chemin)
     for (const auto &f : features)
     {
         auto geom = std::make_shared<Geometry4D>(f.geometry);
-        std::cout << "EWKT: " << geom->toEWKT() << std::endl;
         layer->ajouterGeometrie(geom);
     }
     // Fermeture du fichier et stockage de la couche
