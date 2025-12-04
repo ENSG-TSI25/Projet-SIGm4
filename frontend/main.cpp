@@ -24,6 +24,5 @@ int main(int argc, char *argv[])
 
     int r = a.exec();
     QgsApplication::exitQgis();
-
     return r;
 }
