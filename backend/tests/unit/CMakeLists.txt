@@ -1,4 +1,5 @@
 # Google Test
+cmake_minimum_required(VERSION 3.28)
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -8,16 +9,23 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 
-# Fichiers sources à tester
+# Determine project root
+get_filename_component(PROJECT_ROOT "${CMAKE_CURRENT_LIST_DIR}/../.." ABSOLUTE)
+
+# Find GDAL when configuring tests standalone so we link OGR symbols
+find_package(GDAL REQUIRED)
+
+# Source files to test
 file(GLOB_RECURSE TEST_SOURCES 
-    "${CMAKE_SOURCE_DIR}/src/core/*.cpp"
+    "${PROJECT_ROOT}/src/core/*.cpp"
 )
 
-# Exécutable de test
+# Testing executables
 add_executable(unit_tests
     test_geometry4d.cpp
     test_datamanager.cpp
     test_geopackagereader.cpp
+    test_project_class.cpp
     ${TEST_SOURCES}
 )
 
@@ -27,7 +35,8 @@ target_link_libraries(unit_tests
 )
 
 target_include_directories(unit_tests PRIVATE
-    ${CMAKE_SOURCE_DIR}/include
+    ${PROJECT_ROOT}/include
+    ${GDAL_INCLUDE_DIRS}
 )
 
 add_test(NAME AllUnitTests COMMAND unit_tests)
