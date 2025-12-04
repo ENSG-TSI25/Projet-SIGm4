@@ -50,8 +50,7 @@ services:
       DISPLAY: ${DISPLAY}
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
-      - ../backend:/app/backend
-      - ../frontend:/app/frontend
+
     network_mode: "host"
 
 volumes:

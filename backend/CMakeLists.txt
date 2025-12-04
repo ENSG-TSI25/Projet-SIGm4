@@ -10,7 +10,7 @@ pkg_check_modules(GDAL REQUIRED gdal)
 pkg_check_modules(PROJ REQUIRED proj)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Collect all backend sources EXCEPT main.cpp
 # main.cpp will be used only for standalone testing
@@ -38,15 +38,15 @@ target_link_libraries(sigm4_backend PUBLIC
 # Expose include directories as PUBLIC
 # Frontend can directly include <core/DataManager.hpp> etc.
 target_include_directories(sigm4_backend PUBLIC 
-    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${PQXX_INCLUDE_DIRS}
     ${GDAL_INCLUDE_DIRS}
 )
 
-# This uses main.cpp and links against our library
-add_executable(backend_app src/main.cpp)
-target_link_libraries(backend_app sigm4_backend)
-
-# Enable unit tests
-enable_testing()
-add_subdirectory(tests/unit)
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    add_executable(backend_app src/main.cpp)
+    target_link_libraries(backend_app sigm4_backend)
+    
+    enable_testing()
+    add_subdirectory(tests/unit)
+endif()

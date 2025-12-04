@@ -10,13 +10,12 @@ RUN apt-get update && apt-get install -y \
     wget unzip \
     && apt-get clean
     
-    
 WORKDIR /app
 
 COPY . .
 
-# Build backend library and standalone app
-RUN mkdir build \
+RUN rm -rf build CMakeCache.txt CMakeFiles \
+    && mkdir build \
     && cd build \
     && cmake .. -DBUILD_TESTS=ON \
     && make -j4 \
