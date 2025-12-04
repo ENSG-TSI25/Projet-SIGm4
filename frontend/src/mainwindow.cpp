@@ -27,11 +27,27 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect (ui->importBtn, &QPushButton::clicked, this, &MainWindow::listFiles);
-    listDimension(); //dimension pour a fficher le contenu de la combobox
-    listSourceSys();
-    listTargetSys();
-    carte = new Carte(ui->carte); // ui->frameCarte = ton QFrame dans Qt Designer
-    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::clickNewProject);
+    //For displaying the CRSs list on the source and target Comboboxes
+    setCrsList(ui->sourceCRSCombo);
+    setCrsList(ui->targetCRSCombo);
+    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSsource);
+    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSdest);
+    listDimension(); //dimension pour afficher le contenu de la combobox
+    carte = new Carte(ui->carte);
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+      
+    
+
+    connect (ui->epochEdit, &QLineEdit::textEdited, this, &MainWindow::getDate);
+    connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
+
+    connect (ui->addToMapBtn, &QPushButton::clicked, this, &MainWindow::addFileToWidget);
+
+    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+
+    connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
 }
 
 MainWindow::~MainWindow()
@@ -114,7 +130,17 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
 void MainWindow::addFileToWidget() {
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
-        ui -> layersList -> addItem(filenameChar.last());
+
+        QListWidgetItem *item = new QListWidgetItem(filenameChar.last());
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Checked);
+
+        ui->layersList->addItem(item);
+
+        //VectorLayer vectLayer = chargerVecteur(fileName);
+        //QgsMapCanvas* canva = carte->getCanvas();
+        //canva->setLayers({vectLayer});
+
         fileName = "";
     }
 }
@@ -172,36 +198,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
         comboBox->addItems(items);
 }
 
-        ui->targetCRSCombo->addItems(items);
-    }
-
-void MainWindow::clickNewProject(){
-        //On crée la boîte de dialogue
-    QDialog chosingCRSDialog;
-    chosingCRSDialog.setWindowTitle("Choix du CRS");
-    QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
-    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
-    QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
-    QLineEdit *crsTextZone = new QLineEdit(&chosingCRSDialog);
-    crsTextZone->setPlaceholderText("Entrez le code EPSG du CRS");
-    QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
-    epochTextZone->setPlaceholderText("Entrez l'époque");
-
-    //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
-    QDoubleValidator *doubleValidator = new QDoubleValidator();
-    //La range et les décimales
-    doubleValidator->setRange(0, 2030, 3);
-    //On intègre le validateur à la zone de texte
-    epochTextZone->setValidator(doubleValidator);
-
-
-    //on ajoute les widgets
-    layout->addWidget(dialogText);
-    layout->addWidget(crsTextZone);
-    layout->addWidget(epochTextZone);
-    layout->addWidget(acceptationButton);
-
-    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
-
-    chosingCRSDialog.exec();
+void MainWindow::openDialog() {
+    Dialog *dialog = new Dialog(this);
+    dialog -> show();
 }
