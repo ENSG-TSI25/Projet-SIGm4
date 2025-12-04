@@ -32,6 +32,7 @@ public:
     std::tuple<std::string, std::string, double> transform();
     // void updateScaleLabel(double scaleValue);
     void setNewProject();
+    void updateScaleLabel(int scaleValue);
     
 
 private:
