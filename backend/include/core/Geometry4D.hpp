@@ -19,7 +19,7 @@ public:
     double getT() const;
     void setT(double timestamp);
     int getSRID() const;
-    void setSRID(int srid);
+    void setSRID(int srid); 
 
     std::string toEWKT() const;
     
