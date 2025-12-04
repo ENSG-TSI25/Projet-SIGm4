@@ -24,19 +24,13 @@ public:
     ~MainWindow();
     void listFiles();
     void listDimension();
-    void addFileToWidget();
-    void openDialog();
-    std::string selectCRSsource();
-    std::string selectCRSdest();
-    double getDate();
-    std::tuple<std::string, std::string, double> transform();
-    // void updateScaleLabel(double scaleValue);
-    void setNewProject();
-    void updateScaleLabel(int scaleValue);
-    
+    void listSourceSys();
+    void listTargetSys();
+    void clickNewProject();
 
 private:
     Ui::MainWindow *ui;
+
     Carte* carte;
     QString fileName;
     void zoomIn_button();
