@@ -27,6 +27,7 @@ set(PROJECT_SOURCES
     src/mainwindow.ui
     src/Carte.cpp
     src/Carte.h
+    resources.qrc
 )
 
 # Exécutable (nom correct)
