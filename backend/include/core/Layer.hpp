@@ -20,4 +20,8 @@ public:
     void setNom(const std::string& n) { nom = n; }
     void setCrs(const std::string& c) { crs = c; }
     void setEpoque(double e) { epoque = e; }
+    
+    bool operator==(const Layer& other) const {
+        return nom == other.nom && crs == other.crs && epoque == other.epoque;
+    }
 };
