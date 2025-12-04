@@ -2,7 +2,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QString>
+#include <QComboBox>
 #include "Carte.h"
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QWheelEvent>
+#include <qgsmapcanvas.h>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,13 +24,23 @@ public:
     ~MainWindow();
     void listFiles();
     void listDimension();
-    void listSourceSys();
-    void listTargetSys();
-    void clickNewProject();
+    void addFileToWidget();
+    void openDialog();
+    std::string selectCRSsource();
+    std::string selectCRSdest();
+    double getDate();
+    std::tuple<std::string, std::string, double> transform();
+    // void updateScaleLabel(double scaleValue);
+    void setNewProject();
+    
 
 private:
     Ui::MainWindow *ui;
-
     Carte* carte;
+    QString fileName;
+    void zoomIn_button();
+    void zoomOut_button();
+    void setCrsList(QComboBox *comboBox);
+
 };
 #endif // MAINWINDOW_H

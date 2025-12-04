@@ -1,0 +1,294 @@
+#carte {
+    background: #e8f0f5;
+    border-radius: 0;
+    padding: 0;
+    height: 100%;
+    border-left: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
+    position: relative;
+}
+
+
+#importBtn {
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    background: #f7fafc;
+}
+
+#importBtn:hover {
+    border-color: #667eea;
+    background: #edf2f7;
+}
+/* Style général du QComboBox */
+QComboBox {
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 5px 30px 5px 10px; /* espace pour le texte et la flèche */
+    background-color: #ffffff;
+    color: #2d3748;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Hover sur le QComboBox */
+QComboBox:hover {
+    border-color: #667eea;
+    background-color: #edf2f7;
+    color: #2d3748;
+}
+
+/* QComboBox quand activé (focus) */
+QComboBox:focus {
+    border-color: #667eea;
+    background-color: #ffffff;
+}
+
+/* Style de la flèche de la liste déroulante */
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 28px; /* largeur du bouton de flèche */
+    border-left: 1px solid #cbd5e0;
+    background: #f7fafc;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+QComboBox::down-arrow {
+    image: url(:/icons/down-arrow.png); /* icône flèche */
+    width: 12px;
+    height: 12px;
+}
+
+/* Style des éléments de la liste déroulante */
+QComboBox QAbstractItemView {
+    border: 1px solid #cbd5e0;
+    background-color: #ffffff;
+    selection-background-color: #667eea;
+    selection-color: #ffffff;
+    padding: 5px;
+    font-size: 13px;
+    outline: none;
+}
+
+/* Option : pour désactiver le focus rectangle bleu par défaut */
+QComboBox QAbstractItemView::item {
+    height: 28px;
+}
+
+/* Style général du QLineEdit */
+QLineEdit {
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background-color: #ffffff;
+    color: #2d3748;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Hover */
+QLineEdit:hover {
+    border-color: #667eea;
+    background-color: #f7fafc;
+}
+
+/* Focus (quand on clique dans le champ) */
+QLineEdit:focus {
+    border-color: #667eea;
+    background-color: #ffffff;
+    selection-background-color: #667eea; /* texte sélectionné */
+    selection-color: #ffffff;
+}
+
+/* Placeholder text (texte gris clair) */
+QLineEdit[placeholderText]:!focus {
+    color: #718096;
+}
+/* Style général pour tous les QPushButton */
+QPushButton {
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background-color: #f7fafc;
+    color: #2d3748;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Hover */
+QPushButton:hover {
+    background-color: #edf2f7;
+    border-color: #667eea;
+    color: #2d3748;
+}
+
+/* Pressed / Click */
+QPushButton:pressed {
+    background-color: #667eea;
+    color: #ffffff;
+    border-color: #5568d3;
+}
+
+/* Disabled */
+QPushButton:disabled {
+    background-color: #f0f4f8;
+    color: #718096;
+    border-color: #cbd5e0;
+}
+
+/* Style spécifique pour le bouton d'import avec icône centrée */
+#importBtn {
+    border: 2px dashed #cbd5e0;
+    border-radius: 8px;
+    padding: 20px;
+    background: #f7fafc;
+    color: #4a5568;
+    text-align: center;
+}
+
+#importBtn:hover {
+    border-color: #667eea;
+    background: #edf2f7;
+}
+
+/* Icone du bouton d'import */
+#importBtn::icon {
+    width: 45px;
+    height: 45px;
+}
+
+/* Boutons "Ajouter à la carte", "Transformer", "Exporter les couches" */
+#btnNew,
+#btnOpen,
+#btnSave,
+#addToMapBtn,
+#transformBtn,
+#exportLayersBtn {
+    background-color: #667eea;
+    color: #ffffff;
+    border: 1px solid #667eea;
+}
+
+#addToMapBtn:hover,
+#transformBtn:hover,
+#exportLayersBtn:hover,
+#btnNew:hover,
+#btnOpen:hover,
+#btnSave:hover {
+    background-color: #5568d3;
+    border-color: #5568d3;
+}
+
+/* Boutons de la barre d'outils */
+#btnMove,
+#btnSelect,
+#btnMeasure,
+#btnZoomPlus,
+#btnZoomMinus,
+#btnFit {
+    background-color: #f7fafc;
+    color: #2d3748;
+    border: 1px solid #cbd5e0;
+}
+
+
+#btnMove:hover,
+#btnSelect:hover,
+#btnMeasure:hover,
+#btnZoomPlus:hover,
+#btnZoomMinus:hover,
+#btnFit:hover {
+    background-color: #edf2f7;
+    border-color: #667eea;
+    color: #2d3748;
+}
+
+/* Boutons actifs dans la barre d'outils (ex: sélection) */
+#btnMove:checked,
+#btnSelect:checked,
+#btnMeasure:checked,
+#btnZoomPlus:checked,
+#btnZoomMinus:checked,
+#btnFit:checked {
+    background-color: #667eea;
+    color: #ffffff;
+    border-color: #667eea;
+}
+
+/* TITRES DES GROUPBOX */
+QGroupBox {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2d3748; /* texte sombre */
+    border: 1px solid #e2e8f0; /* bordure légère autour du groupbox */
+    border-radius: 6px;
+    margin-top: 10px;
+    padding: 12px;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 6px;
+    color: #2d3748;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* LABELS (ex: Epoch, LayersTitle) */
+QLabel {
+    font-size: 13px;
+    color: #2d3748;
+    font-weight: 500;
+}
+
+/* Placeholder text pour QLineEdit */
+QLineEdit[placeholderText]:!focus {
+    color: #718096; /* gris clair */
+    font-style: italic;
+}
+
+/* Placeholder text pour QComboBox */
+QComboBox[placeholderText]:!focus {
+    color: #718096;
+    font-style: italic;
+}
+
+/* Texte des boutons */
+QPushButton {
+    font-size: 13px;
+    font-weight: 500;
+    color: #2d3748; /* texte normal */
+}
+
+/* Texte des boutons bleus (ajouter, transformer, exporter) */
+#addToMapBtn,
+#transformBtn,
+#btnNew,
+#btnOpen,
+#btnSave,
+#exportLayersBtn {
+    color: #ffffff; /* texte blanc sur boutons bleus */
+}
+
+/* Texte des boutons de la barre d'outils */
+#btnMove,
+#btnSelect,
+#btnMeasure,
+#btnZoomPlus,
+#btnZoomMinus,
+#btnFit {
+    font-size: 13px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+/* Texte sélectionné / actif */
+QPushButton:checked {
+    color: #ffffff;
+    font-weight: 600;
+}

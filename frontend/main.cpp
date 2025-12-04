@@ -1,17 +1,29 @@
 #include "src/mainwindow.h"
-
-#include <QApplication>
-#include <QDialog>
-#include <QLineEdit>
-#include <QDoubleValidator>
+#include <qgsapplication.h>
+#include "src/mainwindow.h"
+#include <QFile>
+#include <QDebug>
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QgsApplication a(argc, argv, true);
+    QgsApplication::setPrefixPath("/usr", true);
+    QgsApplication::initQgis();
 
-        MainWindow w;
-        w.show();
-        return a.exec();
-    return 0;
+    QFile styleFile(":/styles/style.qss");
+    if (styleFile.open(QFile::ReadOnly)) {
+        QString style = QLatin1String(styleFile.readAll());
+        a.setStyleSheet(style);
+        styleFile.close();
+    } else {
+        qDebug() << "Impossible de charger le fichier style.qss";
+    }
 
+    MainWindow w;
+    w.show();
+
+    int r = a.exec();
+    QgsApplication::exitQgis();
+
+    return r;
 }

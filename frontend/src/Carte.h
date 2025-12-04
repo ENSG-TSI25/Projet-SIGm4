@@ -57,5 +57,7 @@ private:
     void initLayers();
     void connectSignals();
     void updateLabels();
+
+    void toggleBaseLayer();
     QgsPointXY wgs84ToMercator(double lon, double lat);
 };
