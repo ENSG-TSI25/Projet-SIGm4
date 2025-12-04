@@ -1,6 +1,4 @@
 
-
-
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -18,19 +16,21 @@ RUN apt-get update && apt-get install -y \
     libqt5xmlpatterns5-dev \
     qgis \
     libqgis-dev \
+    libgdal-dev \
+    libpq-dev \
+    libpqxx-dev \
+    libproj-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-
 WORKDIR /app
+
 COPY . /app/
-# Build your Qt/QGIS C++ application
+
 RUN mkdir -p /app/build && cd /app/build && \
-    cmake /app \
+    cmake /app/frontend \
       -DCMAKE_CXX_STANDARD=17 \
       -DCMAKE_CXX_FLAGS="-I/usr/include/qgis -I/usr/include/qgis/qgis" \
     && make -j$(nproc)
 
-
-# Default command → run your GUI
 CMD ["/app/build/frontend"]
