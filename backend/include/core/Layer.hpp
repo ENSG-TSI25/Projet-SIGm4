@@ -14,8 +14,6 @@ public:
     virtual ~Layer() = default;
 
     std::string getNom() const { return nom; }
-    // Alias in English for tests
-    std::string getName() const { return nom; }
     std::string getCrs() const { return crs; }
     double getEpoque() const { return epoque; }
 
