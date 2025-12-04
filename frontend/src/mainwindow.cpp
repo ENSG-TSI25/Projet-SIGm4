@@ -46,6 +46,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+
+    connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
 }
 
 MainWindow::~MainWindow()
@@ -128,7 +130,17 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
 void MainWindow::addFileToWidget() {
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
-        ui -> layersList -> addItem(filenameChar.last());
+
+        QListWidgetItem *item = new QListWidgetItem(filenameChar.last());
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Checked);
+
+        ui->layersList->addItem(item);
+
+        //VectorLayer vectLayer = chargerVecteur(fileName);
+        //QgsMapCanvas* canva = carte->getCanvas();
+        //canva->setLayers({vectLayer});
+
         fileName = "";
     }
 }
@@ -186,3 +198,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
         comboBox->addItems(items);
 }
 
+void MainWindow::openDialog() {
+    Dialog *dialog = new Dialog(this);
+    dialog -> show();
+}
