@@ -33,6 +33,7 @@ public:
     //void updateScaleLabel(double scaleValue);
     void setNewProject();
     void updateScaleLabel(int scaleValue);
+    //void getCalendarDate();
 
 private:
     Ui::MainWindow *ui;

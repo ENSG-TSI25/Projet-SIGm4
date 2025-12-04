@@ -13,11 +13,13 @@
 #include <QVBoxLayout>
 #include <QDoubleValidator>
 #include <QDialog>
-
+#include <QCalendarWidget>
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
 #include <iostream>
+#include <QDate>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+
 }
 
 MainWindow::~MainWindow()
@@ -135,7 +138,7 @@ void MainWindow::addFileToWidget() {
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
-    //On crée la boîte de dialogue
+    //Creation of the dialog window
     QDialog chosingCRSDialog;
     chosingCRSDialog.setWindowTitle("Choix du CRS");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
@@ -146,26 +149,46 @@ void MainWindow::setNewProject(){
     setCrsList(crsList);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
+    QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
+    
+    
 
     //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
-    //La range et les décimales
+    //range and decimals
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     //On intègre le validateur à la zone de texte
     epochTextZone->setValidator(doubleValidator);
 
 
+
+
     //on ajoute les widgets
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
+    layout->addWidget(calendar);
     layout->addWidget(acceptationButton);
+    
+
 
     QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
 
     chosingCRSDialog.exec();
 }
+
+/*void MainWindow::getCalendarDays(QCalendarWidget *calendarwidget){
+    connect (calendar,&QCalendarWidget::selectionChanged, [=](){
+        QDate date = calendar->selectedDate();
+        int day = date.day();
+        int month = date.month();
+        int year = date.year();
+        
+    });
+    
+}*/
+
 
 //Function to set the targetted comboBox to show the list of CRS accepted by the project
 void MainWindow::setCrsList(QComboBox *comboBox){
@@ -181,7 +204,8 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "ETRF2005 (9068)",
             "ETRF2000 (9067)",
             "RGF93v2b (9784)",
-            "RGM23 (10673)"
+            "RGM23 (10673)",
+            
         };
         comboBox->addItems(items);
 }
