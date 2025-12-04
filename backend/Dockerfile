@@ -2,7 +2,8 @@ FROM ubuntu:22.04
 
 
 RUN apt-get update && apt-get install -y \
-    g++ cmake make \
+    g++ cmake make git \
+    pkg-config \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
     pkg-config \
@@ -12,11 +13,9 @@ RUN apt-get update && apt-get install -y \
     libtiff-dev \
     libcurl4-openssl-dev \
     liblzma-dev \
+    wget unzip \
     && apt-get clean
     
-RUN mkdir -p /app/io/input /app/io/output
-
-WORKDIR /opt
 
 RUN git clone https://github.com/OSGeo/PROJ.git && \
     cd PROJ && \
@@ -30,16 +29,21 @@ RUN git clone https://github.com/OSGeo/PROJ.git && \
     make -j$(nproc) && \
     make install && \
     ldconfig
+    
+    
 
 # Build de ton application
 WORKDIR /app
 COPY . .
 
+# Build backend library and standalone app
 RUN mkdir build \
     && cd build \
-    && cmake .. \
+    && cmake .. -DBUILD_TESTS=ON \
     && make -j4 \
-    && cp backend_app /app/backend_app
+    && ctest --verbose \
+    && cp backend_app /app/backend_app \
+    && cp libsigm4_backend.a /app/libsigm4_backend.a
 
-CMD ["/app/backend_app"]
 
+CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]

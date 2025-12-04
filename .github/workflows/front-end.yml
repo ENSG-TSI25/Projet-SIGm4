@@ -1,0 +1,50 @@
+name: Frontend CI
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config \
+            qtbase5-dev \
+            qttools5-dev \
+            qttools5-dev-tools \
+            libqt5svg5-dev \
+            libqt5xmlpatterns5-dev \
+            qgis \
+            libqgis-dev \
+            libgtest-dev \
+            libgmock-dev
+      
+      - name: Configure CMake
+        working-directory: frontend
+        run: cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+      
+      - name: Build
+        working-directory: frontend
+        run: cmake --build build --verbose
+      
+      - name: Run tests
+        working-directory: frontend
+        run: |
+          cd build
+          ctest --output-on-failure --verbose
+      
+      - name: Test Summary
+        if: always()
+        working-directory: frontend
+        run: |
+          cd build
+          ctest --output-on-failure || true

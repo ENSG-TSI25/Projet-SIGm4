@@ -14,6 +14,49 @@ Projet-SIGm4/
 │   └── .env
 └── README.md
 ```
+## Tests en local
+
+#### Installer les dépendances 
+
+```bash
+sudo apt-get update
+sudo apt-get install libgtest-dev libgmock-dev
+```
+#### Configurer le projet avec CMake
+
+```bash
+cd backend
+rm -rf build
+mkdir build
+cd build
+cmake ..
+make
+```
+#### Lancer tous les tests :
+
+```bash
+ctest
+# Avec des détails
+ctest --verbose
+```
+#### Sortie en cas d'échec
+
+```bash
+ctest --output-on-failure
+```
+
+#### Lister les tests :
+```bash
+ctest -N
+```
+
+#### Lancer un test en particulier :
+
+```bash
+./tests/nom_test
+# Exemple :
+./tests/unit_tests
+```
 
 ## Installation
 
