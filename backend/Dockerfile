@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
     libproj-dev \
+    pkg-config \
+    wget unzip \
     && apt-get clean
     
     
@@ -13,10 +15,13 @@ WORKDIR /app
 
 COPY . .
 
+# Build backend library and standalone app
 RUN mkdir build \
     && cd build \
     && cmake .. -DBUILD_TESTS=ON \
     && make -j4 \
-    && cp backend_app /app/backend_app
+    && ctest --verbose \
+    && cp backend_app /app/backend_app \
+    && cp libsigm4_backend.a /app/libsigm4_backend.a
 
-CMD ["/app/backend_app"]
+CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]

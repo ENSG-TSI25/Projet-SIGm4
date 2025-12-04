@@ -1,3 +1,6 @@
+.env
+.vscode/
+data/*.gpkg
 # Build directories
 build/
 build-*/
