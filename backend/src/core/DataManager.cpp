@@ -5,7 +5,7 @@
 DataManager::DataManager() {}
 DataManager::~DataManager() {}
 
-VectorLayer *DataManager::chargerVecteur(const std::string &chemin)
+VectorLayer *DataManager::loadVector(const std::string &chemin)
 {
     // Ouverture du fichier GeoPackage
     GeoPackageReader reader(chemin);
@@ -26,7 +26,7 @@ VectorLayer *DataManager::chargerVecteur(const std::string &chemin)
     for (const auto &f : features)
     {
         auto geom = std::make_shared<Geometry4D>(f.geometry);
-        layer->ajouterGeometrie(geom);
+        layer->addGeometry(geom);
     }
     // Fermeture du fichier et stockage de la couche
     reader.close();

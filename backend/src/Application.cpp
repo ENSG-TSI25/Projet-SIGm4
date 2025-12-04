@@ -15,11 +15,10 @@ void Application::initialize()
     std::cout << "=== Initializing Application ===" << std::endl;
     GDALAllRegister();
     std::cout << "GDAL version: " << GDALVersionInfo("VERSION_NUM") << std::endl;
-
+    
     dbClient->connect();
     dbClient->initExtensions();
 }
-
 
 void Application::run()
 {
@@ -29,20 +28,19 @@ void Application::run()
     
     std::cout << "\n=== Test GeoPackage ===" << std::endl;
     DataManager dm;
-    VectorLayer *layer = dm.chargerVecteur("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
+    VectorLayer *layer = dm.loadVector("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
     
     if (layer)
     {
-        std::cout << "Couche: " << layer->getNom() << std::endl;
+        std::cout << "Layer: " << layer->getName() << std::endl;
         std::cout << "CRS: " << layer->getCrs() << std::endl;
-        std::cout << "Époque: " << layer->getEpoque() << std::endl;
-        std::cout << "Nombre géométries: " << layer->getNombreGeometries() << std::endl;
+        std::cout << "Epoch: " << layer->getEpoch() << std::endl;
         
         const auto &geoms = layer->getGeometries();
         if (!geoms.empty())
         {
             const auto &geom = geoms[0];
-            std::cout << "\n--- Première géométrie ---" << std::endl;
+            std::cout << "\n--- First geometry ---" << std::endl;
             
             OGRGeometry *g = geom->getGeometry();
             OGRwkbGeometryType type = wkbFlatten(g->getGeometryType());
@@ -59,7 +57,7 @@ void Application::run()
                 g->toMultiPolygon()->getGeometryRef(0)->getExteriorRing()->getPoint(0, &pt);
             }
             
-            std::cout << "Premier point (X, Y, Z, T): ("
+            std::cout << "First point (X, Y, Z, T): ("
                       << pt.getX() << ", " << pt.getY() << ", "
                       << pt.getZ() << ", " << t << ")" << std::endl;
         }

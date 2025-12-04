@@ -39,30 +39,30 @@ TEST_F(DataManagerTest, Constructor) {
 }
 
 // Chargement fichier valide
-TEST_F(DataManagerTest, ChargerVecteurValid) {
+TEST_F(DataManagerTest, loadVectorValid) {
     std::string path = createTestGpkg();
     DataManager dm;
-    VectorLayer* layer = dm.chargerVecteur(path);
+    VectorLayer* layer = dm.loadVector(path);
     ASSERT_NE(layer, nullptr);
     EXPECT_FALSE(layer->getGeometries().empty());
     std::remove(path.c_str());
 }
 
 // Fichier inexistant
-TEST_F(DataManagerTest, ChargerVecteurInvalid) {
+TEST_F(DataManagerTest, loadVectorInvalid) {
     DataManager dm;
-    VectorLayer* layer = dm.chargerVecteur("/tmp/nonexistent.gpkg");
+    VectorLayer* layer = dm.loadVector("/tmp/nonexistent.gpkg");
     EXPECT_EQ(layer, nullptr);
 }
 
 // Fichier vide
-TEST_F(DataManagerTest, ChargerVecteurEmpty) {
+TEST_F(DataManagerTest, loadVectorEmpty) {
     std::string path = "/tmp/empty.gpkg";
     GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
     GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
     GDALClose(ds);
     DataManager dm;
-    VectorLayer* layer = dm.chargerVecteur(path);
+    VectorLayer* layer = dm.loadVector(path);
     EXPECT_EQ(layer, nullptr);
     std::remove(path.c_str());
 }

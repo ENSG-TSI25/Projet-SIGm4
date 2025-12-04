@@ -12,7 +12,7 @@ public:
     VectorLayer(const std::string& nom_, const std::string& crs_ = "EPSG:4326", double epoque_ = 0.0)
         : Layer(nom_, crs_, epoque_) {}
     
-    void ajouterGeometrie(std::shared_ptr<Geometry4D> geom) {
+    void addGeometry(std::shared_ptr<Geometry4D> geom) {
         geometries.push_back(geom);
     }
     
@@ -21,7 +21,5 @@ public:
         return geometries;
     }
     
-    size_t getNombreGeometries() const {
-        return geometries.size();
-    }
+
 };

@@ -12,5 +12,5 @@ public:
     DataManager();
     ~DataManager();
     
-    VectorLayer* chargerVecteur(const std::string& chemin);
+    VectorLayer* loadVector(const std::string& path);
 };

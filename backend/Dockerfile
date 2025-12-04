@@ -13,11 +13,13 @@ WORKDIR /app
 
 COPY . .
 
+# Build backend library and standalone app
 RUN mkdir build \
     && cd build \
     && cmake .. \
     && make -j4 \
     && ctest --verbose \
-    && cp backend_app /app/backend_app
-    
+    && cp backend_app /app/backend_app \
+    && cp libsigm4_backend.a /app/libsigm4_backend.a
+
 CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]

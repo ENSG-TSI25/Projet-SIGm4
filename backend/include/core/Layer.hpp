@@ -13,11 +13,11 @@ public:
     
     virtual ~Layer() = default;
 
-    std::string getNom() const { return nom; }
+    std::string getName() const { return nom; }
     std::string getCrs() const { return crs; }
-    double getEpoque() const { return epoque; }
+    double getEpoch() const { return epoque; }
 
-    void setNom(const std::string& n) { nom = n; }
+    void setName(const std::string& n) { nom = n; }
     void setCrs(const std::string& c) { crs = c; }
     void setEpoque(double e) { epoque = e; }
 };
