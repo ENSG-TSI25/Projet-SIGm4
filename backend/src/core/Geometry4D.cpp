@@ -1,4 +1,5 @@
 #include <core/Geometry4D.hpp>
+#include <sstream>
 
 Geometry4D::Geometry4D() : geometry(nullptr), crs("EPSG:4326") {}
 
@@ -58,4 +59,24 @@ void Geometry4D::setSRID(int srid) {
     srs->Release();
     
     crs = "EPSG:" + std::to_string(srid);
+}
+
+std::string Geometry4D::toEWKT() const {
+    if (!geometry) return "";
+    
+    std::ostringstream oss;
+    
+    // SRID
+    int srid = getSRID();
+    if (srid > 0) {
+        oss << "SRID=" << srid << ";";
+    }
+    
+    // WKT avec M
+    char* wkt = nullptr;
+    geometry->exportToWkt(&wkt);
+    oss << wkt;
+    CPLFree(wkt);
+    
+    return oss.str();
 }

@@ -20,4 +20,4 @@ RUN mkdir build \
     && ctest --verbose \
     && cp backend_app /app/backend_app
     
-CMD ["tail", "-f", "/dev/null"]
+CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]
