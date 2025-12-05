@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
     wget unzip \
     && apt-get clean
     
+WORKDIR /app
 
 RUN git clone https://github.com/OSGeo/PROJ.git && \
     cd PROJ && \
@@ -31,19 +32,16 @@ RUN git clone https://github.com/OSGeo/PROJ.git && \
     ldconfig
     
     
-
-# Build de ton application
 WORKDIR /app
 COPY . .
 
-# Build backend library and standalone app
-RUN mkdir build \
+RUN rm -rf build CMakeCache.txt CMakeFiles \
+    && mkdir build \
     && cd build \
     && cmake .. -DBUILD_TESTS=ON \
     && make -j4 \
     && ctest --verbose \
     && cp backend_app /app/backend_app \
     && cp libsigm4_backend.a /app/libsigm4_backend.a
-
 
 CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]
