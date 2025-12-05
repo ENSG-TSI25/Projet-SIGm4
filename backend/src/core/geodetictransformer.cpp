@@ -86,69 +86,33 @@ GeodeticTransformer::transformAtEpoch(
         0.0
     );
 
-    // debut changements
-    // // Ask PROJ for all potential transformations.
-    // auto ops = CoordinateOperationFactory::create()->createOperations(
-    //     source, target, opCtx);
+    // Ask PROJ for all potential transformations.
+    auto ops = CoordinateOperationFactory::create()->createOperations(
+        source, target, opCtx);
 
-    // if (ops.empty())
-    //     throw std::runtime_error("No coordinate operation found.");
+    if (ops.empty())
+        throw std::runtime_error("No coordinate operation found.");
 
-    // // Use the first available transformation.
-    // auto tr = osgeo::proj::operation::CoordinateTransformer::create(ops[0], ctx_);
+    // Use the first available transformation.
+    auto tr = ops[0]->coordinateTransformer(ctx_);
 
-    // // Prepare input spatio-temporal coordinate.
-    // PJ_COORD input;
-    // input.lpzt.phi = proj_torad(lat);
-    // input.lpzt.lam = proj_torad(lon);
-    // input.lpzt.z   = h;
-    // input.lpzt.t   = t_epoch;
+    // Prepare input spatio-temporal coordinate.
+    PJ_COORD input;
+    input.lpzt.phi = proj_torad(lat);
+    input.lpzt.lam = proj_torad(lon);
+    input.lpzt.z   = h;
+    input.lpzt.t   = t_epoch;
 
-//     // Apply transformation.
-//     PJ_COORD r = tr->transform(input);
+    // Apply transformation.
+    PJ_COORD r = tr->transform(input);
 
-//     // Convert back to degrees.
-//     return { proj_todeg(r.lpzt.lam),
-//              proj_todeg(r.lpzt.phi),
-//              r.lpzt.z,
-//              r.lpzt.t };
-// }
-    // fin changements
+    // Convert back to degrees.
+    return { proj_todeg(r.lpzt.lam),
+             proj_todeg(r.lpzt.phi),
+             r.lpzt.z,
+             r.lpzt.t };
+}
 
-
-// Ask PROJ for all potential transformations.
-auto ops = CoordinateOperationFactory::create()->createOperations(
-    source, target, opCtx);
-
-if (ops.empty())
-    throw std::runtime_error("No coordinate operation found.");
-
-// Use the first available transformation - convert to PJ* directly
-std::string proj_string = ops[0]->exportToPROJString(
-    PROJStringFormatter::create(PROJStringFormatter::Convention::PROJ_5, db).get());
-
-PJ* P = proj_create(ctx_, proj_string.c_str());
-if (!P)
-    throw std::runtime_error("Failed to create transformation from PROJ string.");
-
-// Prepare input spatio-temporal coordinate.
-PJ_COORD input;
-input.lpzt.phi = proj_torad(lat);
-input.lpzt.lam = proj_torad(lon);
-input.lpzt.z   = h;
-input.lpzt.t   = t_epoch;
-
-// Apply transformation.
-PJ_COORD r = proj_trans(P, PJ_FWD, input);
-
-// Clean up
-proj_destroy(P);
-
-// Convert back to degrees.
-return { proj_todeg(r.lpzt.lam),
-         proj_todeg(r.lpzt.phi),
-         r.lpzt.z,
-         r.lpzt.t };
 //
 // 2. JSON DEF-MODEL DEFORMATION (IGN, Mayotte, etc.)
 // ----------------------------------------------------
@@ -171,7 +135,6 @@ return { proj_todeg(r.lpzt.lam),
  * @throws std::runtime_error if the model cannot be loaded.
  */
 GeodeticTransformer::Result
-
 GeodeticTransformer::applyDefModel(
     double lon, double lat, double h, double t_epoch,
     const std::string& json_model_path,
