@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     qtbase5-dev qttools5-dev qttools5-dev-tools \
     libqt5svg5-dev libqt5xmlpatterns5-dev \
     qgis libqgis-dev \
+    libpqxx \
     libgdal-dev libpq-dev libpqxx-dev libproj-dev \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
