@@ -32,10 +32,10 @@ jobs:
             libproj-dev
       
       - name: Backend build
-        working-directory: backend
+        working-directory: frontend
         run: 
           cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-          cmake --build build --target libsigm4_backend
+          cmake --build build --target sigm4_backend
 
       - name: Configure CMake
         working-directory: frontend
