@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
+    libpqxx \
     pkg-config \
     git \
     curl \
