@@ -1,6 +1,5 @@
 #include "src/mainwindow.h"
 #include <qgsapplication.h>
-#include "src/mainwindow.h"
 #include <QFile>
 #include <QDebug>
 

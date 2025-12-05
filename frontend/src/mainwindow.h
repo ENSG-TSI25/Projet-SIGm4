@@ -28,7 +28,8 @@ public:
     void listDimension();
     void addFileToWidget();
     void openDialog();
-    QString renameLayer();
+    void duplicateLayer();
+    void renameLayer();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();

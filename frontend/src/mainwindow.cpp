@@ -50,7 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
     //Dialog
     dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
-    connect (dialog->buttonBox->standardButtons, &QDialogButtonBox::Ok::clicked, this, &MainWindow::renameLayer);
+    Ui::Dialog *dig = dialog -> getUI();
+    connect (dig->buttonBox, &QDialogButtonBox::accepted, this, &MainWindow::duplicateLayer);
 }
 
 MainWindow::~MainWindow()
@@ -130,11 +131,10 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
     return final;
 }
 
-void MainWindow::addFileToWidget() {
+void MainWindow::addFileToWidget() { 
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
         QString layerName = filenameChar.last();
-
         QListWidgetItem *item = new QListWidgetItem(layerName);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
@@ -147,10 +147,27 @@ void MainWindow::addFileToWidget() {
 
         fileName = "";
     }
-    if (!(ui->renameLayer().isEmpty())) {
-        item -> editItem();
-    }
+}
 
+//Rename the layer
+void MainWindow::duplicateLayer() {
+    QString name = dialog-> nameLayer();
+    QListWidgetItem *item = new QListWidgetItem(name);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> insertItem(currentIndex, item);
+}
+
+void MainWindow::renameLayer() {
+    duplicateLayer();
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> takeItem(currentIndex);
+}
+
+void MainWindow::openDialog() {
+    dialog -> show();
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
@@ -204,13 +221,4 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "RGM23 (10673)"
         };
         comboBox->addItems(items);
-}
-
-void MainWindow::openDialog() {
-    dialog -> show();
-}
-
-QString MainWindow::renameLayer() {
-    QString name = dialog-> renameLayer();
-    return name;
 }

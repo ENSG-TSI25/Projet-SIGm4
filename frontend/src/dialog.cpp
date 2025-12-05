@@ -10,7 +10,7 @@ Dialog::Dialog(QWidget *parent) :
 {
     dig->setupUi(this);
 
-    connect(dig->lineEdit, &QLineEdit::textEdited, this, &Dialog::renameLayer);
+    connect(dig->lineEdit, &QLineEdit::textEdited, this, &Dialog::nameLayer);
 }
 
 Dialog::~Dialog()
@@ -18,7 +18,11 @@ Dialog::~Dialog()
     delete dig;
 }
 
-QString Dialog::renameLayer() {
+QString Dialog::nameLayer() {
     QString name = dig -> lineEdit -> text();
     return name;
+}
+
+Ui::Dialog* Dialog::getUI() {
+    return dig;
 }
