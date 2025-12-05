@@ -14,9 +14,10 @@ class Dialog : public QDialog
 public:
     explicit Dialog(QWidget *parent = nullptr);
     ~Dialog();
+    QString renameLayer();
 
 private:
-    Ui::Dialog *ui;
+    Ui::Dialog *dig;
 };
 
 #endif // DIALOG_H

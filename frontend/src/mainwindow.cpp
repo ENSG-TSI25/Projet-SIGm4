@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dialog.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -13,6 +12,7 @@
 #include <QVBoxLayout>
 #include <QDoubleValidator>
 #include <QDialog>
+#include <QDialogButtonBox>
 
 #include <QString>
 #include <QStringList>
@@ -21,7 +21,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow) 
     , fileName(" ") 
     
 {
@@ -47,7 +47,10 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
+    //Dialog
+    dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
+    connect (dialog->buttonBox->standardButtons, &QDialogButtonBox::Ok::clicked, this, &MainWindow::renameLayer);
 }
 
 MainWindow::~MainWindow()
@@ -130,8 +133,9 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
 void MainWindow::addFileToWidget() {
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
+        QString layerName = filenameChar.last();
 
-        QListWidgetItem *item = new QListWidgetItem(filenameChar.last());
+        QListWidgetItem *item = new QListWidgetItem(layerName);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
 
@@ -143,6 +147,10 @@ void MainWindow::addFileToWidget() {
 
         fileName = "";
     }
+    if (!(ui->renameLayer().isEmpty())) {
+        item -> editItem();
+    }
+
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
@@ -199,6 +207,10 @@ void MainWindow::setCrsList(QComboBox *comboBox){
 }
 
 void MainWindow::openDialog() {
-    Dialog *dialog = new Dialog(this);
     dialog -> show();
+}
+
+QString MainWindow::renameLayer() {
+    QString name = dialog-> renameLayer();
+    return name;
 }
