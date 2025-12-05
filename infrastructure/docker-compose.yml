@@ -25,7 +25,9 @@ services:
       postgis:
         condition: service_healthy
     volumes:
+      - ../backend/data:/app/data*
       - ../backend/data:/app/data
+      - ../backend:/app/backend
     ports:
       - "3000:3000"
     environment:
@@ -34,9 +36,8 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
-    volumes:
-      - ../backend/data:/app/data
-      - ../backend:/app/backend
+
+
 
   frontend:
     build:
