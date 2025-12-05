@@ -16,10 +16,8 @@ public:
         geometries.push_back(geom);
     }
     
-    
     const std::vector<std::shared_ptr<Geometry4D>>& getGeometries() const {
         return geometries;
     }
     
-
 };
