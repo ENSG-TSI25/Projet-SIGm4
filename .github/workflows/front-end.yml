@@ -53,7 +53,6 @@ jobs:
       
       - name: Test Summary
         if: always()
-        working-directory: frontend
+        working-directory: frontend/build
         run: |
-          cd build
           ctest --output-on-failure || true
