@@ -33,7 +33,7 @@ jobs:
       
       - name: Backend build
         working-directory: frontend
-        run: 
+        run: |
           cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
           cmake --build build --target sigm4_backend
 
