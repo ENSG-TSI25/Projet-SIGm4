@@ -26,13 +26,22 @@ jobs:
             qgis \
             libqgis-dev \
             libgtest-dev \
-            libgmock-dev
+            libgmock-dev \
+            libpqxx-dev libpq-dev \
+            libgdal-dev \
+            libproj-dev
       
+      - name: Backend build
+        working-directory: backend
+        run: 
+          cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build --target sigm4_backend
+
       - name: Configure CMake
         working-directory: frontend
         run: cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
       
-      - name: Build
+      - name: Frontend  Build
         working-directory: frontend
         run: cmake --build build --verbose
       
