@@ -74,7 +74,14 @@ void MainWindow::zoomOut_button()
 
 
 void MainWindow::listFiles(){
+    ui->selectedFileLabel->setText("");
     fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));
+    QStringList filenameChar = fileName.split(u'/');
+    ui->selectedFileLabel->setText(
+        QString("Fichier sélectionné: %1").arg(filenameChar.last())
+    );
+    ui->selectedFileLabel->setWordWrap(true);
+
 }
 
 
