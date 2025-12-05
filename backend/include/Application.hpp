@@ -1,6 +1,7 @@
 #pragma once
 #include <db/PostgresClient.hpp>
 #include <memory>
+#include <core/DataManager.hpp>
 
 class Application {
 private:
