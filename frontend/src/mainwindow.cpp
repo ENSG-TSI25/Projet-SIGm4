@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dialog.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -13,15 +12,19 @@
 #include <QVBoxLayout>
 #include <QDoubleValidator>
 #include <QDialog>
+#include <QCalendarWidget>
+#include <QDialogButtonBox>
 
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
 #include <iostream>
+#include <QDate>
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow) 
     , fileName(" ") 
     
 {
@@ -46,6 +49,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+
+    //Dialog management
+    dialog = new Dialog();
+    connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
+    Ui::Dialog *dig = dialog -> getUI();
+    connect (dig->buttonDuplicate, &QPushButton::clicked, this, &MainWindow::duplicateLayer);
+    connect (dig->buttonRename, &QPushButton::clicked, this, &MainWindow::renameLayer);
 }
 
 MainWindow::~MainWindow()
@@ -72,7 +82,14 @@ void MainWindow::zoomOut_button()
 
 
 void MainWindow::listFiles(){
+    ui->selectedFileLabel->setText("");
     fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));
+    QStringList filenameChar = fileName.split(u'/');
+    ui->selectedFileLabel->setText(
+        QString("Fichier sélectionné: %1").arg(filenameChar.last())
+    );
+    ui->selectedFileLabel->setWordWrap(true);
+
 }
 
 
@@ -125,17 +142,50 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
     return final;
 }
 
-void MainWindow::addFileToWidget() {
+void MainWindow::addFileToWidget() { 
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
-        ui -> layersList -> addItem(filenameChar.last());
+        QString layerName = filenameChar.last();
+        QListWidgetItem *item = new QListWidgetItem(layerName);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Checked);
+
+        ui->layersList->addItem(item);
+
+        //VectorLayer vectLayer = chargerVecteur(fileName);
+        //QgsMapCanvas* canva = carte->getCanvas();
+        //canva->setLayers({vectLayer});
+
         fileName = "";
     }
 }
 
+//Duplicate the layer when it's clicked
+void MainWindow::duplicateLayer() {
+    QString name = dialog-> nameLayer();
+    QListWidgetItem *item = new QListWidgetItem(name);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> insertItem(currentIndex, item);
+}
+
+//Rename layer selected
+void MainWindow::renameLayer() {
+    duplicateLayer();
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> takeItem(currentIndex);
+}
+
+//Open dialog when the layer is clicked
+void MainWindow::openDialog() {
+    dialog -> show();
+}
+
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
-    //On crée la boîte de dialogue
+    //Creation of the dialog window
     QDialog chosingCRSDialog;
     chosingCRSDialog.setWindowTitle("Choix du CRS");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
@@ -146,26 +196,46 @@ void MainWindow::setNewProject(){
     setCrsList(crsList);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
+    QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
+    
+    
 
     //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
-    //La range et les décimales
+    //range and decimals
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     //On intègre le validateur à la zone de texte
     epochTextZone->setValidator(doubleValidator);
 
 
+
+
     //on ajoute les widgets
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
+    layout->addWidget(calendar);
     layout->addWidget(acceptationButton);
+    
+
 
     QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
 
     chosingCRSDialog.exec();
 }
+
+/*void MainWindow::getCalendarDays(QCalendarWidget *calendarwidget){
+    connect (calendar,&QCalendarWidget::selectionChanged, [=](){
+        QDate date = calendar->selectedDate();
+        int day = date.day();
+        int month = date.month();
+        int year = date.year();
+        
+    });
+    
+}*/
+
 
 //Function to set the targetted comboBox to show the list of CRS accepted by the project
 void MainWindow::setCrsList(QComboBox *comboBox){
@@ -181,8 +251,8 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "ETRF2005 (9068)",
             "ETRF2000 (9067)",
             "RGF93v2b (9784)",
-            "RGM23 (10673)"
+            "RGM23 (10673)",
+            
         };
         comboBox->addItems(items);
 }
-

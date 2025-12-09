@@ -1,6 +1,5 @@
 #include "src/mainwindow.h"
 #include <qgsapplication.h>
-#include "src/mainwindow.h"
 #include <QFile>
 #include <QDebug>
 #include <core/DataManager.hpp>
@@ -26,6 +25,5 @@ int main(int argc, char *argv[])
 
     int r = a.exec();
     QgsApplication::exitQgis();
-
     return r;
 }
