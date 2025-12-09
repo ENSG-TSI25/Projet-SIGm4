@@ -20,7 +20,7 @@ Projet-SIGm4/
 
 ```bash
 sudo apt-get update
-sudo apt-get install libgtest-dev libgmock-dev
+sudo apt-get install libgtest-dev libgmock-dev libpqxx-dev
 ```
 #### Configurer le projet avec CMake
 
