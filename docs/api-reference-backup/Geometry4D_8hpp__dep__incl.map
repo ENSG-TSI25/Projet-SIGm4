@@ -1,0 +1,31 @@
+<map id="backend/include/core/Geometry4D.hpp" name="backend/include/core/Geometry4D.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="539,5,697,45"/>
+<area shape="rect" id="Node000002" href="$GeoPackageReader_8hpp.html" title=" " alt="" coords="167,93,346,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="526,51,336,96,335,91,525,46"/>
+<area shape="rect" id="Node000006" href="$VectorLayer_8hpp.html" title=" " alt="" coords="435,93,593,133"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="586,56,539,95,535,91,583,52"/>
+<area shape="rect" id="Node000013" href="$Geometry4D_8cpp.html" title=" " alt="" coords="618,93,826,133"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="653,52,701,91,697,95,650,56"/>
+<area shape="rect" id="Node000014" href="$test__geometry4d_8cpp.html" title=" " alt="" coords="851,93,1015,133"/>
+<area shape="poly" id="edge15_Node000001_Node000014" title=" " alt="" coords="701,46,864,91,863,96,700,52"/>
+<area shape="rect" id="Node000003" href="$DataManager_8cpp.html" title=" " alt="" coords="5,277,255,302"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="154,134,73,155,42,168,23,183,16,201,23,220,37,238,55,253,95,274,92,279,52,258,33,242,18,223,11,201,19,180,39,163,72,150,153,129"/>
+<area shape="rect" id="Node000004" href="$GeoPackageReader_8cpp.html" title=" " alt="" coords="33,181,248,221"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="222,144,168,183,165,179,218,140"/>
+<area shape="rect" id="Node000005" href="$test__geopackagereader_8cpp.html" title=" " alt="" coords="272,181,476,221"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="295,140,350,179,346,183,292,144"/>
+<area shape="rect" id="Node000007" href="$DataManager_8hpp.html" title=" " alt="" coords="500,181,659,221"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="539,143,567,179,563,183,535,146"/>
+<area shape="poly" id="edge11_Node000007_Node000003" title=" " alt="" coords="487,224,194,279,193,274,486,219"/>
+<area shape="rect" id="Node000008" href="$Application_8hpp.html" title=" " alt="" coords="350,277,582,302"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="545,232,483,278,480,274,542,228"/>
+<area shape="rect" id="Node000009" href="$Application_8cpp.html" title=" " alt="" coords="211,357,414,383"/>
+<area shape="poly" id="edge10_Node000007_Node000009" title=" " alt="" coords="487,226,393,250,358,262,340,271,326,292,319,315,315,357,309,357,313,314,322,289,336,267,356,257,392,245,486,221"/>
+<area shape="rect" id="Node000011" href="$test__datamanager_8cpp.html" title=" " alt="" coords="606,269,777,309"/>
+<area shape="poly" id="edge12_Node000007_Node000011" title=" " alt="" coords="617,228,668,267,665,271,614,232"/>
+<area shape="rect" id="Node000012" href="$frontend_2main_8cpp.html" title=" " alt="" coords="801,277,942,302"/>
+<area shape="poly" id="edge13_Node000007_Node000012" title=" " alt="" coords="657,223,833,274,832,279,656,228"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="432,311,337,359,334,355,430,306"/>
+<area shape="rect" id="Node000010" href="$backend_2src_2main_8cpp.html" title=" " alt="" coords="438,357,601,383"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="484,312,514,356,509,359,479,315"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="frontend/src/dialog.cpp" name="frontend/src/dialog.cpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="11,5,181,31"/>
+<area shape="rect" id="Node000002" href="$dialog_8h.html" title=" " alt="" coords="5,79,80,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="89,33,62,69,57,66,85,29"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="104,79,197,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="107,29,136,66,131,69,103,33"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,152,80,177"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="45,104,45,138,40,138,40,104"/>
+</map>

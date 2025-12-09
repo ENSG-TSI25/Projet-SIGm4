@@ -1,0 +1,18 @@
+<map id="backend/include/core/GeoPackageReader.hpp" name="backend/include/core/GeoPackageReader.hpp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="292,5,471,45"/>
+<area shape="rect" id="Node000002" href="$Geometry4D_8hpp.html" title=" " alt="" coords="107,93,272,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="336,48,231,91,229,86,334,43"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="285,167,344,192"/>
+<area shape="poly" id="edge5_Node000001_Node000004" title=" " alt="" coords="369,47,341,94,322,154,317,152,336,92,365,44"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="350,93,413,119"/>
+<area shape="poly" id="edge6_Node000001_Node000006" title=" " alt="" coords="384,46,384,79,379,79,379,46"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="437,93,488,119"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="403,44,442,82,439,85,399,47"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="512,93,635,119"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="428,43,534,86,532,91,426,48"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,167,83,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="167,121,81,163,79,158,165,116"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="211,116,284,157,281,162,208,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="107,167,261,192"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="191,119,189,153,183,153,186,119"/>
+</map>
