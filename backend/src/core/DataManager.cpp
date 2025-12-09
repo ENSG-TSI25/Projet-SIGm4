@@ -7,32 +7,42 @@
 DataManager::DataManager() {}
 DataManager::~DataManager() {}
 
-VectorLayer *DataManager::loadVector(const std::string &chemin)
+std::vector<VectorLayer*> DataManager::loadVector(const std::string &chemin)
 {
+    std::vector<VectorLayer*> loadedLayers; 
+
     // Ouverture du fichier GeoPackage
     GeoPackageReader reader(chemin);
     if (!reader.open())
-        return nullptr;
+        return loadedLayers; 
 
     // Récupération des couches disponibles
     auto couches = reader.listLayers();
     if (couches.empty())
-        return nullptr;
+        return loadedLayers;
 
-    // Lecture des métadonnées de la première couche
-    auto metadata = reader.getLayerMetadata(couches[0]);
-    auto layer = std::make_shared<VectorLayer>(couches[0], metadata.crs, metadata.referenceEpoch);
 
-    // Extraction et ajout des géométries dans la couche
-    auto features = reader.extractFeatures(couches[0]);
-    for (const auto &f : features)
+     for (const auto& layerName : couches)
     {
-        auto geom = std::make_shared<Geometry4D>(f.geometry);
-        layer->addGeometry(geom);
-    }
-    // Fermeture du fichier et stockage de la couche
-    reader.close();
-    vectorLayers.push_back(layer);
+        // Lecture des métadonnées de la couche
+        auto metadata = reader.getLayerMetadata(layerName);
+        auto layer = std::make_shared<VectorLayer>(layerName, metadata.crs, metadata.referenceEpoch);
 
-    return layer.get();
+        // Extraction et ajout des géométries dans la couche
+        auto features = reader.extractFeatures(layerName);
+        for (const auto &f : features)
+        {
+            auto geom = std::make_shared<Geometry4D>(f.geometry);
+            layer->addGeometry(geom);
+        }
+        
+        // Stockage de la couche
+        vectorLayers.push_back(layer);
+        loadedLayers.push_back(layer.get()); 
+    }
+    
+    // Fermeture du fichier
+    reader.close();
+
+    return loadedLayers;
 }
