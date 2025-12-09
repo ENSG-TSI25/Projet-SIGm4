@@ -1,0 +1,39 @@
+name: test docker CI
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ../backend
+          file: ./backend/Dockerfile
+          tags: backend-test:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Run tests in Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/backend:/app \
+            backend-test:latest \
+            bash -c "cd build && ctest --output-on-failure --verbose"
+      
+      - name: Test Summary
+        if: always()
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/backend:/app \
+            backend-test:latest \
+            bash -c "cd build && ctest --output-on-failure || true"
