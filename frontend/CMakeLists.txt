@@ -19,6 +19,10 @@ include_directories(
     /usr/include/qgis/gui
 )
 
+set(BACKEND_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../backend)
+
+add_subdirectory(${BACKEND_SOURCE_DIR} ${CMAKE_BINARY_DIR}/backend)
+
 # Sources
 set(PROJECT_SOURCES
     main.cpp
@@ -27,8 +31,8 @@ set(PROJECT_SOURCES
     src/mainwindow.ui
     src/Carte.cpp
     src/Carte.h
-    src/dialog.cpp
-    src/dialog.h
+    src/dialogLayerManagement.cpp
+    src/dialogLayerManagement.h
     src/dialog.ui
     resources.qrc
 )
@@ -47,6 +51,7 @@ target_link_libraries(frontend PRIVATE
     Qt5::Svg
     qgis_core
     qgis_gui
+    sigm4_backend    
 )
 
 # Propriétés

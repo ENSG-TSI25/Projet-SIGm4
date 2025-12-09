@@ -24,6 +24,10 @@ services:
     depends_on:
       postgis:
         condition: service_healthy
+    volumes:
+      - ../backend/data:/app/data*
+      - ../backend/data:/app/data
+      - ../backend:/app/backend
     ports:
       - "3000:3000"
     environment:
@@ -32,10 +36,13 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
+
+
+
   frontend:
     build:
-      context: ../frontend   
-      dockerfile: Dockerfile
+      context: ../
+      dockerfile: frontend/Dockerfile
     container_name: qt_frontend
     depends_on:
       postgis:
@@ -45,27 +52,9 @@ services:
     environment:
       DISPLAY: ${DISPLAY}
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix  # X11 for GUI
-    # important: GUI must stay interactive
-    network_mode: "host"  # recommended for GUI apps on Linux
+      - /tmp/.X11-unix:/tmp/.X11-unix
 
-
-  # Tests 
-  backend-tests:
-    build: 
-      context: ../backend
-      dockerfile: Dockerfile
-    container_name: backend_tests
-    command: /app/build/backend_tests
-    depends_on:
-      postgis:
-        condition: service_healthy
-    environment:
-      DB_HOST: postgis
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASS}
-      DB_NAME: ${DB_NAME}
+    network_mode: "host"
 
 volumes:
-  pgdata:
+  pgdata: 

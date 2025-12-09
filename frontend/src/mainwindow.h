@@ -5,6 +5,8 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
+#include "dialogLayerManagement.h"
+#include "ui_dialog.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>
@@ -26,6 +28,8 @@ public:
     void listDimension();
     void addFileToWidget();
     void openDialog();
+    void duplicateLayer();
+    void renameLayer();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();
@@ -38,6 +42,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    Dialog* dialog;
     QString fileName;
     void zoomIn_button();
     void zoomOut_button();

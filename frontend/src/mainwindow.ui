@@ -48,6 +48,19 @@
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="selectedFileLabel">
+            <property name="maximumSize">
+             <size>
+              <width>300</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QLabel" name="label_2">
             <property name="maximumSize">
              <size>
