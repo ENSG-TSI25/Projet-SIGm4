@@ -18,7 +18,6 @@ jobs:
         with:
           context: ./backend
           file: ./backend/Dockerfile
-          tags: backend-test:latest
           load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
