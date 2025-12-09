@@ -6,7 +6,7 @@
 #include <QComboBox>
 #include "Carte.h"
 #include "dialogLayerManagement.h"
-#include "ui_dialog.h"
+#include "ui_dialogLayerManagement.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>

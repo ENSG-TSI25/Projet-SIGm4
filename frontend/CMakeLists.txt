@@ -29,7 +29,7 @@ set(PROJECT_SOURCES
     src/Carte.h
     src/dialogLayerManagement.cpp
     src/dialogLayerManagement.h
-    src/dialog.ui
+    src/dialogLayerManagement.ui
     resources.qrc
 )
 
