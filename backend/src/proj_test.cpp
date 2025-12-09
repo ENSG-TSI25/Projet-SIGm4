@@ -1,6 +1,5 @@
 #include <proj.h>
-#include "core/geodetictransformer.hpp"
-#include "core/Geometry4D.hpp"
+#include "geodetictransformer.hpp"
 #include <iostream>
 #include <cstdlib>
 
@@ -8,7 +7,7 @@ int proj_test() {
     
     std::cout<<"\nDébut des test de proj : "<<std::endl;
 
-    std::string path = "/app/backend/data/required/";
+    std::string path = "/app/data/required/";
 
     GeodeticTransformer gt;
 
@@ -34,9 +33,6 @@ int proj_test() {
         2000.0);
     std::cout << "NKG grid deformation: "
             << r3.x << " " << r3.y << " " << r3.z << " " <<r3.t<<"\n";
-
-    // Geometry4D geom;
-    // std::cout << geom.getGeometry() << "\n";
             
     std::cout<<"Fin des tests proj"<<std::endl;
 

@@ -1,10 +1,6 @@
-FROM ubuntu:22.04
+FROM ubuntu:25.04
 
-RUN apt-get update && apt-get install -y software-properties-common \
-    && add-apt-repository ppa:ubuntugis/ubuntugis-unstable -y \
-    && apt-get update
-
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     g++ cmake make git \
     pkg-config \
     proj-bin proj-data libproj-dev \
@@ -12,7 +8,7 @@ RUN apt-get install -y \
     libpq-dev libpqxx-dev \
     wget unzip \
     && apt-get clean
-    
+
 WORKDIR /app
 
 COPY . .
@@ -27,3 +23,4 @@ RUN rm -rf build CMakeCache.txt CMakeFiles \
     && cp libsigm4_backend.a /app/libsigm4_backend.a
 
 CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]
+

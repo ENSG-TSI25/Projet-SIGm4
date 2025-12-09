@@ -4,7 +4,7 @@
 
 int main() {
     try {
-        proj_test();
+        // proj_test();
         Application app;
         app.initialize();
         app.run();
