@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY . /app/
 
-RUN mkdir -p /app/frontend/build && cd /app/frontend/build && \
+RUN mkdir -p /app/build && cd /app/build && \
     cmake .. && \
     make -j$(nproc)
 
-CMD ["/app/frontend/build/frontend"]
+CMD ["/app/build/frontend"]
