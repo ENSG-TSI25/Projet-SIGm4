@@ -21,12 +21,12 @@ jobs:
 
       # 3. Construire les conteneurs (équivalent de "docker-compose build")
       - name: Build Docker Compose
-        run: docker-compose -f docker-compose.yml build
+        run: docker-compose -f ../docker-compose.yml build
 
       # 4. Démarrer les services nécessaires aux tests
       #    (souvent le backend + la DB)
       - name: Start services
-        run: docker-compose -f docker-compose.yml up -d
+        run: docker-compose -f ../docker-compose.yml up -d
 
       # 5. Lancer les tests à l'intérieur du conteneur backend
       #
