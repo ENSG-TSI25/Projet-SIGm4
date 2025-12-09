@@ -16,7 +16,7 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ../backend
+          context: ./backend
           file: ./backend/Dockerfile
           tags: backend-test:latest
           load: true
