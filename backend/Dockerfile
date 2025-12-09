@@ -1,11 +1,11 @@
-FROM ubuntu:22.04
+FROM ubuntu:25.04
 
 RUN apt-get update && apt-get install -y \
-    g++ cmake make \
+    g++ cmake make git \
+    pkg-config \
+    proj-bin proj-data libproj-dev \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
-    libproj-dev \
-    pkg-config \
     wget unzip \
     && apt-get clean
 
@@ -13,8 +13,8 @@ WORKDIR /app
 
 COPY . .
 
-# Build backend library and standalone app
-RUN mkdir build \
+RUN rm -rf build CMakeCache.txt CMakeFiles \
+    && mkdir build \
     && cd build \
     && cmake .. \
     && make -j4 \
@@ -23,3 +23,4 @@ RUN mkdir build \
     && cp libsigm4_backend.a /app/libsigm4_backend.a
 
 CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]
+

@@ -1,0 +1,101 @@
+###############################################################################
+#
+#   proj init file to implement new transformations in Mayotte
+#   
+#   version : 12/03/2025
+#   
+#   Changes : - updated ITRF2020 to RGM23 transformation (version 2)
+#             - provided results of the examples in the section "RGM23 to RGM04. Grid transformation." ,of this file are now correct
+#
+#   contact: xavier.collilieux @ ensg.eu 
+#   
+#   Based on work to be published in "Grandin R., Collilieux X., Pasquier I. et Jamet O. (2025b), 
+#   Volcano-tectonic crisis of Mayotte (2018–2022): deformation model for geodetic applications, 
+#   in preparation"
+#
+#   This file and all associated files (fr_ign_grid_RGM04toRGM23.tif, 
+#   fr_ign_RGM23_defmodel.json, fr_ign_lonlat_RGM23_deformation_model.tif, 
+#   fr_ign_grid_ITRF2020_RGM23_velA.tif, fr_ign_grid_ITRF2020_RGM23_velB.tif and 
+#   fr_ign_RGM23_to_ITRF2020.json) should be copied in the proj share/ folder
+#   Ex: Path on windows (for version XXXX of QGIS): C:\Program Files\QGIS XXXX\share\proj
+#
+#   Proj version >= 9.5.1 required
+#
+###############################################################################
+
+###############################################################################
+# RGM23 : application of the deformation model
+###############################################################################
+
+# From "geographic 3D" to "geographic 3D" in decimal degrees and meter
+
+# RGM23@t -> RGM23(reference epoch=2023.75)
+# Example: echo  45.00 -13.02 0.0  2018.0 | cct +init=FR:RGM23geo3DtoRGM23geo3D_at_t
+#      result: "44.9999983154  -13.0200007128        0.0797     2018.0000"
+<RGM23geo3D> +inv +proj=defmodel +model=fr_ign_RGM23_defmodel.json 	
+# Inverse transformation RGM23(reference epoch=2023.75) -> RGM23@t 
+<RGM23geo3DtoRGM23geo3D_at_t> +proj=defmodel +model=fr_ign_RGM23_defmodel.json  
+
+# From "geocentric Cartesian" to "geocentric Cartesian"
+
+# RGM23@t -> RGM23(reference epoch=2023.75)
+# Example: echo  4394824.5976   4394824.5976  -1427561.0242 2018.0 | cct +init=FR:RGM23toRGM23_at_t 
+#      result: "4394824.7691   4394824.5107  -1427561.1190     2018.0000"
+<RGM23> +proj=pipeline 
+        +step +inv +proj=cart +ellps=GRS80 
+        +step +inv +proj=defmodel +model=fr_ign_RGM23_defmodel.json
+        +step +proj=cart +ellps=GRS80
+		
+# Inverse transformation RGM23(reference epoch=2023.75) -> RGM23@t 
+<RGM23toRGM23_at_t> +proj=pipeline 
+        +step +inv +proj=cart +ellps=GRS80 
+        +step +proj=defmodel +model=fr_ign_RGM23_defmodel.json
+		+step +proj=cart +ellps=GRS80
+
+###############################################################################
+# ITRF2020@t to RGM23(reference epoch=2023.75)
+# version 2
+###############################################################################
+
+# From "geocentric Cartesian" to "geocentric Cartesian"
+
+# ITRF2020@t -> RGM23(reference epoch=2023.75)
+# Example: echo  4394824.5976   4394824.5976  -1427561.0242 2018.0 | cct +init=FR:ITRF2020toRGM23
+<ITRF2020toRGM23v2> +proj=pipeline 
+                  +step +inv +proj=cart +ellps=GRS80 
+				  +step +inv +proj=defmodel +model=fr_ign_RGM23_to_ITRF2020.json
+				  +step +proj=cart +ellps=GRS80
+		
+# Inverse transfromation RGM23(reference epoch=2023.75) -> ITRF2020@t				  
+<RGM23toITRF2020_at_tv2> +proj=pipeline 
+				  +step +inv +proj=cart +ellps=GRS80 
+				  +step +proj=defmodel +model=fr_ign_RGM23_to_ITRF2020.json
+				  +step +proj=cart +ellps=GRS80
+				  
+###############################################################################
+# RGM23 to RGM04. Grid transformation. 
+###############################################################################
+
+# From "geocentric Cartesian" to "geocentric Cartesian"
+
+# RGM04 to RGM23
+# Example: echo 4392066.018 4408260.675 -1394658.224 | cct +init=FR:RGM23toRGM04 
+#      result: "4392066.5143   4408260.2547  -1394658.4991           inf"
+<RGM04toRGM23> +proj=xyzgridshift +grids=fr_ign_grid_RGM04toRGM23.tif
+# Inverse transformation RGM23 to RGM04
+<RGM23toRGM04> +inv +proj=xyzgridshift +grids=fr_ign_grid_RGM04toRGM23.tif 
+
+# From "geographic 3D" to "geographic 3D" in decimal degrees and meter
+
+# Example: echo 45.1054375004  -12.7148351182       43.4898  | cct +init=FR:RGM23geo3DtoRGM04geo3D
+# RGM04 to RGM23 
+#      result: "45.1054315319  -12.7148374390       43.6016           inf"
+<RGM04geo3DtoRGM23geo3D> +proj=pipeline 
+        +step +proj=cart +ellps=GRS80
+		+step +proj=xyzgridshift +grids=fr_ign_grid_RGM04toRGM23.tif
+		+step +inv +proj=cart +ellps=GRS80 
+# Inverse transformation RGM23 to RGM04		
+<RGM23geo3DtoRGM04geo3D> +proj=pipeline 
+        +step +proj=cart +ellps=GRS80
+		+step +inv +proj=xyzgridshift +grids=fr_ign_grid_RGM04toRGM23.tif 
+		+step +inv +proj=cart +ellps=GRS80 

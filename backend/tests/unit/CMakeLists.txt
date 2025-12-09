@@ -1,9 +1,11 @@
+cmake_minimum_required(VERSION 3.14)
+
 # Google Test
 cmake_minimum_required(VERSION 3.28)
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/release-1.12.1.zip
+    googletest
+    URL https://github.com/google/googletest/archive/release-1.12.1.zip
 )
 FetchContent_MakeAvailable(googletest)
 
@@ -21,6 +23,9 @@ file(GLOB_RECURSE TEST_SOURCES
 )
 
 # Testing executables
+include(GoogleTest)
+
+# Unit tests - link against the backend library
 add_executable(unit_tests
     test_geometry4d.cpp
     test_datamanager.cpp
@@ -29,9 +34,10 @@ add_executable(unit_tests
     ${TEST_SOURCES}
 )
 
+# Link against sigm4_backend 
 target_link_libraries(unit_tests
     gtest_main
-    ${GDAL_LIBRARIES}
+    sigm4_backend 
 )
 
 target_include_directories(unit_tests PRIVATE
@@ -39,4 +45,4 @@ target_include_directories(unit_tests PRIVATE
     ${GDAL_INCLUDE_DIRS}
 )
 
-add_test(NAME AllUnitTests COMMAND unit_tests)
+gtest_discover_tests(unit_tests)
