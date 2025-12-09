@@ -19,8 +19,8 @@ WORKDIR /app
 
 COPY . /app/
 
-RUN mkdir -p /app/build && cd /app/build && \
+RUN mkdir -p /app/frontend/build && cd /app/frontend/build && \
     cmake .. && \
     make -j$(nproc)
 
-CMD ["/app/build/frontend"]
+CMD ["/app/frontend/build/frontend"]
