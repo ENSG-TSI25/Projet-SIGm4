@@ -3,6 +3,8 @@
 #include "src/mainwindow.h"
 #include <QFile>
 #include <QDebug>
+#include <core/DataManager.hpp>
+
 
 int main(int argc, char *argv[])
 {
