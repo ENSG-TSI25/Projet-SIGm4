@@ -1,42 +1,56 @@
 name: Backend CI
 
-on: push
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
+      # 1. Checkout du repository
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Install dependencies
+
+      # 2. Installer Docker Compose (souvent déjà installé, mais on assure)
+      - name: Install Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            cmake g++ ninja-build \
-            pkg-config \
-            libpqxx-dev libpq-dev \
-            libgdal-dev \
-            libproj-dev
-      
-      - name: Configure CMake
-        working-directory: backend
-        run: cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-      
-      - name: Build
-        working-directory: backend
-        run: cmake --build build --verbose
-      
-      - name: Run tests
-        working-directory: backend
+          sudo apt-get install -y docker-compose
+
+      # 3. Construire les conteneurs (équivalent de "docker-compose build")
+      - name: Build Docker Compose
+        run: docker-compose -f docker-compose.yml build
+
+      # 4. Démarrer les services nécessaires aux tests
+      #    (souvent le backend + la DB)
+      - name: Start services
+        run: docker-compose -f docker-compose.yml up -d
+
+      # 5. Lancer les tests à l'intérieur du conteneur backend
+      #
+      # ⚠️ Ici tu dois remplacer "backend" par le nom EXACT
+      #    du service dans ton docker-compose.yml
+      #
+      - name: Run backend tests
         run: |
-          cd build
-          ctest --output-on-failure --verbose
-      
+          docker-compose exec -T backend sh -c "
+            cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug &&
+            cmake --build build &&
+            cd build &&
+            ctest --output-on-failure --verbose
+          "
+
+      # 6. Toujours avoir un résumé, même si échec
       - name: Test Summary
         if: always()
-        working-directory: backend
         run: |
-          cd build
-          ctest --output-on-failure || true
+          docker-compose exec -T backend sh -c "
+            cd build && ctest --output-on-failure || true
+          "
+
+      # 7. Arrêter les conteneurs proprement
+      - name: Shutdown
+        if: always()
+        run: docker-compose down
