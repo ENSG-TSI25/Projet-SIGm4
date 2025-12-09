@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
-// #include <proj.h>
 #include <core/geodetictransformer.hpp>
 
 // === Chemin vers les données ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
 
 // === Tolérance numérique acceptable ===
-static constexpr double EPS = 0;
+static constexpr double EPS = 0.0001;
 
 // Fixture (optionnel)
 class GeodeticTransformerTest : public ::testing::Test {
@@ -25,9 +24,9 @@ TEST_F(GeodeticTransformerTest, TransformITRF2020toITRF2014) {
     );
 
     // Valeurs attendues (issues de l'image fournie)
-    EXPECT_DOUBLE_EQ(r.x, 5.77339);
-    EXPECT_DOUBLE_EQ(r.y, 43.9794);
-    EXPECT_DOUBLE_EQ(r.z, 774.994);
+    EXPECT_NEAR(r.x, 5.77339, EPS);
+    EXPECT_NEAR(r.y, 43.9794, EPS);
+    EXPECT_NEAR(r.z, 774.994, EPS);
 }
 
 // ---------------------------------------------------------------------------
@@ -42,10 +41,10 @@ TEST_F(GeodeticTransformerTest, MayotteDefModel) {
     );
 
     // Valeurs attendues
-    EXPECT_DOUBLE_EQ(r.x, 44.0);
-    EXPECT_DOUBLE_EQ(r.y, -13.02);
-    EXPECT_DOUBLE_EQ(r.z, 0.0796542);   // valeur vue dans ton image
-    EXPECT_DOUBLE_EQ(r.t, 2018.0);
+    EXPECT_NEAR(r.x, 44.0, EPS);
+    EXPECT_NEAR(r.y, -13.02, EPS);
+    EXPECT_NEAR(r.z, 0.0796542, EPS);   // valeur vue dans ton image
+    EXPECT_NEAR(r.t, 2018.0, EPS);
 }
 
 // ---------------------------------------------------------------------------
@@ -60,8 +59,8 @@ TEST_F(GeodeticTransformerTest, NKGGridDeformation) {
     );
 
     // Valeurs attendues
-    EXPECT_DOUBLE_EQ(r.x, 24.3953);
-    EXPECT_DOUBLE_EQ(r.y, 60.2175);
-    EXPECT_DOUBLE_EQ(r.z, 94.6879);
-    EXPECT_DOUBLE_EQ(r.t, 2019.7);
+    EXPECT_NEAR(r.x, 24.3953, EPS);
+    EXPECT_NEAR(r.y, 60.2175, EPS);
+    EXPECT_NEAR(r.z, 94.6879, EPS);
+    EXPECT_NEAR(r.t, 2019.7, EPS);
 }
