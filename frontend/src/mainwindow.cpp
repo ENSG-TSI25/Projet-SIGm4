@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dialog.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -13,6 +12,7 @@
 #include <QVBoxLayout>
 #include <QDoubleValidator>
 #include <QDialog>
+#include <QDialogButtonBox>
 
 #include <QString>
 #include <QStringList>
@@ -21,7 +21,7 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
+    , ui(new Ui::MainWindow) 
     , fileName(" ") 
     
 {
@@ -47,7 +47,11 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
+    //Dialog management
+    dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
+    Ui::Dialog *dig = dialog -> getUI();
+    connect (dig->buttonBox, &QDialogButtonBox::accepted, this, &MainWindow::duplicateLayer);
 }
 
 MainWindow::~MainWindow()
@@ -134,11 +138,11 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
     return final;
 }
 
-void MainWindow::addFileToWidget() {
+void MainWindow::addFileToWidget() { 
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
-
-        QListWidgetItem *item = new QListWidgetItem(filenameChar.last());
+        QString layerName = filenameChar.last();
+        QListWidgetItem *item = new QListWidgetItem(layerName);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
 
@@ -150,6 +154,28 @@ void MainWindow::addFileToWidget() {
 
         fileName = "";
     }
+}
+
+//Duplicate the layer when it's clicked
+void MainWindow::duplicateLayer() {
+    QString name = dialog-> nameLayer();
+    QListWidgetItem *item = new QListWidgetItem(name);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> insertItem(currentIndex, item);
+}
+
+void MainWindow::renameLayer() {
+    duplicateLayer();
+    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
+    ui -> layersList -> takeItem(currentIndex);
+}
+
+//Open dialog when the layer is clicked
+void MainWindow::openDialog() {
+    dialog -> show();
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
@@ -203,9 +229,4 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "RGM23 (10673)"
         };
         comboBox->addItems(items);
-}
-
-void MainWindow::openDialog() {
-    Dialog *dialog = new Dialog(this);
-    dialog -> show();
 }

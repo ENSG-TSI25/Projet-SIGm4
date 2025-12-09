@@ -31,8 +31,8 @@ set(PROJECT_SOURCES
     src/mainwindow.ui
     src/Carte.cpp
     src/Carte.h
-    src/dialog.cpp
-    src/dialog.h
+    src/dialogLayerManagement.cpp
+    src/dialogLayerManagement.h
     src/dialog.ui
     resources.qrc
 )
