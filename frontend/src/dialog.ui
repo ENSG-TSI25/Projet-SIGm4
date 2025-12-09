@@ -32,9 +32,9 @@
   <widget class="QLineEdit" name="lineEdit">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>10</x>
      <y>60</y>
-     <width>113</width>
+     <width>111</width>
      <height>31</height>
     </rect>
    </property>
@@ -42,17 +42,43 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QPushButton" name="buttonRename">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>140</x>
      <y>60</y>
-     <width>91</width>
-     <height>21</height>
+     <width>111</width>
+     <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Renommer</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="buttonDuplicate">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>60</y>
+     <width>111</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Dupliquer</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>30</y>
+     <width>131</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Nom de la couche</string>
    </property>
   </widget>
  </widget>

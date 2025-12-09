@@ -51,7 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
     dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog -> getUI();
-    connect (dig->buttonBox, &QDialogButtonBox::accepted, this, &MainWindow::duplicateLayer);
+    connect (dig->buttonDuplicate, &QPushButton::clicked, this, &MainWindow::duplicateLayer);
+    connect (dig->buttonRename, &QPushButton::clicked, this, &MainWindow::renameLayer);
 }
 
 MainWindow::~MainWindow()
@@ -160,6 +161,7 @@ void MainWindow::duplicateLayer() {
     ui -> layersList -> insertItem(currentIndex, item);
 }
 
+//Rename layer selected
 void MainWindow::renameLayer() {
     duplicateLayer();
     int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
