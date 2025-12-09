@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
-    //Dialog
+    //Dialog management
     dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog -> getUI();
@@ -149,7 +149,7 @@ void MainWindow::addFileToWidget() {
     }
 }
 
-//Rename the layer
+//Duplicate the layer when it's clicked
 void MainWindow::duplicateLayer() {
     QString name = dialog-> nameLayer();
     QListWidgetItem *item = new QListWidgetItem(name);
@@ -166,6 +166,7 @@ void MainWindow::renameLayer() {
     ui -> layersList -> takeItem(currentIndex);
 }
 
+//Open dialog when the layer is clicked
 void MainWindow::openDialog() {
     dialog -> show();
 }

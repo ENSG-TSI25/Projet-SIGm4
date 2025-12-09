@@ -1,9 +1,10 @@
-#include "dialog.h"
+#include "dialogLayerManagement.h"
 #include "ui_dialog.h"
 
 #include <QLineEdit>
 #include <QString>
 
+//Create a dialog class to manage the layers
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
     dig(new Ui::Dialog)
@@ -18,11 +19,13 @@ Dialog::~Dialog()
     delete dig;
 }
 
+//Taking the layer's name
 QString Dialog::nameLayer() {
     QString name = dig -> lineEdit -> text();
     return name;
 }
 
+//Return dialog's UI to place in the main window
 Ui::Dialog* Dialog::getUI() {
     return dig;
 }

@@ -5,7 +5,7 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
-#include "dialog.h"
+#include "dialogLayerManagement.h"
 #include "ui_dialog.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
