@@ -23,7 +23,7 @@ private:
 public:
     Project(const std::string &name_, double epoch0_, const std::string &crs_ = "EPSG:4326", const std::vector<Layer> &layerList_ = {})
 
-        : name(name_), crs(crs_), epoch0(epoch0), layerList(layerList_)
+        : name(name_), crs(crs_), epoch0(epoch0_), layerList(layerList_)
     {
     }
 
