@@ -1,5 +1,6 @@
 #include "../include/mainwindow.h"
 #include "../include/Layer.h"
+#include "../include/TransformCRS.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -28,12 +29,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     layer = new Layer(this);
+    transform = new TransformCRS(this);
     connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
-    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSsource);
-    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, this, &MainWindow::selectCRSdest);
+    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
+    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
     listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte);
     connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);   
@@ -42,8 +44,8 @@ MainWindow::MainWindow(QWidget *parent)
       
     
 
-    connect (ui->epochEdit, &QLineEdit::textEdited, this, &MainWindow::getDate);
-    connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
+    connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
+    connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
     connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
 
@@ -102,48 +104,6 @@ void MainWindow::listDimension(){
     ui->dimensionCombo->addItem("4D");
 
 }
-
-std::string MainWindow::selectCRSsource() {
-    QString text = ui->sourceCRSCombo->currentText();
-    std::string crs = text.toStdString();
-    int del = 0;
-    for (int i=0; i<=crs.length();i++) {
-        if (crs[i] == '(') {
-            del = i+1;
-        }
-    }
-    crs.erase(0,del);
-    crs.erase(crs.length()-1);
-    return crs;
-}
-
-std::string MainWindow::selectCRSdest() {
-    QString text = ui -> targetCRSCombo->currentText();
-    std::string crs = text.toStdString();
-    int del = 0;
-    for (int i=0; i<=crs.length();i++) {
-        if (crs[i] == '(') {
-            del = i+1;
-        }
-    }
-    crs.erase(0,del);
-    crs.erase(crs.length()-1);
-    return crs;
-}
-
-double MainWindow::getDate() {
-    QString date = ui -> epochEdit -> text();
-    return date.toDouble();
-}
-
-std::tuple<std::string, std::string, double> MainWindow::transform() {
-    std::tuple<std::string, std::string, double> final = {selectCRSsource(),selectCRSdest(), getDate()};
-    std::cout<<std::get<0>(final);
-    std::cout<<std::get<1>(final);
-    std::cout<<std::get<2>(final);
-    return final;
-}
-
 
 
 //Open dialog when the layer is clicked

@@ -6,6 +6,7 @@
 #include <QComboBox>
 #include "Carte.h"
 #include "Layer.h"
+#include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
 #include <QGraphicsView>
@@ -29,10 +30,6 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
-    std::string selectCRSsource();
-    std::string selectCRSdest();
-    double getDate();
-    std::tuple<std::string, std::string, double> transform();
     void setNewProject();
     void updateScaleLabel(int scaleValue);
     Ui::MainWindow* getUi();
@@ -43,6 +40,7 @@ private:
     Carte* carte;
     Layer* layer;
     Dialog* dialog;
+    TransformCRS* transform;
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
