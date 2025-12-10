@@ -20,7 +20,7 @@ VectorLayer *DataManager::loadVector(const std::string &chemin)
 
     // Lecture des métadonnées de la première couche
     auto metadata = reader.getLayerMetadata(couches[0]);
-    auto layer = std::make_shared<VectorLayer>(couches[0], metadata.crs, metadata.referenceEpoch);
+    auto layer = std::make_shared<VectorLayer>(couches[0], metadata.crs, metadata.referenceEpoch, metadata.coords_type);
 
     // Extraction et ajout des géométries dans la couche
     auto features = reader.extractFeatures(couches[0]);

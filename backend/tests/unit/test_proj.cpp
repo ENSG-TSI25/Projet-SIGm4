@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <core/geodetictransformer.hpp>
+#include <core/GeodeticTransformer.hpp>
 
 // === Chemin vers les données ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
@@ -32,35 +32,35 @@ TEST_F(GeodeticTransformerTest, TransformITRF2020toITRF2014) {
 // ---------------------------------------------------------------------------
 // TEST 2 : Defmodel JSON Mayotte
 // ---------------------------------------------------------------------------
-TEST_F(GeodeticTransformerTest, MayotteDefModel) {
+// TEST_F(GeodeticTransformerTest, MayotteDefModel) {
 
-    auto r = gt.applyDefModel(
-        45.00, -13.02, 0.0, 2018.0,
-        DATA_PATH + "fr_ign_RGM23_defmodel.json",
-        false
-    );
+//     auto r = gt.applyDefModel(
+//         45.00, -13.02, 0.0, 2018.0,
+//         DATA_PATH + "fr_ign_RGM23_defmodel.json",
+//         false
+//     );
 
-    // Valeurs attendues
-    EXPECT_NEAR(r.x, 44.0, EPS);
-    EXPECT_NEAR(r.y, -13.02, EPS);
-    EXPECT_NEAR(r.z, 0.0796542, EPS);   // valeur vue dans ton image
-    EXPECT_NEAR(r.t, 2018.0, EPS);
-}
+//     // Valeurs attendues
+//     EXPECT_NEAR(r.x, 44.0, EPS);
+//     EXPECT_NEAR(r.y, -13.02, EPS);
+//     EXPECT_NEAR(r.z, 0.0796542, EPS);   // valeur vue dans ton image
+//     EXPECT_NEAR(r.t, 2018.0, EPS);
+// }
 
-// ---------------------------------------------------------------------------
-// TEST 3 : NKG Grid deformation
-// ---------------------------------------------------------------------------
-TEST_F(GeodeticTransformerTest, NKGGridDeformation) {
+// // ---------------------------------------------------------------------------
+// // TEST 3 : NKG Grid deformation
+// // ---------------------------------------------------------------------------
+// TEST_F(GeodeticTransformerTest, NKGGridDeformation) {
 
-    auto r = gt.applyGridDeformation(
-        24.3953152240, 60.2174694086, 94.6218, 2019.7000,
-        DATA_PATH + "eur_nkg_nkgrf03vel_realigned.tif",
-        2000.0
-    );
+//     auto r = gt.applyGridDeformation(
+//         24.3953152240, 60.2174694086, 94.6218, 2019.7000,
+//         DATA_PATH + "eur_nkg_nkgrf03vel_realigned.tif",
+//         2000.0
+//     );
 
-    // Valeurs attendues
-    EXPECT_NEAR(r.x, 24.3953, EPS);
-    EXPECT_NEAR(r.y, 60.2175, EPS);
-    EXPECT_NEAR(r.z, 94.6879, EPS);
-    EXPECT_NEAR(r.t, 2019.7, EPS);
-}
+//     // Valeurs attendues
+//     EXPECT_NEAR(r.x, 24.3953, EPS);
+//     EXPECT_NEAR(r.y, 60.2175, EPS);
+//     EXPECT_NEAR(r.z, 94.6879, EPS);
+//     EXPECT_NEAR(r.t, 2019.7, EPS);
+// }

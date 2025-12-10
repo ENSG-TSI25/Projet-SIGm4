@@ -58,6 +58,18 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
         if (auto* code = srs->GetAuthorityCode(nullptr)) {
             m.srid = std::atoi(code);
             m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
+            char* unitName = nullptr;
+            srs->GetLinearUnits(&unitName);
+            if (unitName == "metre"){
+                m.coords_type = "cartesian";
+            }
+            if (unitName == "degree"){
+                m.coords_type = "geographic";
+            }
+            else {
+                std::cout<< "Invalid coordinate units";
+                m.coords_type = "geographic";
+            } 
         }
     }
     return m;

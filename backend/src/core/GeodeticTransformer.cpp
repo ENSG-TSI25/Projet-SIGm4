@@ -10,7 +10,7 @@
  * All operations support spatio-temporal coordinates (lon, lat, height, epoch).
  */
 
-#include "core/geodetictransformer.hpp"
+#include "core/GeodeticTransformer.hpp"
 
 #include <proj/io.hpp>
 #include <proj/crs.hpp>

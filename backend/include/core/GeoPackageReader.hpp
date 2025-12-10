@@ -8,6 +8,7 @@
 class GDALDataset;
 class OGRFeature;
 
+
 class GeoPackageReader {
 public:
     struct LayerMetadata {
@@ -17,6 +18,7 @@ public:
         size_t featureCount;
         double referenceEpoch;
         OGRwkbGeometryType geometryType;
+        std::string coords_type;
     };
 
     struct Feature {

@@ -28,7 +28,7 @@ void Application::run()
     
     std::cout << "\n=== Test GeoPackage ===" << std::endl;
     DataManager dm;
-    VectorLayer *layer = dm.loadVector("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
+    VectorLayer *layer = dm.loadVector("/app/data/test_data.gpkg");
     
     if (layer)
     {

@@ -16,6 +16,7 @@ add_executable(unit_tests
     test_datamanager.cpp
     test_geopackagereader.cpp
     test_proj.cpp
+    test_transformationengine.cpp
 )
 
 # Link against sigm4_backend 
