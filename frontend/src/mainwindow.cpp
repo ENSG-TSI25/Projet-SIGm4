@@ -1,4 +1,5 @@
 #include "../include/mainwindow.h"
+#include "../include/Layer.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -24,11 +25,10 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow) 
-    , fileName(" ") 
-    
 {
     ui->setupUi(this);
-    connect (ui->importBtn, &QPushButton::clicked, this, &MainWindow::listFiles);
+    layer = new Layer(this);
+    connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, this, &MainWindow::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, this, &MainWindow::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, this, &MainWindow::addFileToWidget);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
@@ -53,13 +53,27 @@ MainWindow::MainWindow(QWidget *parent)
     dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog -> getUI();
-    connect (dig->buttonDuplicate, &QPushButton::clicked, this, &MainWindow::duplicateLayer);
-    connect (dig->buttonRename, &QPushButton::clicked, this, &MainWindow::renameLayer);
+    connect(dig->buttonDuplicate, &QPushButton::clicked,
+            this, [this]() {
+                layer->duplicateLayer(dialog);
+            });
+
+    connect(dig->buttonRename, &QPushButton::clicked,
+            this, [this]() {
+                layer->renameLayer(dialog);
+            });
+
+
 }
 
 MainWindow::~MainWindow()
 {
+    delete layer;
     delete ui;
+}
+
+Ui::MainWindow* MainWindow::getUi(){
+    return ui;
 }
 
 void MainWindow::updateScaleLabel(int scaleValue)
@@ -77,18 +91,6 @@ void MainWindow::zoomIn_button()
 void MainWindow::zoomOut_button()
 {
     carte->getCanvas()->zoomOut();
-}
-
-
-void MainWindow::listFiles(){
-    ui->selectedFileLabel->setText("");
-    fileName = QFileDialog::getOpenFileName(this, tr("Open window"), "$PWD", tr("Files (*.gpkg)"));
-    QStringList filenameChar = fileName.split(u'/');
-    ui->selectedFileLabel->setText(
-        QString("Fichier sélectionné: %1").arg(filenameChar.last())
-    );
-    ui->selectedFileLabel->setWordWrap(true);
-
 }
 
 
@@ -141,41 +143,7 @@ std::tuple<std::string, std::string, double> MainWindow::transform() {
     return final;
 }
 
-void MainWindow::addFileToWidget() { 
-    if (!fileName.isEmpty()) {
-        QStringList filenameChar = fileName.split(u'/');
-        QString layerName = filenameChar.last();
-        QListWidgetItem *item = new QListWidgetItem(layerName);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
 
-        ui->layersList->addItem(item);
-
-        //VectorLayer vectLayer = chargerVecteur(fileName);
-        //QgsMapCanvas* canva = carte->getCanvas();
-        //canva->setLayers({vectLayer});
-
-        fileName = "";
-    }
-}
-
-//Duplicate the layer when it's clicked
-void MainWindow::duplicateLayer() {
-    QString name = dialog-> nameLayer();
-    QListWidgetItem *item = new QListWidgetItem(name);
-    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-    item->setCheckState(Qt::Checked);
-
-    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
-    ui -> layersList -> insertItem(currentIndex, item);
-}
-
-//Rename layer selected
-void MainWindow::renameLayer() {
-    duplicateLayer();
-    int currentIndex = ui -> layersList -> row(ui -> layersList -> currentItem());
-    ui -> layersList -> takeItem(currentIndex);
-}
 
 //Open dialog when the layer is clicked
 void MainWindow::openDialog() {
