@@ -12,5 +12,5 @@ public:
     DataManager();
     ~DataManager();
     
-    VectorLayer* loadVector(const std::string& path);
+    std::vector<VectorLayer*> loadVector(const std::string& path);
 };
