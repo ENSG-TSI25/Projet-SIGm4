@@ -36,7 +36,7 @@
              <string>Importer des fichiers</string>
             </property>
             <property name="icon">
-             <iconset resource="../resources.qrc">
+             <iconset resource="../resources/resources.qrc">
               <normaloff>:/icons/icons/upload.png</normaloff>:/icons/icons/upload.png</iconset>
             </property>
             <property name="iconSize">
@@ -283,6 +283,13 @@
        </item>
        <item>
         <widget class="QLabel" name="scale">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="date">
          <property name="text">
           <string>TextLabel</string>
          </property>

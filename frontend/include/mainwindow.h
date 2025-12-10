@@ -5,17 +5,28 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
+#include "Layer.h"
+#include "TransformCRS.h"
+#include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
-#include "ui_dialogLayerManagement.h"
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>
 #include <qgsmapcanvas.h>
+#include <QLabel>
+#include <QCalendarWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QDate>
 
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
+
+class Layer; 
 
 class MainWindow : public QMainWindow
 {
@@ -24,26 +35,23 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void listFiles();
     void listDimension();
-    void addFileToWidget();
     void openDialog();
-    void duplicateLayer();
-    void renameLayer();
-    std::string selectCRSsource();
-    std::string selectCRSdest();
-    double getDate();
-    std::tuple<std::string, std::string, double> transform();
-    //void updateScaleLabel(double scaleValue);
     void setNewProject();
     void updateScaleLabel(int scaleValue);
-    //void getCalendarDate();
+    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    float computeDate(int day, int month, int year);
+    void getDateSelected(const QDate &date);
+    void updateSelectedDate(const QDate &date);
+
+    Ui::MainWindow* getUi();
 
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    Layer* layer;
     Dialog* dialog;
-    QString fileName;
+    TransformCRS* transform;
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);

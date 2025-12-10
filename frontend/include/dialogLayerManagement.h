@@ -2,6 +2,7 @@
 #define DIALOG_H
 
 #include <QDialog>
+#include "../ui/ui_dialogLayerManagement.h" 
 
 namespace Ui {
 class Dialog;

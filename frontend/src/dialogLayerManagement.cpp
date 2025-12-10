@@ -1,5 +1,4 @@
-#include "dialogLayerManagement.h"
-#include "ui_dialogLayerManagement.h"
+#include "../include/dialogLayerManagement.h"
 
 #include <QLineEdit>
 #include <QString>
