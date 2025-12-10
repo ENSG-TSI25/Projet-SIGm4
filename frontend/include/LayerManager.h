@@ -23,13 +23,13 @@
 
 class MainWindow;
 
-class Layer : public QObject
+class LayerManager : public QObject
 {
     Q_OBJECT
 
 public:
-    Layer(MainWindow* mw);
-    ~Layer();
+    LayerManager(MainWindow* mw);
+    ~LayerManager();
 
     void listFiles();
     void addFileToWidget();

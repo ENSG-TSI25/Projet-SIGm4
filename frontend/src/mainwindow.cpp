@@ -1,5 +1,5 @@
 #include "../include/mainwindow.h"
-#include "../include/Layer.h"
+#include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
 #include <QFileDialog>
 #include <QComboBox>
@@ -28,9 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow) 
 {
     ui->setupUi(this);
-    layer = new Layer(this);
+    layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
@@ -61,12 +61,12 @@ MainWindow::MainWindow(QWidget *parent)
     Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]() {
-                layer->duplicateLayer(dialog);
+                layerManager->duplicateLayer(dialog);
             });
 
     connect(dig->buttonRename, &QPushButton::clicked,
             this, [this]() {
-                layer->renameLayer(dialog);
+                layerManager->renameLayer(dialog);
             });
 
 
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete layer;
+    delete layerManager;
     delete ui;
 }
 

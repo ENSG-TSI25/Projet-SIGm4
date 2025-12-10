@@ -5,7 +5,7 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
-#include "Layer.h"
+#include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
@@ -26,7 +26,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class Layer; 
+class LayerManager; 
 
 class MainWindow : public QMainWindow
 {
@@ -49,7 +49,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
-    Layer* layer;
+    LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     void zoomIn_button();
