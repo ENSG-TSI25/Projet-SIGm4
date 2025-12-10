@@ -1,5 +1,4 @@
 #include <core/DataManager.hpp>
-#include <core/GeoPackageReader.hpp>
 #include <iostream>
 
 
