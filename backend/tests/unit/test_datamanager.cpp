@@ -74,3 +74,12 @@ TEST_F(DataManagerTest, loadVectorEmpty) {
     
     std::remove(path.c_str());
 }
+
+
+
+// Test loadRaster invalide
+TEST_F(DataManagerTest, loadRasterInvalid) {
+    DataManager dm;
+    RasterLayer* raster = dm.loadRaster("/tmp/nonexistent.gpkg");
+    EXPECT_EQ(raster, nullptr);
+}

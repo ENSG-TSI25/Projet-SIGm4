@@ -16,9 +16,24 @@ GeoPackageReader::GeoPackageReader(const std::string& path)
 GeoPackageReader::~GeoPackageReader() { close(); }
 
 bool GeoPackageReader::open() {
-    // Ouverture du GeoPackage
     if (isOpen) return true;
-    dataset = (GDALDataset*)GDALOpenEx(filePath.c_str(), GDAL_OF_VECTOR | GDAL_OF_READONLY, nullptr, nullptr, nullptr);
+    
+    // Try opening as vector first
+    dataset = (GDALDataset*)GDALOpenEx(
+        filePath.c_str(), 
+        GDAL_OF_VECTOR | GDAL_OF_READONLY, 
+        nullptr, nullptr, nullptr
+    );
+    
+    // If fails, try as update mode to access both vector and raster
+    if (!dataset) {
+        dataset = (GDALDataset*)GDALOpenEx(
+            filePath.c_str(), 
+            GDAL_OF_READONLY,  // Remove GDAL_OF_VECTOR restriction
+            nullptr, nullptr, nullptr
+        );
+    }
+    
     return (isOpen = dataset != nullptr);
 }
 
@@ -164,4 +179,95 @@ double GeoPackageReader::parseTimestamp(const std::string& str) const {
     }
     
     return ss.fail() ? 0.0 : static_cast<double>(mktime(&tm));
+}
+
+
+
+bool GeoPackageReader::isRasterLayer(const std::string& layerName) const {
+    if (!isOpen) return false;
+    
+    // Try opening as raster with GPKG prefix
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    bool isRaster = false;
+    if (rasterDS) {
+        isRaster = (rasterDS->GetRasterCount() > 0);
+        GDALClose(rasterDS);
+    }
+    
+    return isRaster;
+}
+// Exrait les métadonnées raster d'une couche
+
+GeoPackageReader::RasterMetadata 
+GeoPackageReader::extractRasterMetadata(const std::string& layerName) const {
+    RasterMetadata m{"", "", 0, 0, 0, 0.0, {0,0,0,0,0,0}, ""};
+    if (!isOpen) return m;
+    
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    if (!rasterDS) return m;
+    
+    m.name = layerName;
+    m.width = rasterDS->GetRasterXSize();
+    m.height = rasterDS->GetRasterYSize();
+    m.layerPath = tablePath;
+    
+    rasterDS->GetGeoTransform(m.geoTransform);
+    
+    if (auto* srs = rasterDS->GetSpatialRef()) {
+        if (auto* code = srs->GetAuthorityCode(nullptr)) {
+            m.srid = std::atoi(code);
+            m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
+        }
+    }
+    
+    const char* epochStr = rasterDS->GetMetadataItem("COORDINATE_EPOCH");
+    if (epochStr) {
+        m.referenceEpoch = std::stod(epochStr);
+    }
+    
+    GDALClose(rasterDS);
+    return m;
+}
+
+Geometry4D GeoPackageReader::extractRasterExtent(
+    const std::string& layerName, double timestamp) const {
+    
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    if (!rasterDS) return Geometry4D();
+    
+    double gt[6];
+    rasterDS->GetGeoTransform(gt);
+    
+    int width = rasterDS->GetRasterXSize();
+    int height = rasterDS->GetRasterYSize();
+    
+    double minX = gt[0];
+    double maxY = gt[3];
+    double maxX = gt[0] + width * gt[1];
+    double minY = gt[3] + height * gt[5];
+    
+    OGRPolygon* poly = new OGRPolygon();
+    OGRLinearRing* ring = new OGRLinearRing();
+    
+    ring->addPoint(minX, minY, 0);
+    ring->addPoint(maxX, minY, 0);
+    ring->addPoint(maxX, maxY, 0);
+    ring->addPoint(minX, maxY, 0);
+    ring->addPoint(minX, minY, 0);
+    
+    poly->addRing(ring);
+    poly->setMeasured(TRUE);
+    
+    for (int i = 0; i < ring->getNumPoints(); i++) {
+        ring->setM(i, timestamp);
+    }
+    
+    GDALClose(rasterDS);
+    return Geometry4D(poly);
 }
