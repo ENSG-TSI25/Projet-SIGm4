@@ -288,6 +288,13 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QLabel" name="date">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>

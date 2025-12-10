@@ -11,6 +11,13 @@
 #include <QGraphicsScene>
 #include <QWheelEvent>
 #include <qgsmapcanvas.h>
+#include <QLabel>
+#include <QCalendarWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QDate>
 
 
 QT_BEGIN_NAMESPACE
@@ -34,10 +41,16 @@ public:
     std::string selectCRSdest();
     double getDate();
     std::tuple<std::string, std::string, double> transform();
-    //void updateScaleLabel(double scaleValue);
+    
     void setNewProject();
     void updateScaleLabel(int scaleValue);
-    //void getCalendarDate();
+    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    float computeDate(int day, int month, int year);
+    void getDateSelected(const QDate &date);
+signals:
+    
+    void updateSelectedDate(const QDate &date);
+
 
 private:
     Ui::MainWindow *ui;
