@@ -1,48 +1,26 @@
-FROM ubuntu:22.04
-
+FROM ubuntu:25.04
 
 RUN apt-get update && apt-get install -y \
     g++ cmake make git \
     pkg-config \
+    proj-bin proj-data libproj-dev \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
-    libpqxx \
-    pkg-config \
-    git \
-    curl \
-    sqlite3 libsqlite3-dev \
-    libtiff-dev \
-    libcurl4-openssl-dev \
-    liblzma-dev \
     wget unzip \
     && apt-get clean
-    
+
 WORKDIR /app
 
-RUN git clone https://github.com/OSGeo/PROJ.git && \
-    cd PROJ && \
-    git checkout 9.5.1 && \
-    mkdir build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release \
-             -DBUILD_SHARED_LIBS=ON \
-             -DBUILD_PROJSYNC=ON \
-             -DENABLE_IPO=ON \
-             -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    make -j$(nproc) && \
-    make install && \
-    ldconfig
-    
-    
-WORKDIR /app
 COPY . .
 
 RUN rm -rf build CMakeCache.txt CMakeFiles \
     && mkdir build \
     && cd build \
-    && cmake .. -DBUILD_TESTS=ON \
+    && cmake .. \
     && make -j4 \
     && ctest --verbose \
     && cp backend_app /app/backend_app \
     && cp libsigm4_backend.a /app/libsigm4_backend.a
 
 CMD ["/bin/sh", "-c", "/app/backend_app; tail -f /dev/null"]
+
