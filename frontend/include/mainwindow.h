@@ -21,6 +21,8 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <core/Project.hpp>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -37,7 +39,7 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
-    void setNewProject();
+    Projet* setNewProject();
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
