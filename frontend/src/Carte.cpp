@@ -81,82 +81,21 @@ void Carte::initLayers()
 
 
     // ============================
-    //           FRANCE
-    // ============================
-    polyLayer = new QgsVectorLayer("Polygon?crs=EPSG:3857", "France", "memory");
-    auto polyProv = polyLayer->dataProvider();
-
-    QgsFeature france;
-    france.setGeometry(QgsGeometry::fromPolygonXY({
-        {
-            wgs84ToMercator(-5.0, 41.0),
-            wgs84ToMercator(9.5, 41.0),
-            wgs84ToMercator(9.5, 51.0),
-            wgs84ToMercator(-5.0, 51.0),
-            wgs84ToMercator(-5.0, 41.0)
-        }
-    }));
-    polyProv->addFeature(france);
-    polyLayer->updateExtents();
-    QgsProject::instance()->addMapLayer(polyLayer);
-
-    // ============================
-    //           POINTS
-    // ============================
-    pointLayer = new QgsVectorLayer("Point?crs=EPSG:3857", "Points", "memory");
-    auto pointProv = pointLayer->dataProvider();
-
-    QgsFeature f1; 
-    f1.setGeometry(QgsGeometry::fromPointXY(wgs84ToMercator(2.0, 48.0))); 
-    pointProv->addFeature(f1);
-
-    QgsFeature f2; 
-    f2.setGeometry(QgsGeometry::fromPointXY(wgs84ToMercator(4.0, 45.0))); 
-    pointProv->addFeature(f2);
-
-    pointLayer->updateExtents();
-    QgsProject::instance()->addMapLayer(pointLayer);
-
-    // ============================
-    //           LIGNES
-    // ============================
-    lineLayer = new QgsVectorLayer("LineString?crs=EPSG:3857", "Lines", "memory");
-    auto lineProv = lineLayer->dataProvider();
-
-    QgsFeature l1;
-    l1.setGeometry(QgsGeometry::fromPolylineXY({
-        wgs84ToMercator(-5.0, 41.0),
-        wgs84ToMercator(9.5, 51.0),
-        wgs84ToMercator(4,48)
-    }));
-    lineProv->addFeature(l1);
-    lineLayer->updateExtents();
-    QgsProject::instance()->addMapLayer(lineLayer);
-
-    // ============================
     //      AJOUT AU CANVAS
     // ============================
     osmVisible = true;
-    canvas->setLayers({lineLayer, pointLayer,polyLayer, osmLayer, satLayer});
-    canvas->setExtent(polyLayer->extent());
+    canvas->setLayers({osmLayer});
+    canvas->setExtent(osmLayer->extent());
     canvas->refresh();
 }
 
 void Carte::connectSignals()
 {
-    QObject::connect(canvas, &QgsMapCanvas::extentsChanged,
-                     [this]() { updateLabels(); });
-
-    QObject::connect(canvas, &QgsMapCanvas::mapCanvasRefreshed,
-                     [this]() { updateLabels(); });
 
     QObject::connect(toggleBasemap, &QPushButton::clicked,
                      this, &Carte::toggleBaseLayer);
 }
 
-void Carte::updateLabels()
-{
-}
 
 void Carte::toggleBaseLayer()
 {
@@ -164,11 +103,11 @@ void Carte::toggleBaseLayer()
 
     if(osmVisible)
     {
-        canvas->setLayers({ lineLayer, pointLayer, polyLayer, osmLayer });
+        canvas->setLayers({  osmLayer });
     }
     else
     {
-        canvas->setLayers({ lineLayer, pointLayer, polyLayer, satLayer  });
+        canvas->setLayers({ satLayer  });
     }
 
     canvas->refresh();
