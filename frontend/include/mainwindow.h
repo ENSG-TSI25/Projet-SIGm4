@@ -14,6 +14,8 @@
 #include <QWheelEvent>
 #include <qgsmapcanvas.h>
 
+#include <core/Project.hpp>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -30,7 +32,7 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
-    void setNewProject();
+    Projet* setNewProject();
     void updateScaleLabel(int scaleValue);
     Ui::MainWindow* getUi();
 

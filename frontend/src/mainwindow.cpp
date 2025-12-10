@@ -112,34 +112,47 @@ void MainWindow::openDialog() {
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
-void MainWindow::setNewProject(){
+Project* MainWindow::setNewProject(){
+    //Creating new project
+    Project* newProject = new Project("test");
+
     //Creation of the dialog window
     QDialog chosingCRSDialog;
+    
+    
     chosingCRSDialog.setWindowTitle("Choix du CRS");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
     QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+    
+    //Widget for choosing the name of the project
+    
+    //Widget for choosing the CRS of the project
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
     crsList->setPlaceholderText("Entrez le code EPSG du CRS");
     setCrsList(crsList);
+    
+    //Widget for choosing the epoch0 of the project by entering the exact geodectic date
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
+    
+    //Widget for choosing the epoch0 of the project by selecting the date on a calendar
     QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
     
     
 
-    //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
+    //The validator for blocking the user to enter a wrong date//TO FIX
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
-    //range and decimals
+    //Setting range and decimals for the validator
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    //On intègre le validateur à la zone de texte
+    //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
 
 
 
 
-    //on ajoute les widgets
+    //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
@@ -151,6 +164,8 @@ void MainWindow::setNewProject(){
     QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
 
     chosingCRSDialog.exec();
+    
+    return newProject;
 }
 
 /*void MainWindow::getCalendarDays(QCalendarWidget *calendarwidget){
