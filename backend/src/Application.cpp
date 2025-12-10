@@ -26,44 +26,112 @@ void Application::run()
     pqxx::result r = dbClient->execute("SELECT PostGIS_Version();");
     std::cout << "PostGIS version: " << r[0][0].c_str() << std::endl;
     
-    std::cout << "\n=== Test Vector GeoPackage ===" << std::endl;
-    DataManager dm;
-    VectorLayer *layer = dm.loadVector("/app/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg");
+    std::cout << "\n========================================" << std::endl;
+    std::cout << "=== TEST LOADVECTOR WITH ALL LAYERS ===" << std::endl;
+    std::cout << "========================================" << std::endl;
     
-    if (layer)
-    {
-        std::cout << "Layer: " << layer->getName() << std::endl;
-        std::cout << "CRS: " << layer->getCrs() << std::endl;
-        std::cout << "Epoch: " << layer->getEpoch() << std::endl;
-        
-        const auto &geoms = layer->getGeometries();
-        if (!geoms.empty())
-        {
-            const auto &geom = geoms[0];
-            std::cout << "\n--- First geometry ---" << std::endl;
-            
-            OGRGeometry *g = geom->getGeometry();
-            OGRwkbGeometryType type = wkbFlatten(g->getGeometryType());
-            
-            OGRPoint pt;
-            double t = geom->getT();
-            
-            if (type == wkbPolygon)
-            {
-                g->toPolygon()->getExteriorRing()->getPoint(0, &pt);
-            }
-            else if (type == wkbMultiPolygon)
-            {
-                g->toMultiPolygon()->getGeometryRef(0)->getExteriorRing()->getPoint(0, &pt);
-            }
-            
-            std::cout << "First point (X, Y, Z, T): ("
-                      << pt.getX() << ", " << pt.getY() << ", "
-                      << pt.getZ() << ", " << t << ")" << std::endl;
-        }
+    DataManager dm;
+    
+    // Test with your data file
+    std::string filePath = "/app/backend/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg";
+    auto layers = dm.loadVector(filePath);
+    
+    if (layers.empty()) {
+        std::cout << "No layers loaded!" << std::endl;
+        return;
     }
     
+    std::cout << "Successfully loaded " << layers.size() << " layer(s)" << std::endl;
     
+    // Test each layer
+    for (size_t i = 0; i < layers.size(); ++i) {
+        auto* layer = layers[i];
+        
+        std::cout << "LAYER " << (i + 1) << " INFORMATION" << std::endl;
+        
+        // Layer metadata
+        std::cout << "Name: " << layer->getName() << std::endl;
+        std::cout << "CRS: " << layer->getCrs() << std::endl;
+        std::cout << "Reference Epoch: " << layer->getEpoch() << std::endl;
+        
+        // Get geometries and EWKT
+        const auto& geoms = layer->getGeometries();
+        const auto& ewkts = layer->getEWKT();
+        
+        std::cout << "Number of geometries: " << geoms.size() << std::endl;
+        std::cout << "Number of EWKT strings: " << ewkts.size() << std::endl;
+        
+        if (geoms.empty()) {
+            std::cout << "No geometries in this layer" << std::endl;
+            continue;
+        }
+        
+        // Display first 3 geometries
+        std::cout << "\n--- First " << std::min(size_t(3), geoms.size()) << " geometry details ---" << std::endl;
+        
+        for (size_t j = 0; j < std::min(size_t(3), geoms.size()); ++j) {
+            std::cout << "\nGeometry [" << j << "]:" << std::endl;
+            
+            auto geom = geoms[j];
+            
+            // SRID and timestamp
+            std::cout << "  SRID: " << geom->getSRID() << std::endl;
+            std::cout << "  Timestamp (T): " << geom->getT() << std::endl;
+            
+            // Geometry type
+            OGRGeometry* g = geom->getGeometry();
+            if (g) {
+                std::cout << "  Type: " << g->getGeometryName() << std::endl;
+                
+                OGRwkbGeometryType type = wkbFlatten(g->getGeometryType());
+                
+                // Get first coordinate
+                if (type == wkbPoint) {
+                    OGRPoint* pt = g->toPoint();
+                    std::cout << "  Coordinates: X=" << pt->getX() 
+                              << ", Y=" << pt->getY() 
+                              << ", Z=" << pt->getZ() 
+                              << ", M=" << pt->getM() << std::endl;
+                }
+                else if (type == wkbLineString) {
+                    OGRLineString* line = g->toLineString();
+                    std::cout << "  First point: X=" << line->getX(0) 
+                              << ", Y=" << line->getY(0) 
+                              << ", Z=" << line->getZ(0) 
+                              << ", M=" << line->getM(0) << std::endl;
+                    std::cout << "  Total points: " << line->getNumPoints() << std::endl;
+                }
+                else if (type == wkbPolygon) {
+                    OGRPolygon* poly = g->toPolygon();
+                    OGRLinearRing* ring = poly->getExteriorRing();
+                    std::cout << "  First point: X=" << ring->getX(0) 
+                              << ", Y=" << ring->getY(0) 
+                              << ", Z=" << ring->getZ(0) 
+                              << ", M=" << ring->getM(0) << std::endl;
+                    std::cout << "  Total points in exterior ring: " << ring->getNumPoints() << std::endl;
+                }
+                else if (type == wkbMultiPolygon) {
+                    OGRMultiPolygon* mpoly = g->toMultiPolygon();
+                    std::cout << "  Number of polygons: " << mpoly->getNumGeometries() << std::endl;
+                    if (mpoly->getNumGeometries() > 0) {
+                        OGRPolygon* firstPoly = static_cast<OGRPolygon*>(mpoly->getGeometryRef(0));
+                        OGRLinearRing* ring = firstPoly->getExteriorRing();
+                        std::cout << "  First polygon first point: X=" << ring->getX(0) 
+                                  << ", Y=" << ring->getY(0) 
+                                  << ", Z=" << ring->getZ(0) 
+                                  << ", M=" << ring->getM(0) << std::endl;
+                    }
+                }
+            }
+            
+            std::string ewkt = ewkts[j];
+            if (ewkt.length() > 150) {
+                ewkt = ewkt.substr(0, 150) + "...";
+            }
+            std::cout << "  EWKT: " << ewkt << std::endl;
+        }
+    }
+        
     
     std::cout << "\n=== Test Raster GeoPackage ===" << std::endl;
     RasterLayer* raster = dm.loadRaster("/app/data/raster_data.gpkg");
