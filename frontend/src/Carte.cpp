@@ -1,4 +1,4 @@
-#include "Carte.h"
+#include "../include/Carte.h"
 #include <cmath>
 #include <QVBoxLayout>
 #include <QDebug>

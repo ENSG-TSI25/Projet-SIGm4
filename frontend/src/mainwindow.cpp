@@ -1,5 +1,4 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "../include/mainwindow.h"
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
