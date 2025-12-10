@@ -1,8 +1,24 @@
 #include <core/Geometry4D.hpp>
 #include <sstream>
 
+/**
+ * @file Geometry4D.cpp
+ * @brief Implementation of Geometry4D class
+ * 
+ * Contains 4D geometry operations with temporal dimension.
+ */
+
+/**
+ * @brief Default constructor
+ */
 Geometry4D::Geometry4D() : geometry(nullptr), crs("EPSG:4326") {}
 
+/**
+ * @brief Constructor from OGR geometry
+ * @param geom OGR geometry pointer
+ * 
+ * Enables 3D and measured dimensions if not already set.
+ */
 Geometry4D::Geometry4D(OGRGeometry* geom) : geometry(geom), crs("EPSG:4326") {
     if (geometry && !geometry->IsMeasured()) {
         geometry->set3D(TRUE);
@@ -10,12 +26,21 @@ Geometry4D::Geometry4D(OGRGeometry* geom) : geometry(geom), crs("EPSG:4326") {
     }
 }
 
+/**
+ * @brief Copy constructor
+ * @param other Geometry4D to copy
+ */
 Geometry4D::Geometry4D(const Geometry4D& other) : crs(other.crs) {
     if (other.geometry) {
         geometry.reset(other.geometry->clone());
     }
 }
 
+/**
+ * @brief Assignment operator
+ * @param other Geometry4D to assign from
+ * @return Reference to this object
+ */
 Geometry4D& Geometry4D::operator=(const Geometry4D& other) {
     if (this != &other) {
         crs = other.crs;
@@ -24,6 +49,10 @@ Geometry4D& Geometry4D::operator=(const Geometry4D& other) {
     return *this;
 }
 
+/**
+ * @brief Gets temporal coordinate T
+ * @return Time value from M coordinate
+ */
 double Geometry4D::getT() const {
     if (!geometry || !geometry->IsMeasured()) return 0.0;
     auto type = wkbFlatten(geometry->getGeometryType());
@@ -32,6 +61,10 @@ double Geometry4D::getT() const {
     return 0.0;
 }
 
+/**
+ * @brief Sets temporal coordinate T
+ * @param ts Time value to set
+ */
 void Geometry4D::setT(double ts) {
     if (!geometry) return;
     auto type = wkbFlatten(geometry->getGeometryType());
@@ -42,6 +75,10 @@ void Geometry4D::setT(double ts) {
     }
 }
 
+/**
+ * @brief Gets SRID from geometry
+ * @return EPSG code or 0 if not set
+ */
 int Geometry4D::getSRID() const {
     if (!geometry) return 0;
     auto* srs = geometry->getSpatialReference();
@@ -50,6 +87,10 @@ int Geometry4D::getSRID() const {
     return code ? std::atoi(code) : 0;
 }
 
+/**
+ * @brief Sets SRID for geometry
+ * @param srid EPSG code to set
+ */
 void Geometry4D::setSRID(int srid) {
     if (!geometry) return;
     
@@ -61,6 +102,10 @@ void Geometry4D::setSRID(int srid) {
     crs = "EPSG:" + std::to_string(srid);
 }
 
+/**
+ * @brief Converts geometry to EWKT format
+ * @return EWKT string with SRID and coordinates
+ */
 std::string Geometry4D::toEWKT() const {
     if (!geometry) return "";
     
@@ -72,7 +117,7 @@ std::string Geometry4D::toEWKT() const {
         oss << "SRID=" << srid << ";";
     }
     
-    // WKT avec M
+    // WKT with M coordinate
     char* wkt = nullptr;
     geometry->exportToWkt(&wkt);
     oss << wkt;

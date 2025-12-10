@@ -4,12 +4,28 @@
 #include <gdal/gdal.h>
 #include <iostream>
 
+/**
+ * @file Application.cpp
+ * @brief Implementation of Application class
+ * 
+ * Main backend application logic.
+ */
+
+/**
+ * @brief Constructor - loads DB config from environment
+ */
 Application::Application()
 {
     DBConfig cfg = DBConfig::loadFromEnv();
     dbClient = std::make_unique<PostgresClient>(cfg);
 }
 
+/**
+ * @brief Initializes application components
+ * 
+ * Registers GDAL drivers, connects to database,
+ * and initializes PostGIS extensions.
+ */
 void Application::initialize()
 {
     std::cout << "=== Initializing Application ===" << std::endl;
@@ -20,6 +36,12 @@ void Application::initialize()
     dbClient->initExtensions();
 }
 
+/**
+ * @brief Main application execution
+ * 
+ * Tests database connection, loads sample data,
+ * and displays geometry information.
+ */
 void Application::run()
 {
     std::cout << "\n=== Running Application ===" << std::endl;

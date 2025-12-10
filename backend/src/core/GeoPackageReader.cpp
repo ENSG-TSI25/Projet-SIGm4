@@ -8,22 +8,41 @@
 #include <iomanip>
 #include <algorithm>
 
+/**
+ * @file GeoPackageReader.cpp
+ * @brief Implementation of GeoPackageReader class
+ * 
+ * Handles reading of GeoPackage files with GDAL.
+ */
+
+/**
+ * @brief Constructor
+ * @param path Path to GeoPackage file
+ */
 GeoPackageReader::GeoPackageReader(const std::string& path)
     : filePath(path), dataset(nullptr), isOpen(false) {
-    GDALAllRegister(); // Initialisation GDAL
+    GDALAllRegister(); // GDAL initialization
 }
 
+/**
+ * @brief Destructor - closes file if open
+ */
 GeoPackageReader::~GeoPackageReader() { close(); }
 
+/**
+ * @brief Opens the GeoPackage file
+ * @return true if opened successfully
+ */
 bool GeoPackageReader::open() {
-    // Ouverture du GeoPackage
     if (isOpen) return true;
     dataset = (GDALDataset*)GDALOpenEx(filePath.c_str(), GDAL_OF_VECTOR | GDAL_OF_READONLY, nullptr, nullptr, nullptr);
     return (isOpen = dataset != nullptr);
 }
 
+/**
+ * @brief Closes the GeoPackage file
+ */
 void GeoPackageReader::close() {
-    // Fermeture du dataset
     if (dataset) {
         GDALClose(dataset);
         dataset = nullptr;
@@ -31,8 +50,11 @@ void GeoPackageReader::close() {
     }
 }
 
+/**
+ * @brief Lists all layers in the file
+ * @return Vector of layer names
+ */
 std::vector<std::string> GeoPackageReader::listLayers() const {
-    // Récupère les noms des couches
     std::vector<std::string> layers;
     if (!isOpen) return layers;
 
@@ -42,8 +64,12 @@ std::vector<std::string> GeoPackageReader::listLayers() const {
     return layers;
 }
 
+/**
+ * @brief Gets metadata for a specific layer
+ * @param layerName Name of the layer
+ * @return LayerMetadata structure
+ */
 GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::string& layerName) const {
-    // Lit les métadonnées d'une couche
     LayerMetadata m{"", "", 0, 0, 0.0, wkbUnknown};
     if (!isOpen) return m;
     
@@ -63,8 +89,12 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
     return m;
 }
 
+/**
+ * @brief Extracts features from a layer
+ * @param layerName Name of the layer
+ * @return Vector of Feature objects
+ */
 std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const std::string& layerName) const {
-    // Extraction des features
     std::vector<Feature> features;
     if (!isOpen) return features;
 
@@ -82,8 +112,14 @@ std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const s
     return features;
 }
 
+/**
+ * @brief Detects timestamp field in layer attributes
+ * @param layerName Name of the layer
+ * @return Name of timestamp field or empty string
+ * 
+ * Searches for fields containing "time", "timestamp", "date", or "epoch".
+ */
 std::string GeoPackageReader::detectTimestampField(const std::string& layerName) const {
-    // Cherche un champ temporel
     if (!isOpen) return "";
     OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
     if (!layer) return "";
@@ -102,8 +138,13 @@ std::string GeoPackageReader::detectTimestampField(const std::string& layerName)
     return "";
 }
 
+/**
+ * @brief Converts OGRFeature to internal Feature structure
+ * @param ogrf OGR feature to convert
+ * @param tsField Timestamp field name
+ * @return Feature object
+ */
 GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, const std::string& tsField) const {
-    // Convertit un OGRFeature en structure interne
     Feature f;
     f.fid = ogrf->GetFID();
     f.timestamp = 0.0;
@@ -128,8 +169,13 @@ GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, 
     return f;
 }
 
+/**
+ * @brief Extracts and converts geometry to Geometry4D
+ * @param ogrf OGR feature
+ * @param timestamp Temporal value
+ * @return Geometry4D object
+ */
 Geometry4D GeoPackageReader::extractGeometry4D(OGRFeature* ogrf, double timestamp) const {
-    // Ajoute une valeur temporelle M aux géométries
     OGRGeometry* geom = ogrf->GetGeometryRef();
     if (!geom) return Geometry4D();
 
@@ -151,8 +197,14 @@ Geometry4D GeoPackageReader::extractGeometry4D(OGRFeature* ogrf, double timestam
     return Geometry4D(clone);
 }
 
+/**
+ * @brief Parses timestamp string to double
+ * @param str Timestamp string
+ * @return Timestamp value or 0.0 if parsing fails
+ * 
+ * Supports ISO 8601 format: YYYY-MM-DDTHH:MM:SS or YYYY-MM-DD
+ */
 double GeoPackageReader::parseTimestamp(const std::string& str) const {
-    // Convertit une date en timestamp
     struct tm tm = {};
     std::istringstream ss(str);
     

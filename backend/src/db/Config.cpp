@@ -1,6 +1,25 @@
 #include <db/Config.hpp>
 #include <stdexcept>
 
+/**
+ * @file Config.cpp
+ * @brief DBConfig implementation
+ */
+
+/**
+ * @brief Loads database configuration from environment variables
+ * @return DBConfig structure with connection parameters
+ * @throws std::runtime_error if any required variable is missing
+ * 
+ * Reads the following environment variables:
+ * - DB_HOST: Database server hostname
+ * - DB_PORT: Database server port
+ * - DB_USER: Database username
+ * - DB_PASS: Database password
+ * - DB_NAME: Database name
+ * 
+ * All variables are required. Used in Docker deployment.
+ */
 DBConfig DBConfig::loadFromEnv() {
     DBConfig cfg;
     
