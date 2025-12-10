@@ -60,12 +60,12 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
             m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
             char* unitName = nullptr;
             srs->GetLinearUnits(&unitName);
-            if (unitName == "metre"){
-                m.coords_type = "cartesian";
-            }
-            if (unitName == "degree"){
+            if (srs->IsProjected()) {
+            m.coords_type = "cartesian"; 
+            } 
+            else if (srs->IsGeographic()) {
                 m.coords_type = "geographic";
-            }
+            } 
             else {
                 std::cout<< "Invalid coordinate units";
                 m.coords_type = "geographic";
