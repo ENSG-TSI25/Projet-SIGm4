@@ -1,5 +1,5 @@
 #include "../include/mainwindow.h"
-#include "../include/Layer.h"
+#include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
 #include <QFileDialog>
 #include <QComboBox>
@@ -28,9 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow) 
 {
     ui->setupUi(this);
-    layer = new Layer(this);
+    layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -38,19 +38,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
     listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte);
-    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);   
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+    //connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected); 
       
     
 
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+    //connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
+    //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
 
     //Dialog management
     dialog = new Dialog();
@@ -58,12 +61,12 @@ MainWindow::MainWindow(QWidget *parent)
     Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]() {
-                layer->duplicateLayer(dialog);
+                layerManager->duplicateLayer(dialog);
             });
 
     connect(dig->buttonRename, &QPushButton::clicked,
             this, [this]() {
-                layer->renameLayer(dialog);
+                layerManager->renameLayer(dialog);
             });
 
 
@@ -71,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete layer;
+    delete layerManager;
     delete ui;
 }
 
@@ -111,6 +114,13 @@ void MainWindow::openDialog() {
     dialog -> show();
 }
 
+void MainWindow::getDateSelected(const QDate &date){
+    //QDate initalDate= ui->calendar->selectedDate();
+    ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
+
+}
+
+
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 Project* MainWindow::setNewProject(){
     //Creating new project
@@ -139,8 +149,6 @@ Project* MainWindow::setNewProject(){
     //Widget for choosing the epoch0 of the project by selecting the date on a calendar
     QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
     
-    
-
     //The validator for blocking the user to enter a wrong date//TO FIX
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     //Setting range and decimals for the validator
@@ -148,36 +156,66 @@ Project* MainWindow::setNewProject(){
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
+    
+    QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);   
+    getCalendarDays(calendar, decimalDate);
+     
+    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
 
-
-
+    connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
+        QDate selectedDate = calendar->selectedDate();
+        //emit getDateSelected(selectedDate);  // Émission du signal vers MainWindow
+        //this->getDateSelected(selectedDate);
+        this->getDateSelected(selectedDate);
+    });
 
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    layout->addWidget(acceptationButton);
     
+    layout->addWidget(decimalDate);
+    layout->addWidget(acceptationButton);
 
-
-    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
+  
 
     chosingCRSDialog.exec();
     
     return newProject;
 }
 
-/*void MainWindow::getCalendarDays(QCalendarWidget *calendarwidget){
-    connect (calendar,&QCalendarWidget::selectionChanged, [=](){
-        QDate date = calendar->selectedDate();
-        int day = date.day();
-        int month = date.month();
-        int year = date.year();
+void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate){
+    {
+        QDate initalDate= calendar->selectedDate();
+        float initalValue = computeDate (initalDate.day(),
+                                          initalDate.month(),
+                                          initalDate.year());
+        decimalDate->setText("Date décimale : "+ QString::number(initalValue, 'f', 6));
+
+        connect (calendar,&QCalendarWidget::selectionChanged, 
+                [calendar, decimalDate, this](){;
         
-    });
+            QDate date = calendar->selectedDate();
+            float dec = computeDate(date.day(), date.month(), date.year());
+            decimalDate->setText("Date décimale :" + QString::number(dec, 'f', 6));
+        
+    });}
     
-}*/
+    
+        
+}
+
+float MainWindow::computeDate(int day, int month, int year){
+    
+    QDate start (year,1,1);
+    QDate selected (year, month, day);
+    float daysCount = start.daysTo(selected)+1;
+    float daysInYear = QDate::isLeapYear(year) ? 366 : 365;
+    float deci_date = year + (daysCount-1)/(daysInYear);
+    return deci_date;
+ 
+}
 
 
 //Function to set the targetted comboBox to show the list of CRS accepted by the project
