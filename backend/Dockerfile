@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y \
     proj-bin proj-data libproj-dev \
     gdal-bin libgdal-dev \
     libpq-dev libpqxx-dev \
+    rapidjson-dev \
     wget unzip \
-    && apt-get clean
+    && apt-get clean 
 
 WORKDIR /app
 
