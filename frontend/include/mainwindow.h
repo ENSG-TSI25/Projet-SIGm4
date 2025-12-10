@@ -27,12 +27,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    // void listFiles();
     void listDimension();
-    // void addFileToWidget();
     void openDialog();
-    // void duplicateLayer();
-    // void renameLayer();
     std::string selectCRSsource();
     std::string selectCRSdest();
     double getDate();
@@ -42,13 +38,11 @@ public:
     Ui::MainWindow* getUi();
 
 
-
 private:
     Ui::MainWindow *ui;
     Carte* carte;
     Layer* layer;
     Dialog* dialog;
-    // QString fileName;
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
