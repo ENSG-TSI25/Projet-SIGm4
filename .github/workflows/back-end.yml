@@ -1,42 +1,44 @@
 name: Backend CI
 
-on: push
+on:
+  push:
+  pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      
-      - name: Install dependencies
+
+      - name: Install Docker Compose
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            cmake g++ ninja-build \
-            pkg-config \
-            libpqxx-dev libpq-dev \
-            libgdal-dev \
-            libproj-dev
-      
-      - name: Configure CMake
-        working-directory: backend
-        run: cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-      
-      - name: Build
-        working-directory: backend
-        run: cmake --build build --verbose
-      
-      - name: Run tests
-        working-directory: backend
+          sudo apt-get install -y docker-compose
+
+      - name: Build Docker Compose
+        run: docker-compose -f "${{ github.workspace }}/docker-compose.yml" build
+
+      - name: Start services
+        run: docker-compose -f "${{ github.workspace }}/docker-compose.yml" up -d
+
+      - name: Run backend tests
         run: |
-          cd build
-          ctest --output-on-failure --verbose
-      
+          docker-compose -f "${{ github.workspace }}/docker-compose.yml" exec -T backend sh -c "
+            cmake -B build -G Ninja -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug &&
+            cmake --build build &&
+            cd build &&
+            ctest --output-on-failure --verbose
+          "
+
       - name: Test Summary
         if: always()
-        working-directory: backend
         run: |
-          cd build
-          ctest --output-on-failure || true
+          docker-compose -f "${{ github.workspace }}/docker-compose.yml" exec -T backend sh -c "
+            cd build && ctest --output-on-failure || true
+          "
+
+      - name: Shutdown
+        if: always()
+        run: docker-compose -f "${{ github.workspace }}/docker-compose.yml" down
