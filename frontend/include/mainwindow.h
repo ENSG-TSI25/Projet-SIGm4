@@ -46,10 +46,9 @@ public:
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
     void getDateSelected(const QDate &date);
-signals:
-    
     void updateSelectedDate(const QDate &date);
 
+    Ui::MainWindow* getUi();
 
 private:
     Ui::MainWindow *ui;
