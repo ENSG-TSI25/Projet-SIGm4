@@ -131,5 +131,33 @@ void Application::run()
             std::cout << "  EWKT: " << ewkt << std::endl;
         }
     }
+        
     
+    std::cout << "\n=== Test Raster GeoPackage ===" << std::endl;
+    RasterLayer* raster = dm.loadRaster("/app/data/raster_data.gpkg");
+    
+    if (raster) {
+        // Attributs Layer
+        std::cout << "Name: " << raster->getName() << std::endl;
+        std::cout << "CRS: " << raster->getCrs() << std::endl;
+        std::cout << "Epoch: " << raster->getEpoch() << std::endl;
+        
+        // Attributs RasterLayer
+        std::cout << "Dimensions: " << raster->getWidth() << "x" << raster->getHeight() << " pixels" << std::endl;
+        std::cout << "FilePath: " << raster->getFilePath() << std::endl;
+        
+        // GeoTransform
+        const double* gt = raster->getGeoTransform();
+        std::cout << "GeoTransform: [" << gt[0] << ", " << gt[1] << ", " << gt[2] << ", "
+                  << gt[3] << ", " << gt[4] << ", " << gt[5] << "]" << std::endl;
+        std::cout << "Resolution: " << gt[1] << "m/pixel (X), " << std::abs(gt[5]) << "m/pixel (Y)" << std::endl;
+        
+        // Emprise
+        auto emprise = raster->getEmprise();
+        if (emprise) {
+            std::cout << "Extent EWKT: " << emprise->toEWKT() << std::endl;
+        }
+    }
+
+    std::cout << "\n✓ Application running successfully!" << std::endl;
 }
