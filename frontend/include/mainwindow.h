@@ -48,8 +48,8 @@ public:
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
-    void displayEpochProject(const QDate &date);
-    void getSRCSelected();
+    // void displayEpochProject(const QDate &date);
+    // void getSRCSelected();
 
     Ui::MainWindow* getUi();
 
