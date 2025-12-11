@@ -176,6 +176,26 @@ void MainWindow::setNewProject(){
     //connect (crsList, &QComboBox::currentTextChanged, this, &MainWindow::getSRCSelected);
     });
 
+
+    // connect the calendar with the epoch textzone
+
+    connect(calendar, &QCalendarWidget::selectionChanged, this, [calendar, epochTextZone]() {
+        QDate selectedDate = calendar->selectedDate();
+        // epoch calculated from the date (à changer avec le truc de blandine)
+        double decimalYear = selectedDate.year() + 
+                            (selectedDate.dayOfYear() - 1) / 
+                            (selectedDate.isLeapYear(selectedDate.year()) ? 366.0 : 365.0);
+        epochTextZone->setText(QString::number(decimalYear, 'f', 3));
+    });
+
+    // manual entry of the epoch 
+
+    connect(epochTextZone, &QLineEdit::textChanged, this, [decimalDate, epochTextZone]() {
+        decimalDate->setText("Date décimale : " + epochTextZone->text());
+    });
+
+
+
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
@@ -185,18 +205,69 @@ void MainWindow::setNewProject(){
     layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-  
+    // check if the user has created the project
+        if (chosingCRSDialog.exec() == QDialog::Accepted) {
 
-    chosingCRSDialog.exec();
-    
-    //for the moment, an empty project
-    Project* newProject = new Project("test_projet", 1950.0);
+    // get the name 
+    QString projectName = nameTextZone-> text();
+    if (projectName.isEmpty()) {
+        projectName = "Projet sans nom"; 
+    }
 
+    // get the CRS 
+    QString selectedCRS = crsList->currentText();
 
+    //EPSG code 
+    int startIndex = selectedCRS.indexOf('(');
+    int endIndex = selectedCRS.indexOf(')');
+    QString epsgCode;
+        
+    if (startIndex != -1 && endIndex != -1) {
+            epsgCode = "EPSG:" + selectedCRS.mid(startIndex + 1, endIndex - startIndex - 1);
+    } else {
+            epsgCode = "EPSG:4326";  //  default value
+        }
+        
+    //epoch
+    double epoch = epochTextZone->text().toDouble();
+        
+    Project* newProject = new Project(
+            projectName.toStdString(),     // name
+            epoch,                         // epoxh
+            epsgCode.toStdString()        // CRS
+        );
+        
     currentProject = newProject;
+        
 
-    std::cout << newProject->getName();
-    std::cout << newProject->getEpoch0();
+    // cout
+        std::cout << "Projet créé avec succès !" << std::endl;
+        std::cout << "Nom : " << newProject->getName() << std::endl;
+        std::cout << "Époque : " << newProject->getEpoch0() << std::endl;
+        std::cout << "CRS : " << newProject->getCrs() << std::endl;
+        
+        // // Mettre à jour l'interface avec les informations du projet
+        // ui->crsLabel->setText("CRS : " + selectedCRS);
+        
+    } else {
+        std::cout << "Création du projet annulée" << std::endl;
+        currentProject = nullptr;
+
+        }
+
+    // chosingCRSDialog.exec();
+
+    // //for the moment, an empty project
+    // Project* newProject = new Project("test_projet", 1950.0);
+
+
+    // Project* newProject = new Project()
+    // std::cout << "TEST";
+
+    // currentProject = newProject;
+
+    // std::cout << newProject->getName();
+    // std::cout << newProject->getEpoch0();
 
 }
 
