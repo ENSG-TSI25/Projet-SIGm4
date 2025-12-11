@@ -76,17 +76,24 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Represents a GIS project.  
+ <a href="classProject.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="Project_8hpp_source.html">Project.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a914b52c7564dc2d9a3656f4698f6fdfb" id="r_a914b52c7564dc2d9a3656f4698f6fdfb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#a914b52c7564dc2d9a3656f4698f6fdfb">Project</a> (const std::string &amp;name_, double epoch0_, const std::string &amp;crs_=&quot;EPSG:4326&quot;, const std::vector&lt; <a class="el" href="classLayer.html">Layer</a> &gt; &amp;layerList_={})</td></tr>
+<tr class="memdesc:a914b52c7564dc2d9a3656f4698f6fdfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <br /></td></tr>
 <tr class="separator:a914b52c7564dc2d9a3656f4698f6fdfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad165d61b76ee86ee9c27fd987a2a7b9e" id="r_ad165d61b76ee86ee9c27fd987a2a7b9e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#ad165d61b76ee86ee9c27fd987a2a7b9e">~Project</a> ()</td></tr>
+<tr class="memdesc:ad165d61b76ee86ee9c27fd987a2a7b9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor - clears layer list.  <br /></td></tr>
 <tr class="separator:ad165d61b76ee86ee9c27fd987a2a7b9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acef31d6192568a5de266d0796d567ac1" id="r_acef31d6192568a5de266d0796d567ac1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#acef31d6192568a5de266d0796d567ac1">addLayer</a> (const <a class="el" href="classLayer.html">Layer</a> &amp;l)</td></tr>
+<tr class="memdesc:acef31d6192568a5de266d0796d567ac1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a layer to the project.  <br /></td></tr>
 <tr class="separator:acef31d6192568a5de266d0796d567ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a818c4b0515c90780632a0b66f1fbfef5" id="r_a818c4b0515c90780632a0b66f1fbfef5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#a818c4b0515c90780632a0b66f1fbfef5">rmLayer</a> (const <a class="el" href="classLayer.html">Layer</a> &amp;l)</td></tr>
+<tr class="memdesc:a818c4b0515c90780632a0b66f1fbfef5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Removes a layer from the project.  <br /></td></tr>
 <tr class="separator:a818c4b0515c90780632a0b66f1fbfef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9456a56a9a10fcb93e138757f46d1cc" id="r_ae9456a56a9a10fcb93e138757f46d1cc"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#ae9456a56a9a10fcb93e138757f46d1cc">getName</a> () const</td></tr>
 <tr class="separator:ae9456a56a9a10fcb93e138757f46d1cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -103,7 +110,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad1782bd44e9822bee6572b0bf81f73ac" id="r_ad1782bd44e9822bee6572b0bf81f73ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classProject.html#ad1782bd44e9822bee6572b0bf81f73ac">setEpoch0</a> (double e)</td></tr>
 <tr class="separator:ad1782bd44e9822bee6572b0bf81f73ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Represents a GIS project. </p>
+<p>Contains project metadata and list of layers. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a914b52c7564dc2d9a3656f4698f6fdfb" name="a914b52c7564dc2d9a3656f4698f6fdfb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a914b52c7564dc2d9a3656f4698f6fdfb">&#9670;&#160;</a></span>Project()</h2>
 
@@ -150,6 +160,17 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name_</td><td><a class="el" href="classProject.html" title="Represents a GIS project.">Project</a> name </td></tr>
+    <tr><td class="paramname">epoch0_</td><td>Reference epoch </td></tr>
+    <tr><td class="paramname">crs_</td><td>Coordinate system </td></tr>
+    <tr><td class="paramname">layerList_</td><td>Initial layers </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="ad165d61b76ee86ee9c27fd987a2a7b9e" name="ad165d61b76ee86ee9c27fd987a2a7b9e"></a>
@@ -166,6 +187,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Destructor - clears layer list. </p>
 
 </div>
 </div>
@@ -185,6 +208,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Adds a layer to the project. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">l</td><td><a class="el" href="classLayer.html" title="Base class for all layers.">Layer</a> to add </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -303,6 +334,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Removes a layer from the project. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">l</td><td><a class="el" href="classLayer.html" title="Base class for all layers.">Layer</a> to remove </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

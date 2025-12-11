@@ -4,15 +4,15 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="528,59,528,93,523,93,523,59"/>
 <area shape="rect" id="Node000003" href="$Application_8hpp.html" title=" " alt="" coords="144,189,376,214"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="455,140,296,191,294,186,454,135"/>
-<area shape="rect" id="Node000004" href="$Application_8cpp.html" title=" " alt="" coords="5,269,208,295"/>
+<area shape="rect" id="Node000004" href="$Application_8cpp.html" title="Implementation of Application class." alt="" coords="5,269,208,295"/>
 <area shape="poly" id="edge5_Node000002_Node000004" title=" " alt="" coords="433,122,349,129,260,140,183,158,154,170,134,183,120,203,112,227,109,269,103,269,107,226,115,201,130,179,152,165,182,153,259,135,348,123,432,116"/>
-<area shape="rect" id="Node000006" href="$DataManager_8cpp.html" title=" " alt="" coords="401,189,650,214"/>
+<area shape="rect" id="Node000006" href="$DataManager_8cpp.html" title="Implementation of DataManager class." alt="" coords="401,189,650,214"/>
 <area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="528,147,528,188,523,188,523,147"/>
 <area shape="rect" id="Node000007" href="$test__datamanager_8cpp.html" title=" " alt="" coords="675,181,845,221"/>
 <area shape="poly" id="edge7_Node000002_Node000007" title=" " alt="" coords="591,136,710,179,708,184,589,141"/>
 <area shape="rect" id="Node000008" href="$frontend_2main_8cpp.html" title=" " alt="" coords="869,189,1011,214"/>
 <area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="619,130,858,179,891,186,890,191,857,184,618,135"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="226,223,131,271,128,267,224,218"/>
-<area shape="rect" id="Node000005" href="$backend_2src_2main_8cpp.html" title=" " alt="" coords="232,269,395,295"/>
+<area shape="rect" id="Node000005" href="$backend_2src_2main_8cpp.html" title="Main entry point for backend application." alt="" coords="232,269,395,295"/>
 <area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="278,224,308,268,303,271,273,227"/>
 </map>

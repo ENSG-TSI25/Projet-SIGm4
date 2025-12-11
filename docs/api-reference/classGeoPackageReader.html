@@ -77,33 +77,48 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Reads GeoPackage files.  
+ <a href="classGeoPackageReader.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="GeoPackageReader_8hpp_source.html">GeoPackageReader.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeoPackageReader_1_1Feature.html">Feature</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a feature with geometry and attributes.  <a href="structGeoPackageReader_1_1Feature.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structGeoPackageReader_1_1LayerMetadata.html">LayerMetadata</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metadata for a GeoPackage layer.  <a href="structGeoPackageReader_1_1LayerMetadata.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a7d68bced0a82e2edb8bc65026737707a" id="r_a7d68bced0a82e2edb8bc65026737707a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a7d68bced0a82e2edb8bc65026737707a">GeoPackageReader</a> (const std::string &amp;path)</td></tr>
+<tr class="memdesc:a7d68bced0a82e2edb8bc65026737707a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <br /></td></tr>
 <tr class="separator:a7d68bced0a82e2edb8bc65026737707a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90129aba3456a5a0f8ac334f4455a6a9" id="r_a90129aba3456a5a0f8ac334f4455a6a9"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a90129aba3456a5a0f8ac334f4455a6a9">~GeoPackageReader</a> ()</td></tr>
+<tr class="memdesc:a90129aba3456a5a0f8ac334f4455a6a9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <br /></td></tr>
 <tr class="separator:a90129aba3456a5a0f8ac334f4455a6a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a667e20b425d65d999eac164a6674640c" id="r_a667e20b425d65d999eac164a6674640c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a667e20b425d65d999eac164a6674640c">open</a> ()</td></tr>
+<tr class="memdesc:a667e20b425d65d999eac164a6674640c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Opens the GeoPackage file.  <br /></td></tr>
 <tr class="separator:a667e20b425d65d999eac164a6674640c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a24fc72c042d1d1fd4dde92ae4621eeac" id="r_a24fc72c042d1d1fd4dde92ae4621eeac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a24fc72c042d1d1fd4dde92ae4621eeac">close</a> ()</td></tr>
+<tr class="memdesc:a24fc72c042d1d1fd4dde92ae4621eeac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Closes the GeoPackage file.  <br /></td></tr>
 <tr class="separator:a24fc72c042d1d1fd4dde92ae4621eeac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3b1b1f828f03600eee50edaceac64dca" id="r_a3b1b1f828f03600eee50edaceac64dca"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a3b1b1f828f03600eee50edaceac64dca">listLayers</a> () const</td></tr>
+<tr class="memdesc:a3b1b1f828f03600eee50edaceac64dca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Lists all layers in the file.  <br /></td></tr>
 <tr class="separator:a3b1b1f828f03600eee50edaceac64dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77c90c2248a00d3f429dce33624f33e7" id="r_a77c90c2248a00d3f429dce33624f33e7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structGeoPackageReader_1_1LayerMetadata.html">LayerMetadata</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a77c90c2248a00d3f429dce33624f33e7">getLayerMetadata</a> (const std::string &amp;layerName) const</td></tr>
+<tr class="memdesc:a77c90c2248a00d3f429dce33624f33e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets metadata for a specific layer.  <br /></td></tr>
 <tr class="separator:a77c90c2248a00d3f429dce33624f33e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f7e4fc0af68b72accf75ecedfbaaa88" id="r_a5f7e4fc0af68b72accf75ecedfbaaa88"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structGeoPackageReader_1_1Feature.html">Feature</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classGeoPackageReader.html#a5f7e4fc0af68b72accf75ecedfbaaa88">extractFeatures</a> (const std::string &amp;layerName) const</td></tr>
+<tr class="memdesc:a5f7e4fc0af68b72accf75ecedfbaaa88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts features from a layer.  <br /></td></tr>
 <tr class="separator:a5f7e4fc0af68b72accf75ecedfbaaa88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Reads GeoPackage files. </p>
+<p>Handles opening, reading metadata, and extracting features from GeoPackage format files. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7d68bced0a82e2edb8bc65026737707a" name="a7d68bced0a82e2edb8bc65026737707a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7d68bced0a82e2edb8bc65026737707a">&#9670;&#160;</a></span>GeoPackageReader()</h2>
 
@@ -119,6 +134,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>Path to GeoPackage file </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -136,6 +159,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Destructor. </p>
+<p>Destructor - closes file if open. </p>
 
 </div>
 </div>
@@ -155,6 +181,8 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Closes the GeoPackage file. </p>
+
 </div>
 </div>
 <a id="a5f7e4fc0af68b72accf75ecedfbaaa88" name="a5f7e4fc0af68b72accf75ecedfbaaa88"></a>
@@ -172,6 +200,15 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Extracts features from a layer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">layerName</td><td>Name of the layer </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vector of <a class="el" href="structGeoPackageReader_1_1Feature.html" title="Represents a feature with geometry and attributes.">Feature</a> objects </dd></dl>
 
 </div>
 </div>
@@ -191,6 +228,15 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Gets metadata for a specific layer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">layerName</td><td>Name of the layer </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structGeoPackageReader_1_1LayerMetadata.html" title="Metadata for a GeoPackage layer.">LayerMetadata</a> structure </dd></dl>
+
 </div>
 </div>
 <a id="a3b1b1f828f03600eee50edaceac64dca" name="a3b1b1f828f03600eee50edaceac64dca"></a>
@@ -208,6 +254,9 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Lists all layers in the file. </p>
+<dl class="section return"><dt>Returns</dt><dd>Vector of layer names </dd></dl>
+
 </div>
 </div>
 <a id="a667e20b425d65d999eac164a6674640c" name="a667e20b425d65d999eac164a6674640c"></a>
@@ -224,6 +273,11 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Opens the GeoPackage file. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if successful</dd>
+<dd>
+true if opened successfully </dd></dl>
 
 </div>
 </div>

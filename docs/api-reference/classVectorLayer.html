@@ -76,14 +76,17 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Vector layer containing geometries.  
+ <a href="classVectorLayer.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="VectorLayer_8hpp_source.html">VectorLayer.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for VectorLayer:</div>
 <div class="dyncontent">
 <div class="center"><img src="classVectorLayer__inherit__graph.png" border="0" usemap="#aVectorLayer_inherit__map" alt="Inheritance graph"/></div>
 <map name="aVectorLayer_inherit__map" id="aVectorLayer_inherit__map">
-<area shape="rect" title=" " alt="" coords="5,79,104,104"/>
-<area shape="rect" href="classLayer.html" title=" " alt="" coords="25,5,84,31"/>
+<area shape="rect" title="Vector layer containing geometries." alt="" coords="5,79,104,104"/>
+<area shape="rect" href="classLayer.html" title="Base class for all layers." alt="" coords="25,5,84,31"/>
 <area shape="poly" title=" " alt="" coords="57,44,57,79,52,79,52,44"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -92,8 +95,8 @@ Collaboration diagram for VectorLayer:</div>
 <div class="dyncontent">
 <div class="center"><img src="classVectorLayer__coll__graph.png" border="0" usemap="#aVectorLayer_coll__map" alt="Collaboration graph"/></div>
 <map name="aVectorLayer_coll__map" id="aVectorLayer_coll__map">
-<area shape="rect" title=" " alt="" coords="5,79,104,104"/>
-<area shape="rect" href="classLayer.html" title=" " alt="" coords="25,5,84,31"/>
+<area shape="rect" title="Vector layer containing geometries." alt="" coords="5,79,104,104"/>
+<area shape="rect" href="classLayer.html" title="Base class for all layers." alt="" coords="25,5,84,31"/>
 <area shape="poly" title=" " alt="" coords="57,44,57,79,52,79,52,44"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -101,13 +104,17 @@ Collaboration diagram for VectorLayer:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a5e8197b73ae4afddd69adb2e85e936bc" id="r_a5e8197b73ae4afddd69adb2e85e936bc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorLayer.html#a5e8197b73ae4afddd69adb2e85e936bc">VectorLayer</a> (const std::string &amp;nom_, const std::string &amp;crs_=&quot;EPSG:4326&quot;, double epoque_=0.0)</td></tr>
+<tr class="memdesc:a5e8197b73ae4afddd69adb2e85e936bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <br /></td></tr>
 <tr class="separator:a5e8197b73ae4afddd69adb2e85e936bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abdfdd071558c6fe16da690445d6c13f9" id="r_abdfdd071558c6fe16da690445d6c13f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorLayer.html#abdfdd071558c6fe16da690445d6c13f9">addGeometry</a> (std::shared_ptr&lt; <a class="el" href="classGeometry4D.html">Geometry4D</a> &gt; geom)</td></tr>
+<tr class="memdesc:abdfdd071558c6fe16da690445d6c13f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Adds a geometry to the layer.  <br /></td></tr>
 <tr class="separator:abdfdd071558c6fe16da690445d6c13f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29ae53810b347fb82170f9fae576872e" id="r_a29ae53810b347fb82170f9fae576872e"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; std::shared_ptr&lt; <a class="el" href="classGeometry4D.html">Geometry4D</a> &gt; &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classVectorLayer.html#a29ae53810b347fb82170f9fae576872e">getGeometries</a> () const</td></tr>
+<tr class="memdesc:a29ae53810b347fb82170f9fae576872e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gets all geometries in the layer.  <br /></td></tr>
 <tr class="separator:a29ae53810b347fb82170f9fae576872e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classLayer"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classLayer')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classLayer.html">Layer</a></td></tr>
 <tr class="memitem:a6a8eabd07cec31eb5cbbca00808cd61d inherit pub_methods_classLayer" id="r_a6a8eabd07cec31eb5cbbca00808cd61d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLayer.html#a6a8eabd07cec31eb5cbbca00808cd61d">Layer</a> (const std::string &amp;nom_, const std::string &amp;crs_=&quot;EPSG:4326&quot;, double epoque_=0.0)</td></tr>
+<tr class="memdesc:a6a8eabd07cec31eb5cbbca00808cd61d inherit pub_methods_classLayer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor.  <br /></td></tr>
 <tr class="separator:a6a8eabd07cec31eb5cbbca00808cd61d inherit pub_methods_classLayer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57e5a4a6ec188de4e7b8c894aac254ea inherit pub_methods_classLayer" id="r_a57e5a4a6ec188de4e7b8c894aac254ea"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLayer.html#a57e5a4a6ec188de4e7b8c894aac254ea">~Layer</a> ()=default</td></tr>
 <tr class="separator:a57e5a4a6ec188de4e7b8c894aac254ea inherit pub_methods_classLayer"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +131,7 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aef407e1eb206982646de1ddd633050f9 inherit pub_methods_classLayer" id="r_aef407e1eb206982646de1ddd633050f9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLayer.html#aef407e1eb206982646de1ddd633050f9">setEpoque</a> (double e)</td></tr>
 <tr class="separator:aef407e1eb206982646de1ddd633050f9 inherit pub_methods_classLayer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ca137ca7b29b318f9eae5f0612e56c5 inherit pub_methods_classLayer" id="r_a3ca137ca7b29b318f9eae5f0612e56c5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLayer.html#a3ca137ca7b29b318f9eae5f0612e56c5">operator==</a> (const <a class="el" href="classLayer.html">Layer</a> &amp;other) const</td></tr>
+<tr class="memdesc:a3ca137ca7b29b318f9eae5f0612e56c5 inherit pub_methods_classLayer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Equality operator.  <br /></td></tr>
 <tr class="separator:a3ca137ca7b29b318f9eae5f0612e56c5 inherit pub_methods_classLayer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="inherited" name="inherited"></a>
@@ -136,7 +144,10 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a969e08359d0b0bd35a906797f9f13344 inherit pro_attribs_classLayer" id="r_a969e08359d0b0bd35a906797f9f13344"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLayer.html#a969e08359d0b0bd35a906797f9f13344">epoque</a></td></tr>
 <tr class="separator:a969e08359d0b0bd35a906797f9f13344 inherit pro_attribs_classLayer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Vector layer containing geometries. </p>
+<p>Extends <a class="el" href="classLayer.html" title="Base class for all layers.">Layer</a> class with vector geometry support. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a5e8197b73ae4afddd69adb2e85e936bc" name="a5e8197b73ae4afddd69adb2e85e936bc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5e8197b73ae4afddd69adb2e85e936bc">&#9670;&#160;</a></span>VectorLayer()</h2>
 
@@ -177,6 +188,16 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">nom_</td><td><a class="el" href="classLayer.html" title="Base class for all layers.">Layer</a> name </td></tr>
+    <tr><td class="paramname">crs_</td><td>Coordinate system </td></tr>
+    <tr><td class="paramname">epoque_</td><td>Reference epoch </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -204,6 +225,14 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Adds a geometry to the layer. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">geom</td><td>Geometry to add </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a29ae53810b347fb82170f9fae576872e" name="a29ae53810b347fb82170f9fae576872e"></a>
@@ -228,6 +257,9 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Gets all geometries in the layer. </p>
+<dl class="section return"><dt>Returns</dt><dd>Vector of geometry pointers </dd></dl>
 
 </div>
 </div>

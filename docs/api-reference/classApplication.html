@@ -76,18 +76,27 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Main backend application class.  
+ <a href="classApplication.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="Application_8hpp_source.html">Application.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:afa8cc05ce6b6092be5ecdfdae44e05f8" id="r_afa8cc05ce6b6092be5ecdfdae44e05f8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#afa8cc05ce6b6092be5ecdfdae44e05f8">Application</a> ()</td></tr>
+<tr class="memdesc:afa8cc05ce6b6092be5ecdfdae44e05f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
 <tr class="separator:afa8cc05ce6b6092be5ecdfdae44e05f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af431bce25717b04a78d4d0940ed6a92c" id="r_af431bce25717b04a78d4d0940ed6a92c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#af431bce25717b04a78d4d0940ed6a92c">initialize</a> ()</td></tr>
+<tr class="memdesc:af431bce25717b04a78d4d0940ed6a92c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes application components.  <br /></td></tr>
 <tr class="separator:af431bce25717b04a78d4d0940ed6a92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68965449404743bf1add056784d6cf81" id="r_a68965449404743bf1add056784d6cf81"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a68965449404743bf1add056784d6cf81">run</a> ()</td></tr>
+<tr class="memdesc:a68965449404743bf1add056784d6cf81"><td class="mdescLeft">&#160;</td><td class="mdescRight">Starts the application.  <br /></td></tr>
 <tr class="separator:a68965449404743bf1add056784d6cf81"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Main backend application class. </p>
+<p>Initializes and coordinates all backend components. This is the entry point for the backend system. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="afa8cc05ce6b6092be5ecdfdae44e05f8" name="afa8cc05ce6b6092be5ecdfdae44e05f8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa8cc05ce6b6092be5ecdfdae44e05f8">&#9670;&#160;</a></span>Application()</h2>
 
@@ -102,6 +111,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Default constructor. </p>
+<p>Constructor - loads DB config from environment. </p>
 
 </div>
 </div>
@@ -121,6 +133,10 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Initializes application components. </p>
+<p>Sets up database connection, data manager, and other required services.</p>
+<p>Registers GDAL drivers, connects to database, and initializes PostGIS extensions. </p>
+
 </div>
 </div>
 <a id="a68965449404743bf1add056784d6cf81" name="a68965449404743bf1add056784d6cf81"></a>
@@ -137,6 +153,11 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Starts the application. </p>
+<p>Main application execution.</p>
+<p>Main loop or processing logic for the backend. Called after initialization is complete.</p>
+<p>Tests database connection, loads sample data, and displays geometry information. </p>
 
 </div>
 </div>

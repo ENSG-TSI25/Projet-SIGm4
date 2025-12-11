@@ -82,42 +82,49 @@ $(document).ready(function() { init_codefold(0); });
 </div><!--header-->
 <div class="contents">
 <a href="Geometry4D_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="preprocessor">#pragma once</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;gdal/ogr_geometry.h&gt;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="foldopen" id="foldopen00006" data-start="{" data-end="};">
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno"><a class="line" href="classGeometry4D.html">    6</a></span><span class="keyword">class </span><a class="code hl_class" href="classGeometry4D.html">Geometry4D</a> {</div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">private</span>:</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span>    std::unique_ptr&lt;OGRGeometry&gt; geometry;</div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span>    std::string crs;</div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span> </div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="keyword">public</span>:</div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>();</div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>(OGRGeometry* geom);</div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>(<span class="keyword">const</span> <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; other);</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; <a class="code hl_function" href="classGeometry4D.html#abc2b41f36ae68ecbaa5821e53709fc84">operator=</a>(<span class="keyword">const</span> <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; other);</div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno"><a class="line" href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">   17</a></span>    OGRGeometry* <a class="code hl_function" href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">getGeometry</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> geometry.get(); }</div>
+<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
+<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &lt;memory&gt;</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;gdal/ogr_geometry.h&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span> </div>
+<div class="foldopen" id="foldopen00014" data-start="{" data-end="};">
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="classGeometry4D.html">   14</a></span><span class="keyword">class </span><a class="code hl_class" href="classGeometry4D.html">Geometry4D</a> {</div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="keyword">private</span>:</div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    std::unique_ptr&lt;OGRGeometry&gt; geometry;</div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    </div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    <span class="keywordtype">double</span> <a class="code hl_function" href="classGeometry4D.html#a0b77e424760a4eb76e02a7b410d55ee1">getT</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classGeometry4D.html#adfe5cbc892a18022377e52f094d5764c">setT</a>(<span class="keywordtype">double</span> timestamp);</div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    <span class="keywordtype">int</span> <a class="code hl_function" href="classGeometry4D.html#ac81399957b6e774c1275a957f098b1ae">getSRID</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classGeometry4D.html#a9a96a5fc110402d2b758060e5699600f">setSRID</a>(<span class="keywordtype">int</span> srid); </div>
-<div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
-<div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span>    std::string <a class="code hl_function" href="classGeometry4D.html#aa0bec68dde02114d7628ad9dd4015a3f">toEWKT</a>() <span class="keyword">const</span>;</div>
-<div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span>    </div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>};</div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    std::string crs;</div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span> </div>
+<div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span><span class="keyword">public</span>:</div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>();</div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    </div>
+<div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>(OGRGeometry* geom);</div>
+<div class="line"><a id="l00033" name="l00033"></a><span class="lineno">   33</span>    </div>
+<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span>    <a class="code hl_function" href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D</a>(<span class="keyword">const</span> <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; other);</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span>    <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; <a class="code hl_function" href="classGeometry4D.html#abc2b41f36ae68ecbaa5821e53709fc84">operator=</a>(<span class="keyword">const</span> <a class="code hl_class" href="classGeometry4D.html">Geometry4D</a>&amp; other);</div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span>    </div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno"><a class="line" href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">   48</a></span>    OGRGeometry* <a class="code hl_function" href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">getGeometry</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> geometry.get(); }</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    <span class="keywordtype">double</span> <a class="code hl_function" href="classGeometry4D.html#a0b77e424760a4eb76e02a7b410d55ee1">getT</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classGeometry4D.html#adfe5cbc892a18022377e52f094d5764c">setT</a>(<span class="keywordtype">double</span> timestamp);</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    </div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">int</span> <a class="code hl_function" href="classGeometry4D.html#ac81399957b6e774c1275a957f098b1ae">getSRID</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span>    <span class="keywordtype">void</span> <a class="code hl_function" href="classGeometry4D.html#a9a96a5fc110402d2b758060e5699600f">setSRID</a>(<span class="keywordtype">int</span> srid);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    std::string <a class="code hl_function" href="classGeometry4D.html#aa0bec68dde02114d7628ad9dd4015a3f">toEWKT</a>() <span class="keyword">const</span>;</div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>};</div>
 </div>
-<div class="ttc" id="aclassGeometry4D_html"><div class="ttname"><a href="classGeometry4D.html">Geometry4D</a></div><div class="ttdef"><b>Definition</b> Geometry4D.hpp:6</div></div>
-<div class="ttc" id="aclassGeometry4D_html_a0b77e424760a4eb76e02a7b410d55ee1"><div class="ttname"><a href="classGeometry4D.html#a0b77e424760a4eb76e02a7b410d55ee1">Geometry4D::getT</a></div><div class="ttdeci">double getT() const</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:27</div></div>
-<div class="ttc" id="aclassGeometry4D_html_a6b855dbe442fa879e5f742f23c51b05d"><div class="ttname"><a href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D::Geometry4D</a></div><div class="ttdeci">Geometry4D()</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:4</div></div>
-<div class="ttc" id="aclassGeometry4D_html_a9a96a5fc110402d2b758060e5699600f"><div class="ttname"><a href="classGeometry4D.html#a9a96a5fc110402d2b758060e5699600f">Geometry4D::setSRID</a></div><div class="ttdeci">void setSRID(int srid)</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:53</div></div>
-<div class="ttc" id="aclassGeometry4D_html_aa0bec68dde02114d7628ad9dd4015a3f"><div class="ttname"><a href="classGeometry4D.html#aa0bec68dde02114d7628ad9dd4015a3f">Geometry4D::toEWKT</a></div><div class="ttdeci">std::string toEWKT() const</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:64</div></div>
-<div class="ttc" id="aclassGeometry4D_html_abc2b41f36ae68ecbaa5821e53709fc84"><div class="ttname"><a href="classGeometry4D.html#abc2b41f36ae68ecbaa5821e53709fc84">Geometry4D::operator=</a></div><div class="ttdeci">Geometry4D &amp; operator=(const Geometry4D &amp;other)</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:19</div></div>
-<div class="ttc" id="aclassGeometry4D_html_ac81399957b6e774c1275a957f098b1ae"><div class="ttname"><a href="classGeometry4D.html#ac81399957b6e774c1275a957f098b1ae">Geometry4D::getSRID</a></div><div class="ttdeci">int getSRID() const</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:45</div></div>
-<div class="ttc" id="aclassGeometry4D_html_acf56ff6da548e88e1a593bb47049e596"><div class="ttname"><a href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">Geometry4D::getGeometry</a></div><div class="ttdeci">OGRGeometry * getGeometry() const</div><div class="ttdef"><b>Definition</b> Geometry4D.hpp:17</div></div>
-<div class="ttc" id="aclassGeometry4D_html_adfe5cbc892a18022377e52f094d5764c"><div class="ttname"><a href="classGeometry4D.html#adfe5cbc892a18022377e52f094d5764c">Geometry4D::setT</a></div><div class="ttdeci">void setT(double timestamp)</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:35</div></div>
+<div class="ttc" id="aclassGeometry4D_html"><div class="ttname"><a href="classGeometry4D.html">Geometry4D</a></div><div class="ttdoc">4D geometry with temporal dimension</div><div class="ttdef"><b>Definition</b> Geometry4D.hpp:14</div></div>
+<div class="ttc" id="aclassGeometry4D_html_a0b77e424760a4eb76e02a7b410d55ee1"><div class="ttname"><a href="classGeometry4D.html#a0b77e424760a4eb76e02a7b410d55ee1">Geometry4D::getT</a></div><div class="ttdeci">double getT() const</div><div class="ttdoc">Gets temporal coordinate T.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:56</div></div>
+<div class="ttc" id="aclassGeometry4D_html_a6b855dbe442fa879e5f742f23c51b05d"><div class="ttname"><a href="classGeometry4D.html#a6b855dbe442fa879e5f742f23c51b05d">Geometry4D::Geometry4D</a></div><div class="ttdeci">Geometry4D()</div><div class="ttdoc">Default constructor.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:14</div></div>
+<div class="ttc" id="aclassGeometry4D_html_a9a96a5fc110402d2b758060e5699600f"><div class="ttname"><a href="classGeometry4D.html#a9a96a5fc110402d2b758060e5699600f">Geometry4D::setSRID</a></div><div class="ttdeci">void setSRID(int srid)</div><div class="ttdoc">Sets SRID.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:94</div></div>
+<div class="ttc" id="aclassGeometry4D_html_aa0bec68dde02114d7628ad9dd4015a3f"><div class="ttname"><a href="classGeometry4D.html#aa0bec68dde02114d7628ad9dd4015a3f">Geometry4D::toEWKT</a></div><div class="ttdeci">std::string toEWKT() const</div><div class="ttdoc">Converts to EWKT format.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:109</div></div>
+<div class="ttc" id="aclassGeometry4D_html_abc2b41f36ae68ecbaa5821e53709fc84"><div class="ttname"><a href="classGeometry4D.html#abc2b41f36ae68ecbaa5821e53709fc84">Geometry4D::operator=</a></div><div class="ttdeci">Geometry4D &amp; operator=(const Geometry4D &amp;other)</div><div class="ttdoc">Assignment operator.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:44</div></div>
+<div class="ttc" id="aclassGeometry4D_html_ac81399957b6e774c1275a957f098b1ae"><div class="ttname"><a href="classGeometry4D.html#ac81399957b6e774c1275a957f098b1ae">Geometry4D::getSRID</a></div><div class="ttdeci">int getSRID() const</div><div class="ttdoc">Gets SRID.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:82</div></div>
+<div class="ttc" id="aclassGeometry4D_html_acf56ff6da548e88e1a593bb47049e596"><div class="ttname"><a href="classGeometry4D.html#acf56ff6da548e88e1a593bb47049e596">Geometry4D::getGeometry</a></div><div class="ttdeci">OGRGeometry * getGeometry() const</div><div class="ttdoc">Gets the OGR geometry.</div><div class="ttdef"><b>Definition</b> Geometry4D.hpp:48</div></div>
+<div class="ttc" id="aclassGeometry4D_html_adfe5cbc892a18022377e52f094d5764c"><div class="ttname"><a href="classGeometry4D.html#adfe5cbc892a18022377e52f094d5764c">Geometry4D::setT</a></div><div class="ttdeci">void setT(double timestamp)</div><div class="ttdoc">Sets temporal coordinate T.</div><div class="ttdef"><b>Definition</b> Geometry4D.cpp:68</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

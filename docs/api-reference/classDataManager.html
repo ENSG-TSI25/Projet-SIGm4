@@ -76,18 +76,27 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Manages vector data layers in the GIS.  
+ <a href="classDataManager.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="DataManager_8hpp_source.html">DataManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ac2eec7fa355109eda41308e1de76d2a8" id="r_ac2eec7fa355109eda41308e1de76d2a8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataManager.html#ac2eec7fa355109eda41308e1de76d2a8">DataManager</a> ()</td></tr>
+<tr class="memdesc:ac2eec7fa355109eda41308e1de76d2a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <br /></td></tr>
 <tr class="separator:ac2eec7fa355109eda41308e1de76d2a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a291f3b4df4392598b2d7064da062705f" id="r_a291f3b4df4392598b2d7064da062705f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataManager.html#a291f3b4df4392598b2d7064da062705f">~DataManager</a> ()</td></tr>
+<tr class="memdesc:a291f3b4df4392598b2d7064da062705f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <br /></td></tr>
 <tr class="separator:a291f3b4df4392598b2d7064da062705f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fcc07775b3d883454f275bc4cbaadf4" id="r_a9fcc07775b3d883454f275bc4cbaadf4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classVectorLayer.html">VectorLayer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataManager.html#a9fcc07775b3d883454f275bc4cbaadf4">loadVector</a> (const std::string &amp;path)</td></tr>
+<tr class="memitem:a9fcc07775b3d883454f275bc4cbaadf4" id="r_a9fcc07775b3d883454f275bc4cbaadf4"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="classVectorLayer.html">VectorLayer</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classDataManager.html#a9fcc07775b3d883454f275bc4cbaadf4">loadVector</a> (const std::string &amp;path)</td></tr>
+<tr class="memdesc:a9fcc07775b3d883454f275bc4cbaadf4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads vector layers from a file.  <br /></td></tr>
 <tr class="separator:a9fcc07775b3d883454f275bc4cbaadf4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Manages vector data layers in the GIS. </p>
+<p>Loads and stores vector layers from various file formats. Used by the main application to handle data operations. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ac2eec7fa355109eda41308e1de76d2a8" name="ac2eec7fa355109eda41308e1de76d2a8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac2eec7fa355109eda41308e1de76d2a8">&#9670;&#160;</a></span>DataManager()</h2>
 
@@ -102,6 +111,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Default constructor. </p>
 
 </div>
 </div>
@@ -120,6 +131,8 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Destructor. </p>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -133,11 +146,30 @@ Public Member Functions</h2></td></tr>
           <td class="memname"><a class="el" href="classVectorLayer.html">VectorLayer</a> * DataManager::loadVector </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>path</em></td><td>)</td>
+          <td class="paramname"><em>chemin</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Loads vector layers from a file. </p>
+<p>Loads a vector layer from a GeoPackage file.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>File path (.shp, .gpkg, etc.) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vector of pointers to loaded layers</dd></dl>
+<p>Called when user imports a file through the interface. Returns empty vector if file cannot be read.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">chemin</td><td>Path to GeoPackage file </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to loaded <a class="el" href="classVectorLayer.html" title="Vector layer containing geometries.">VectorLayer</a></dd></dl>
+<p>Opens the GeoPackage, reads the first layer, extracts geometries, and creates a <a class="el" href="classVectorLayer.html" title="Vector layer containing geometries.">VectorLayer</a> object. Returns nullptr if file cannot be read. </p>
 
 </div>
 </div>

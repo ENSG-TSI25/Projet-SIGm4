@@ -1,5 +1,5 @@
 <map id="GeoPackageReader::Feature" name="GeoPackageReader::Feature">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,93,209,119"/>
-<area shape="rect" id="Node000002" href="$classGeometry4D.html" title=" " alt="" coords="55,5,160,31"/>
+<area shape="rect" id="Node000001" title="Represents a feature with geometry and attributes." alt="" coords="5,93,209,119"/>
+<area shape="rect" id="Node000002" href="$classGeometry4D.html" title="4D geometry with temporal dimension" alt="" coords="55,5,160,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,45,110,93,105,93,105,45"/>
 </map>

@@ -77,27 +77,39 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Database connection configuration.  
+ <a href="structDBConfig.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="Config_8hpp_source.html">Config.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ac2cc30ac01f8133cae202d47154ade7e" id="r_ac2cc30ac01f8133cae202d47154ade7e"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structDBConfig.html">DBConfig</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#ac2cc30ac01f8133cae202d47154ade7e">loadFromEnv</a> ()</td></tr>
+<tr class="memdesc:ac2cc30ac01f8133cae202d47154ade7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Loads configuration from environment variables.  <br /></td></tr>
 <tr class="separator:ac2cc30ac01f8133cae202d47154ade7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a35bd274973d0de028297201cebfeaf46" id="r_a35bd274973d0de028297201cebfeaf46"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#a35bd274973d0de028297201cebfeaf46">host</a></td></tr>
+<tr class="memdesc:a35bd274973d0de028297201cebfeaf46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Database host address.  <br /></td></tr>
 <tr class="separator:a35bd274973d0de028297201cebfeaf46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a7c484e7a27e5bfe720d2a5d11fcdcd" id="r_a5a7c484e7a27e5bfe720d2a5d11fcdcd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#a5a7c484e7a27e5bfe720d2a5d11fcdcd">port</a></td></tr>
+<tr class="memdesc:a5a7c484e7a27e5bfe720d2a5d11fcdcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Database port number.  <br /></td></tr>
 <tr class="separator:a5a7c484e7a27e5bfe720d2a5d11fcdcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e0b2a07ca0aa662873b2d0ec07fa3b8" id="r_a3e0b2a07ca0aa662873b2d0ec07fa3b8"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#a3e0b2a07ca0aa662873b2d0ec07fa3b8">user</a></td></tr>
+<tr class="memdesc:a3e0b2a07ca0aa662873b2d0ec07fa3b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Database username.  <br /></td></tr>
 <tr class="separator:a3e0b2a07ca0aa662873b2d0ec07fa3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01ca603ba258e4f476c239219dd9fb9e" id="r_a01ca603ba258e4f476c239219dd9fb9e"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#a01ca603ba258e4f476c239219dd9fb9e">password</a></td></tr>
+<tr class="memdesc:a01ca603ba258e4f476c239219dd9fb9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Database password.  <br /></td></tr>
 <tr class="separator:a01ca603ba258e4f476c239219dd9fb9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad97e19b3278e4bf8121fcd2d4fc284ab" id="r_ad97e19b3278e4bf8121fcd2d4fc284ab"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structDBConfig.html#ad97e19b3278e4bf8121fcd2d4fc284ab">dbname</a></td></tr>
+<tr class="memdesc:ad97e19b3278e4bf8121fcd2d4fc284ab"><td class="mdescLeft">&#160;</td><td class="mdescRight">Database name.  <br /></td></tr>
 <tr class="separator:ad97e19b3278e4bf8121fcd2d4fc284ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Database connection configuration. </p>
+<p>Contains parameters to connect to PostgreSQL database. Values can be loaded from environment variables. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac2cc30ac01f8133cae202d47154ade7e" name="ac2cc30ac01f8133cae202d47154ade7e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac2cc30ac01f8133cae202d47154ade7e">&#9670;&#160;</a></span>loadFromEnv()</h2>
 
@@ -121,6 +133,26 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Loads configuration from environment variables. </p>
+<p>Loads database configuration from environment variables.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structDBConfig.html" title="Database connection configuration.">DBConfig</a> with values from environment</dd></dl>
+<p>Reads DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME from environment. Used for Docker/container deployment.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structDBConfig.html" title="Database connection configuration.">DBConfig</a> structure with connection parameters </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if any required variable is missing</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Reads the following environment variables:</p><ul>
+<li>DB_HOST: Database server hostname</li>
+<li>DB_PORT: Database server port</li>
+<li>DB_USER: Database username</li>
+<li>DB_PASS: Database password</li>
+<li>DB_NAME: Database name</li>
+</ul>
+<p>All variables are required. Used in Docker deployment. </p>
+
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -136,6 +168,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Database name. </p>
+
 </div>
 </div>
 <a id="a35bd274973d0de028297201cebfeaf46" name="a35bd274973d0de028297201cebfeaf46"></a>
@@ -149,6 +183,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Database host address. </p>
 
 </div>
 </div>
@@ -164,6 +200,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Database password. </p>
+
 </div>
 </div>
 <a id="a5a7c484e7a27e5bfe720d2a5d11fcdcd" name="a5a7c484e7a27e5bfe720d2a5d11fcdcd"></a>
@@ -178,6 +216,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Database port number. </p>
+
 </div>
 </div>
 <a id="a3e0b2a07ca0aa662873b2d0ec07fa3b8" name="a3e0b2a07ca0aa662873b2d0ec07fa3b8"></a>
@@ -191,6 +231,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Database username. </p>
 
 </div>
 </div>

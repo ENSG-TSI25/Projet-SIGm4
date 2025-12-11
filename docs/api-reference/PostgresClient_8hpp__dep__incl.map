@@ -2,10 +2,10 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="266,5,414,45"/>
 <area shape="rect" id="Node000002" href="$Application_8hpp.html" title=" " alt="" coords="93,93,325,119"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="298,55,230,95,227,91,295,50"/>
-<area shape="rect" id="Node000005" href="$PostgresClient_8cpp.html" title=" " alt="" coords="350,93,594,119"/>
+<area shape="rect" id="Node000005" href="$PostgresClient_8cpp.html" title="PostgreSQL client implementation." alt="" coords="350,93,594,119"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="385,50,454,91,451,95,382,55"/>
-<area shape="rect" id="Node000003" href="$Application_8cpp.html" title=" " alt="" coords="5,167,208,192"/>
+<area shape="rect" id="Node000003" href="$Application_8cpp.html" title="Implementation of Application class." alt="" coords="5,167,208,192"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="183,129,125,169,122,164,180,124"/>
-<area shape="rect" id="Node000004" href="$backend_2src_2main_8cpp.html" title=" " alt="" coords="232,167,395,192"/>
+<area shape="rect" id="Node000004" href="$backend_2src_2main_8cpp.html" title="Main entry point for backend application." alt="" coords="232,167,395,192"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="239,124,298,164,295,169,236,129"/>
 </map>

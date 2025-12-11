@@ -76,24 +76,36 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>PostgreSQL database client for spatial data.  
+ <a href="classPostgresClient.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="PostgresClient_8hpp_source.html">PostgresClient.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a7c4cbe1f5d798d00a1ab4242e022f699" id="r_a7c4cbe1f5d798d00a1ab4242e022f699"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#a7c4cbe1f5d798d00a1ab4242e022f699">PostgresClient</a> (const <a class="el" href="structDBConfig.html">DBConfig</a> &amp;cfg)</td></tr>
+<tr class="memdesc:a7c4cbe1f5d798d00a1ab4242e022f699"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructor with configuration.  <br /></td></tr>
 <tr class="separator:a7c4cbe1f5d798d00a1ab4242e022f699"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a3a1feb483177a4e2ac29fcf9bd874d" id="r_a2a3a1feb483177a4e2ac29fcf9bd874d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#a2a3a1feb483177a4e2ac29fcf9bd874d">~PostgresClient</a> ()=default</td></tr>
+<tr class="memdesc:a2a3a1feb483177a4e2ac29fcf9bd874d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor.  <br /></td></tr>
 <tr class="separator:a2a3a1feb483177a4e2ac29fcf9bd874d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d3f9a17fdca1474ba80a4494e027357" id="r_a3d3f9a17fdca1474ba80a4494e027357"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#a3d3f9a17fdca1474ba80a4494e027357">connect</a> ()</td></tr>
+<tr class="memdesc:a3d3f9a17fdca1474ba80a4494e027357"><td class="mdescLeft">&#160;</td><td class="mdescRight">Establishes database connection.  <br /></td></tr>
 <tr class="separator:a3d3f9a17fdca1474ba80a4494e027357"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad21f726ba98d7e3621dd666f2a5becc1" id="r_ad21f726ba98d7e3621dd666f2a5becc1"><td class="memItemLeft" align="right" valign="top">pqxx::result&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#ad21f726ba98d7e3621dd666f2a5becc1">execute</a> (const std::string &amp;sql)</td></tr>
+<tr class="memdesc:ad21f726ba98d7e3621dd666f2a5becc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Executes SQL query.  <br /></td></tr>
 <tr class="separator:ad21f726ba98d7e3621dd666f2a5becc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af799c37ecf70f513f086878d27db9991" id="r_af799c37ecf70f513f086878d27db9991"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#af799c37ecf70f513f086878d27db9991">isConnected</a> () const</td></tr>
+<tr class="memdesc:af799c37ecf70f513f086878d27db9991"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks connection status.  <br /></td></tr>
 <tr class="separator:af799c37ecf70f513f086878d27db9991"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79da167d38264ece88d62dd6b911a4ba" id="r_a79da167d38264ece88d62dd6b911a4ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPostgresClient.html#a79da167d38264ece88d62dd6b911a4ba">initExtensions</a> ()</td></tr>
+<tr class="memdesc:a79da167d38264ece88d62dd6b911a4ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initializes PostGIS extensions.  <br /></td></tr>
 <tr class="separator:a79da167d38264ece88d62dd6b911a4ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>PostgreSQL database client for spatial data. </p>
+<p>Manages connection to PostgreSQL database with PostGIS extension. Used to store and retrieve geospatial data from the application. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a7c4cbe1f5d798d00a1ab4242e022f699" name="a7c4cbe1f5d798d00a1ab4242e022f699"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7c4cbe1f5d798d00a1ab4242e022f699">&#9670;&#160;</a></span>PostgresClient()</h2>
 
@@ -109,6 +121,15 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Constructor with configuration. </p>
+<p>Constructor with database configuration.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">cfg</td><td>Database configuration parameters </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -135,6 +156,8 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Destructor. </p>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -152,6 +175,17 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Establishes database connection. </p>
+<p>Connects to PostgreSQL database.</p>
+<p>Creates connection using stored configuration. Called during application initialization.</p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if connection fails</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Builds connection string from configuration and establishes connection using libpqxx. </p>
 
 </div>
 </div>
@@ -171,6 +205,29 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Executes SQL query. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sql</td><td>SQL query string </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Query result set</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sql</td><td>SQL query string </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Query result set </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if not connected </td></tr>
+    <tr><td class="paramname">pqxx::sql_error</td><td>on query error </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a79da167d38264ece88d62dd6b911a4ba" name="a79da167d38264ece88d62dd6b911a4ba"></a>
@@ -188,6 +245,16 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Initializes PostGIS extensions. </p>
+<p>Enables PostGIS and other required extensions on the database connection.</p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if not connected</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Enables PostGIS and PostGIS Topology extensions required for spatial operations. </p>
+
 </div>
 </div>
 <a id="af799c37ecf70f513f086878d27db9991" name="af799c37ecf70f513f086878d27db9991"></a>
@@ -204,6 +271,9 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Checks connection status. </p>
+<dl class="section return"><dt>Returns</dt><dd>true if connected to database </dd></dl>
 
 </div>
 </div>

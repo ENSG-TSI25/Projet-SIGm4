@@ -1,5 +1,5 @@
 <map id="backend/src/core/DataManager.cpp" name="backend/src/core/DataManager.cpp">
-<area shape="rect" id="Node000001" title=" " alt="" coords="487,5,737,31"/>
+<area shape="rect" id="Node000001" title="Implementation of DataManager class." alt="" coords="487,5,737,31"/>
 <area shape="rect" id="Node000002" href="$DataManager_8hpp.html" title=" " alt="" coords="370,79,539,104"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="588,33,494,75,492,71,586,28"/>
 <area shape="rect" id="Node000010" href="$GeoPackageReader_8hpp.html" title=" " alt="" coords="543,152,750,177"/>
