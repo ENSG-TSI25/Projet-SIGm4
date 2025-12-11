@@ -23,7 +23,7 @@ TEST_F(TransformationEngineTest, Constructor) {
 
 // Loading Valid File
 TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
-    std::string path = "/app/data/test_data.gpkg";
+    std::string path = "/app/backend/data/test_data.gpkg";
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
     ASSERT_NE(layer, nullptr);
