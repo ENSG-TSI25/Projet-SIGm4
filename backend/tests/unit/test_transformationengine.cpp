@@ -31,7 +31,7 @@ protected:
         
         // CRS
         OGRSpatialReference srs;
-        srs.importFromEPSG(2154); 
+        srs.importFromEPSG(10674);
         srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); //(Longitude/X, Latitude/Y)
 
         OGRLayer* layer = ds->CreateLayer("test_layer", &srs, wkbPoint, nullptr);
