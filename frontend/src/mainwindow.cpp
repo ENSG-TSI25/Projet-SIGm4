@@ -1,6 +1,7 @@
 #include "../include/mainwindow.h"
 #include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
+
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -25,7 +26,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow) 
+    , ui(new Ui::MainWindow)
+    , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
     layerManager = new LayerManager(this);
@@ -53,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
 
     //When the "Ouvrir" button is clicked, open the file manager to choose a new project to open
     connect (ui->btnOpen, &QPushButton::clicked, this, &MainWindow::openExistingProject);
@@ -74,7 +75,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]() {
                 layerManager->renameLayer(dialog);
             });
-    //connect (crsLabel)
+    
+    //To show the careteristics of the current project
+    ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
 }
 
@@ -120,13 +123,13 @@ void MainWindow::openDialog() {
     dialog -> show();
 }
 
-void MainWindow::displayEpochProject(const QDate &date){
-    ui->epochDisplayZone->setText("Époque du projet: " + date.toString("dd/MM/yyyy"));
-}
+// void MainWindow::displayEpochProject(const QDate &date){
+//     ui->epochDisplayZone->setText("Époque du projet: " + date.toString("dd/MM/yyyy"));
+// }
 
-void MainWindow::getSRCSelected(){
-    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
-}
+// void MainWindow::getSRCSelected(){
+//     ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+// }
 
 //The function to set the name, the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
@@ -163,83 +166,75 @@ void MainWindow::setNewProject(){
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
-    
-    QLabel *decimalDate = new QLabel("Date décimale : ", &newProjectDialog);   
-    getCalendarDays(calendar, decimalDate);
      
     QObject::connect(acceptationButton, &QPushButton::clicked, &newProjectDialog, &QDialog::accept);
 
     connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
         QDate selectedDate = calendar->selectedDate();
-        // this->displayEpochProject(selectedDate);
     });
 
-    connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
-        ui->crsLabel->setText("CRS : " + crsList->currentText());
-    });
+    // connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
+    //     ui->crsLabel->setText("CRS : " + crsList->currentText());
+    // });
 
 
     // connect the calendar with the epoch textzone
-
     connect(calendar, &QCalendarWidget::selectionChanged, this, [calendar, epochTextZone]() {
         QDate selectedDate = calendar->selectedDate();
-        // epoch calculated from the date (à changer avec le truc de blandine)
+        // epoch calculated from the date 
         double decimalYear = selectedDate.year() + 
                             (selectedDate.dayOfYear() - 1) / 
                             (selectedDate.isLeapYear(selectedDate.year()) ? 366.0 : 365.0);
         epochTextZone->setText(QString::number(decimalYear, 'f', 3));
     });
 
-    // manual entry of the epoch 
-
-    connect(epochTextZone, &QLineEdit::textChanged, this, [decimalDate, epochTextZone]() {
-        decimalDate->setText("Date décimale : " + epochTextZone->text());
-    });
-
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
+    layout->addWidget(nameTextZone);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
     // check if the user has created the project
-        if (newProjectDialog.exec() == QDialog::Accepted) {
+    if (newProjectDialog.exec() == QDialog::Accepted) {
 
-    // get the name 
-    QString projectName = nameTextZone-> text();
-    if (projectName.isEmpty()) {
-        projectName = "Projet sans nom"; 
-    }
+        // get the name 
+        QString projectName = nameTextZone->text();
+        if (projectName.isEmpty()) {
+            projectName = "Projet sans nom"; 
+        }
 
-    // get the CRS 
-    QString selectedCRS = crsList->currentText();
+        // get the CRS 
+        QString selectedCRS = crsList->currentText();
 
-    //EPSG code 
-    int startIndex = selectedCRS.indexOf('(');
-    int endIndex = selectedCRS.indexOf(')');
-    QString epsgCode;
+        //EPSG code 
+        int startIndex = selectedCRS.indexOf('(');
+        int endIndex = selectedCRS.indexOf(')');
+        QString epsgCode;
         
-    if (startIndex != -1 && endIndex != -1) {
+        if (startIndex != -1 && endIndex != -1) {
             epsgCode = "EPSG:" + selectedCRS.mid(startIndex + 1, endIndex - startIndex - 1);
-    } else {
+        } else {
             epsgCode = "EPSG:4326";  //  default value
         }
         
-    //epoch
-    double epoch = epochTextZone->text().toDouble();
+        //epoch
+        double epoch = epochTextZone->text().toDouble();
         
-    Project* newProject = new Project(
+        Project* newProject = new Project(
             projectName.toStdString(),     // name
-            epoch,                         // epoxh
+            epoch,                         // epoch
             epsgCode.toStdString()        // CRS
         );
+        currentProject = newProject;
         
-    currentProject = newProject;
-        
+        //Setting the parameters for the display
+        projectDisplay->setProjectName(projectName.toStdString());
+        projectDisplay->setProjectCRS(epsgCode.toStdString());
+        projectDisplay->setProjectEpoch0(epoch);
 
-    // cout
+        // cout
         std::cout << "Projet créé avec succès !" << std::endl;
         std::cout << "Nom : " << newProject->getName() << std::endl;
         std::cout << "Époque : " << newProject->getEpoch0() << std::endl;
@@ -248,8 +243,7 @@ void MainWindow::setNewProject(){
     } else {
         std::cout << "Création du projet annulée" << std::endl;
         currentProject = nullptr;
-
-        }
+    }
 
 }
 

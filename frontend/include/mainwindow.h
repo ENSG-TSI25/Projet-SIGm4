@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-
+#include "../include/ProjectCaracteristicsDisplay.h"
 #include <core/Project.hpp>
 
 
@@ -60,6 +60,7 @@ private:
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
+    ProjectCarateristicsDisplay* projectDisplay;
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
