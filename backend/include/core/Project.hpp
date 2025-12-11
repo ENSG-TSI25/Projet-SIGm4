@@ -23,7 +23,7 @@ private:
 public:
     Project(const std::string &name_, double epoch0_, const std::string &crs_ = "EPSG:4326", const std::vector<Layer> &layerList_ = {})
 
-        : name(name_), crs(crs_), epoch0(epoch0), layerList(layerList_)
+        : name(name_), crs(crs_), epoch0(epoch0_), layerList(layerList_)
     {
     }
 
@@ -46,4 +46,11 @@ public:
     void setCrs(const std::string &c) { crs = c; }
 
     void setEpoch0(double e) { epoch0 = e; }
+
+    bool save(const std::string& filepath) const;
+    
+    // Charge un projet depuis un fichier .sigm4
+    static Project load(const std::string& filepath);
+        
+        
 };

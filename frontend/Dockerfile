@@ -1,5 +1,4 @@
 FROM ubuntu:22.04
-
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y software-properties-common \
@@ -14,6 +13,7 @@ RUN apt-get install -y \
     libgdal-dev libpq-dev libpqxx-dev \
     libproj-dev proj-bin proj-data \
     pkg-config \
+    rapidjson-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
