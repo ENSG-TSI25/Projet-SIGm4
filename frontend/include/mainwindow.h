@@ -39,7 +39,7 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
-    Projet* setNewProject();
+    void setNewProject();
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
@@ -52,6 +52,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    Project* currentProject;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;

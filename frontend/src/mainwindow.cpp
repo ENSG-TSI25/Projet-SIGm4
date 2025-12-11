@@ -125,20 +125,21 @@ void MainWindow::getSRCSelected(){
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
-Project* MainWindow::setNewProject(){
+void MainWindow::setNewProject(){
     //Creating new project
-    Project* newProject = new Project("test");
 
     //Creation of the dialog window
     QDialog chosingCRSDialog;
     
     
-    chosingCRSDialog.setWindowTitle("Choix du CRS");
+    chosingCRSDialog.setWindowTitle("Nouveau projet");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
     QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
     
     //Widget for choosing the name of the project
+    QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
+    nameTextZone->setPlaceholderText("Entrez le nom du projet");
     
     //Widget for choosing the CRS of the project
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
@@ -188,7 +189,15 @@ Project* MainWindow::setNewProject(){
 
     chosingCRSDialog.exec();
     
-    return newProject;
+    //for the moment, an empty project
+    Project* newProject = new Project("test_projet", 1950.0);
+
+
+    currentProject = newProject;
+
+    std::cout << newProject->getName();
+    std::cout << newProject->getEpoch0();
+
 }
 
 void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate){
