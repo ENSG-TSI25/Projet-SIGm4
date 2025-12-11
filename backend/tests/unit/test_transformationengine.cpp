@@ -13,6 +13,25 @@ protected:
     void SetUp() override {
         GDALAllRegister();
     }
+
+    // Crée un GeoPackage de test temporaire
+    std::string createTestGpkg() {
+        std::string path = "/tmp/test_data.gpkg";
+        std::remove(path.c_str());
+        
+        GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
+        GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
+        
+        OGRLayer* layer = ds->CreateLayer("test_layer", nullptr, wkbPoint, nullptr);
+        OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
+        OGRPoint point(2.0, 48.0);
+        feature->SetGeometry(&point);
+        layer->CreateFeature(feature);
+        OGRFeature::DestroyFeature(feature);
+        
+        GDALClose(ds);
+        return path;
+    }
 };
 
 // Builder
@@ -23,7 +42,7 @@ TEST_F(TransformationEngineTest, Constructor) {
 
 // Loading Valid File
 TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
-    std::string path = "/app/backend/data/test_data.gpkg";
+    std::string path = createTestGpkg();
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
     ASSERT_NE(layer, nullptr);
