@@ -302,6 +302,12 @@
          </property>
         </widget>
        </item>
+        <item>
+        <!-- Layout for displaying the project caracterisitcs -->
+        <layout class ="QVBoxLayout" name="projectCaracteristicsDisplay">
+
+        </layout>
+       </item>
       </layout>
      </widget>
     </item>

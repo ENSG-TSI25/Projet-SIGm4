@@ -1,6 +1,7 @@
 #include "../include/mainwindow.h"
 #include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
+
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -25,7 +26,8 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow) 
+    , ui(new Ui::MainWindow)
+    , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
     layerManager = new LayerManager(this);
@@ -53,7 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
 
     //Dialog management
     dialog = new Dialog();
@@ -68,7 +69,9 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]() {
                 layerManager->renameLayer(dialog);
             });
-    //connect (crsLabel)
+    
+    //To show the careteristics of the current project
+    ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
 }
 
