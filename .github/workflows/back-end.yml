@@ -18,7 +18,8 @@ jobs:
             pkg-config \
             libpqxx-dev libpq-dev \
             libgdal-dev \
-            libproj-dev
+            libproj-dev \
+            rapidjson-dev
       
       - name: Configure CMake
         working-directory: backend

@@ -46,4 +46,11 @@ public:
     void setCrs(const std::string &c) { crs = c; }
 
     void setEpoch0(double e) { epoch0 = e; }
+
+    bool save(const std::string& filepath) const;
+    
+    // Charge un projet depuis un fichier .sigm4
+    static Project load(const std::string& filepath);
+        
+        
 };

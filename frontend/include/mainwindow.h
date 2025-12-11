@@ -49,6 +49,8 @@ public:
 
     Ui::MainWindow* getUi();
 
+    Project* getCurrentProject() { return currentProject; }
+
 private:
     Ui::MainWindow *ui;
     Carte* carte;
@@ -59,6 +61,10 @@ private:
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
+    
+
+private slots:
+    void saveProject();
 
 };
 #endif // MAINWINDOW_H
