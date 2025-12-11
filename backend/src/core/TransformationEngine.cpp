@@ -26,7 +26,7 @@ VectorLayer* TransformationEngine::transformLayerAtEpoch(VectorLayer& inputLayer
             const double x_init = point->getX();
             const double y_init = point->getY();
             const double z_init = point->getZ();
-            
+
             Result r = GeodeticTransformer::geocentricToGeodetic(x_init,y_init,z_init,t_init);
             double lon = r.x;
             double lat = r.y;
@@ -49,7 +49,7 @@ VectorLayer* TransformationEngine::transformLayerAtEpoch(VectorLayer& inputLayer
             const double x_init = point->getX();
             const double y_init = point->getY();
             const double z_init = point->getZ();
-            
+            std::cout<<"Coordonnées avant projection : "<< x_init << " " << y_init << " " << z_init << " " << t_init << "\n";
             Result r = GeodeticTransformer::projectedToGeodetic(x_init,y_init,z_init,t_init, epsg_src, "EPSG:"+epsg_dst);
             double lon = r.x;
             double lat = r.y;

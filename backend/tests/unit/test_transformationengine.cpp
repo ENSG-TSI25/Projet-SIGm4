@@ -4,6 +4,11 @@
 #include <gdal/gdal.h>
 #include <gdal/gdal_priv.h>
 #include <gdal/ogrsf_frmts.h>
+#include <gdal/ogr_geometry.h>
+#include <gdal/ogr_api.h>
+#include <gdal/ogr_spatialref.h>
+#include <fstream>
+#include <cstdio>
 
 // === Chemin vers les données ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
@@ -22,10 +27,24 @@ protected:
         GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
         GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
         
-        OGRLayer* layer = ds->CreateLayer("test_layer", nullptr, wkbPoint, nullptr);
+        // CRS
+        OGRSpatialReference srs;
+        srs.importFromEPSG(10674); 
+        srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); //(Longitude/X, Latitude/Y)
+
+        OGRLayer* layer = ds->CreateLayer("test_layer", &srs, wkbPoint, nullptr);
+
+        // Date
+        OGRFieldDefn fieldEpoch("epoch", OFTReal);
+        if (layer->CreateField(&fieldEpoch) != OGRERR_NONE) {
+            GDALClose(ds);
+            throw std::runtime_error("Error when creating epoch field");
+        }
+        
         OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
-        OGRPoint point(2.0, 48.0);
+        OGRPoint point(513372, 859454, 4779483.0);
         feature->SetGeometry(&point);
+        feature->SetField("epoch", 2025.0);
         layer->CreateFeature(feature);
         OGRFeature::DestroyFeature(feature);
         
@@ -65,11 +84,11 @@ TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
     double DEG_EPS = 1e-4; 
     double H_EPS = 1e-3;
 
-    EXPECT_NEAR(point->getX(), 45.1232, DEG_EPS);
+    EXPECT_NEAR(point->getX(), 45.89617341, DEG_EPS);
     
-    EXPECT_NEAR(point->getY(), -12.7136, DEG_EPS);
+    EXPECT_NEAR(point->getY(), -82.31903548, DEG_EPS);
     
-    EXPECT_NEAR(point->getZ(), 0, H_EPS);
-    EXPECT_EQ(geom->getT(), 1.181779200e+09);
+    EXPECT_NEAR(point->getZ(), 4779483, H_EPS);
+    EXPECT_EQ(geom->getT(), 2025);
     
 }
