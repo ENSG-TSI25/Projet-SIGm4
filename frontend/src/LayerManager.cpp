@@ -13,7 +13,7 @@
 #include <QDebug>
 
 
-LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
+LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName("")
 {
 }
 
@@ -77,12 +77,8 @@ LayerManager::~LayerManager() {}
 
 
 void LayerManager::loadRasterLayer() {
-    QString file = QFileDialog::getOpenFileName(
-        nullptr, "Charger Raster", "/app/data", "GeoPackage (*.gpkg)");
     
-    if (file.isEmpty()) return;
-    
-    RasterLayer* raster = mw->getDataManager().loadRaster(file.toStdString());
+    RasterLayer* raster = mw->getDataManager().loadRaster(fileName.toStdString());
     if (!raster) return;
     
     QString gpkgUri = QString::fromStdString(raster->getFilePath());

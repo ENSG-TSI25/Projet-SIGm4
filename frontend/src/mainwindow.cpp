@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayer);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -48,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayer);
     connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
