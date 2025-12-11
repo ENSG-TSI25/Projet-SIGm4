@@ -29,7 +29,7 @@ protected:
         
         // CRS
         OGRSpatialReference srs;
-        srs.importFromEPSG(10674); 
+        srs.importFromEPSG(2154); 
         srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); //(Longitude/X, Latitude/Y)
 
         OGRLayer* layer = ds->CreateLayer("test_layer", &srs, wkbPoint, nullptr);
@@ -40,7 +40,7 @@ protected:
             GDALClose(ds);
             throw std::runtime_error("Error when creating epoch field");
         }
-        
+
         OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
         OGRPoint point(513372, 859454, 4779483.0);
         feature->SetGeometry(&point);
