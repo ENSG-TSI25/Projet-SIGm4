@@ -188,12 +188,6 @@ void MainWindow::setNewProject(){
         epochTextZone->setText(QString::number(decimalYear, 'f', 3));
     });
 
-    // manual entry of the epoch 
-
-    // connect(epochTextZone, &QLineEdit::textChanged, this, [decimalDate, epochTextZone]() {
-    //     decimalDate->setText("Date décimale : " + epochTextZone->text());
-    // });
-
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(nameTextZone);
@@ -249,7 +243,6 @@ void MainWindow::setNewProject(){
     } else {
         std::cout << "Création du projet annulée" << std::endl;
         currentProject = nullptr;
-
     }
 
 }
