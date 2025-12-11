@@ -25,6 +25,10 @@
 #include "../include/Carte.h"
 
 
+#include <core/Project.hpp>
+
+#include <QMessageBox>
+#include <QDir>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -71,6 +75,8 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]() {
                 layerManager->renameLayer(dialog);
             });
+
+    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
     //connect (crsLabel)
 
 }
@@ -294,4 +300,35 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             
         };
         comboBox->addItems(items);
+}
+
+
+void MainWindow::saveProject() {
+    // Vérifier qu'un projet existe
+    if (currentProject == nullptr) {
+        QMessageBox::warning(this, "Erreur", "Aucun projet à sauvegarder. Créez d'abord un projet avec 'Nouveau'.");
+        return;
+    }
+    
+    // Demander où sauvegarder
+    QString filepath = QFileDialog::getSaveFileName(
+        this,
+        tr("Sauvegarder le projet"),
+        QDir::homePath() + "/" + QString::fromStdString(currentProject->getName()) + ".sigm4",
+        tr("Fichiers SIGM4 (*.sigm4)")
+    );
+    
+    // Si l'utilisateur annule
+    if (filepath.isEmpty()) {
+        return;
+    }
+    
+    // Sauvegarder
+    bool success = currentProject->save(filepath.toStdString());
+    
+    if (success) {
+        QMessageBox::information(this, "Succès", "Projet sauvegardé avec succès !");
+    } else {
+        QMessageBox::critical(this, "Erreur", "Échec de la sauvegarde du projet.");
+    }
 }
