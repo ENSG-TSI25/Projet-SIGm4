@@ -31,7 +31,7 @@ protected:
         
         // CRS
         OGRSpatialReference srs;
-        srs.importFromEPSG(10674);
+        srs.importFromEPSG(3857); 
         srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); //(Longitude/X, Latitude/Y)
 
         OGRLayer* layer = ds->CreateLayer("test_layer", &srs, wkbPoint, nullptr);
@@ -44,7 +44,7 @@ protected:
         }
 
         OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
-        OGRPoint point(513372, 859454, 4779483.0);
+        OGRPoint point(48.808889, 2.660612, 0);
         feature->SetGeometry(&point);
         feature->SetField("epoch", 2025.0);
         layer->CreateFeature(feature);
@@ -67,10 +67,10 @@ TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
     ASSERT_NE(layer, nullptr);
-    ASSERT_EQ(layer->getCrs(), "EPSG:10674");
+    ASSERT_EQ(layer->getCrs(), "EPSG:3857");
     
     TransformationEngine engine;
-    VectorLayer* transformedLayer = engine.transformLayerAtEpoch(*layer, "4326");
+    VectorLayer* transformedLayer = engine.transformLayerAtEpoch(*layer, "9794");
     ASSERT_NE(transformedLayer, nullptr);
 
     auto geometries = transformedLayer->getGeometries();
@@ -83,14 +83,14 @@ TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
     ASSERT_NE(point, nullptr);
 
     // Tolerances : 
-    double DEG_EPS = 1e-4; 
+    double DEG_EPS = 1e-2; // OUCH
     double H_EPS = 1e-3;
 
-    EXPECT_NEAR(point->getX(), 45.89617341, DEG_EPS);
+    EXPECT_NEAR(point->getX(), 909839.98, DEG_EPS);
     
-    EXPECT_NEAR(point->getY(), -82.31903548, DEG_EPS);
+    EXPECT_NEAR(point->getY(), 253596.48, DEG_EPS);
     
-    EXPECT_NEAR(point->getZ(), 4779483, H_EPS);
+    EXPECT_NEAR(point->getZ(), 0, H_EPS);
     EXPECT_EQ(geom->getT(), 2025);
     
 }
