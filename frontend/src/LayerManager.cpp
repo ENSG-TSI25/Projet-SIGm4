@@ -1,4 +1,4 @@
-#include "../include/Layer.h"
+#include "../include/LayerManager.h"
 #include <QMainWindow>
 #include <QString>
 #include <QComboBox>

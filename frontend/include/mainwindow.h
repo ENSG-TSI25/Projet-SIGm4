@@ -5,7 +5,7 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
-#include "Layer.h"
+#include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
@@ -13,6 +13,13 @@
 #include <QGraphicsScene>
 #include <QWheelEvent>
 #include <qgsmapcanvas.h>
+#include <QLabel>
+#include <QCalendarWidget>
+#include <QPushButton>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QVBoxLayout>
+#include <QDate>
 
 #include <core/Project.hpp>
 
@@ -34,8 +41,12 @@ public:
     void openDialog();
     void setNewProject();
     void updateScaleLabel(int scaleValue);
-    Ui::MainWindow* getUi();
+    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    float computeDate(int day, int month, int year);
+    void getDateSelected(const QDate &date);
+    void updateSelectedDate(const QDate &date);
 
+    Ui::MainWindow* getUi();
 
 private:
     Ui::MainWindow *ui;
