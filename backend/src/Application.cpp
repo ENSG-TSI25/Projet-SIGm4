@@ -3,7 +3,10 @@
 #include <db/Config.hpp>
 #include <gdal/gdal.h>
 #include <iostream>
-
+#include <fstream>         
+#include <cmath>           
+#include <core/Project.hpp> 
+#include <core/Layer.hpp> 
 Application::Application()
 {
     DBConfig cfg = DBConfig::loadFromEnv();
@@ -26,9 +29,7 @@ void Application::run()
     pqxx::result r = dbClient->execute("SELECT PostGIS_Version();");
     std::cout << "PostGIS version: " << r[0][0].c_str() << std::endl;
     
-    std::cout << "\n========================================" << std::endl;
     std::cout << "=== TEST LOADVECTOR WITH ALL LAYERS ===" << std::endl;
-    std::cout << "========================================" << std::endl;
     
     DataManager dm;
     
@@ -130,12 +131,51 @@ void Application::run()
             }
             std::cout << "  EWKT: " << ewkt << std::endl;
         }
+
+
+    std::cout << "=======================================" << std::endl;
+    std::cout << "=== TEST PROJECT SAVE/LOAD (.sigm4) ===" << std::endl;
+    std::cout << "=======================================" << std::endl;
+
+    // Créer un projet de test
+    std::cout << "\nCréation d'un projet test..." << std::endl;
+    Project testProject("Projet Test Vendée", 2025.0, "EPSG:2154");
+    
+    // Ajouter des couches avec les données chargées
+    for (size_t i = 0; i < layers.size(); ++i) {
+        auto* vectorLayer = layers[i];
+        Layer simpleLayer(
+            vectorLayer->getName(),
+            vectorLayer->getCrs(),
+            vectorLayer->getEpoch()
+        );
+        testProject.addLayer(simpleLayer);
+        std::cout << "Couche ajoutée: " << vectorLayer->getName() << std::endl;
+    }
+    
+    std::cout << "Projet créé avec " << testProject.getLayers().size() << " couches" << std::endl;
+    
+    // Sauvegarder le projet
+    std::cout << "\nSauvegarde du projet..." << std::endl;
+    std::string projectPath = "/app/backend/data/test_project.sigm4";
+    bool saveSuccess = testProject.save(projectPath);
+    
+    if (saveSuccess) {
+        std::cout << "Projet sauvegardé: " << projectPath << std::endl;
+    } else {
+        std::cout << "Échec de la sauvegarde" << std::endl;
+        return;
     }
         
-    
+ 
     std::cout << "\n=== Test Raster GeoPackage ===" << std::endl;
     RasterLayer* raster = dm.loadRaster("/app/data/raster_data.gpkg");
-    
+      
+      
+      
+      
+      
+      
     if (raster) {
         // Attributs Layer
         std::cout << "Name: " << raster->getName() << std::endl;
@@ -157,6 +197,46 @@ void Application::run()
         if (emprise) {
             std::cout << "Extent EWKT: " << emprise->toEWKT() << std::endl;
         }
+    }
+      
+      
+      
+    
+    // Charger le projet
+    std::cout << "\nChargement du projet sauvegardé..." << std::endl;
+    try {
+        Project loadedProject = Project::load(projectPath);
+        
+        std::cout << "Projet chargé avec succès!" << std::endl;
+        std::cout << "\n Vérification des données:" << std::endl;
+        std::cout << "   - Nom: " << loadedProject.getName() << std::endl;
+        std::cout << "   - CRS: " << loadedProject.getCrs() << std::endl;
+        std::cout << "   - Époque: " << loadedProject.getEpoch0() << std::endl;
+        std::cout << "   - Nombre de couches: " << loadedProject.getLayers().size() << std::endl;
+        
+   
+        
+        // Afficher le contenu du fichier JSON
+        std::cout << "\nContenu du fichier .sigm4:" << std::endl;
+        std::cout << "   -----------------------------------" << std::endl;
+        std::ifstream file(projectPath);
+        if (file.is_open()) {
+            std::string line;
+            while (std::getline(file, line)) {
+                std::cout << "   " << line << std::endl;
+            }
+            file.close();
+        }
+        
+    
+        
+    } catch (const std::exception& e) {
+        std::cout << "   Erreur lors du chargement: " << e.what() << std::endl;
+    }
+
+
+
+
     }
 
     std::cout << "\n✓ Application running successfully!" << std::endl;
