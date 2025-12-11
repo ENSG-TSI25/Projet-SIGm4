@@ -9,6 +9,8 @@
 #include <gdal/ogr_spatialref.h>
 #include <fstream>
 #include <cstdio>
+#include <stdexcept>
+#include <string>
 
 // === Chemin vers les données ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
