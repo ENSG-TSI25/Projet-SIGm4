@@ -123,13 +123,13 @@ void MainWindow::openDialog() {
     dialog -> show();
 }
 
-void MainWindow::displayEpochProject(const QDate &date){
-    ui->epochDisplayZone->setText("Époque du projet: " + date.toString("dd/MM/yyyy"));
-}
+// void MainWindow::displayEpochProject(const QDate &date){
+//     ui->epochDisplayZone->setText("Époque du projet: " + date.toString("dd/MM/yyyy"));
+// }
 
-void MainWindow::getSRCSelected(){
-    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
-}
+// void MainWindow::getSRCSelected(){
+//     ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+// }
 
 //The function to set the name, the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
@@ -173,9 +173,9 @@ void MainWindow::setNewProject(){
         QDate selectedDate = calendar->selectedDate();
     });
 
-    connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
-        ui->crsLabel->setText("CRS : " + crsList->currentText());
-    });
+    // connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
+    //     ui->crsLabel->setText("CRS : " + crsList->currentText());
+    // });
 
 
     // connect the calendar with the epoch textzone

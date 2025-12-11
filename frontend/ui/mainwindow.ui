@@ -219,20 +219,6 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnSelect">
-            <property name="text">
-             <string>Sélectionner</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="btnMeasure">
-            <property name="text">
-             <string>Mesurer</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="btnZoomPlus">
             <property name="text">
              <string>Zoom+</string>
@@ -282,23 +268,9 @@
         <widget class="QListWidget" name="layersList"/>
        </item>
        <item>
-        <widget class="QLabel" name="crsLabel">
-         <property name="text">
-          <string>TextLabel</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QLabel" name="scale">
          <property name="text">
           <string>TextLabel</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="epochDisplayZone">
-         <property name="text">
-          <string>Époque du projet:</string>
          </property>
         </widget>
        </item>
