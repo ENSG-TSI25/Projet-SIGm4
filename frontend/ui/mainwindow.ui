@@ -296,9 +296,9 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="date">
+        <widget class="QLabel" name="epochDisplayZone">
          <property name="text">
-          <string>Epoque du projet:</string>
+          <string>Époque du projet:</string>
          </property>
         </widget>
        </item>
