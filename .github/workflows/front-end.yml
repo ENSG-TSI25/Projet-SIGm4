@@ -38,6 +38,7 @@ jobs:
             libpqxx-dev libpq-dev \
             libgdal-dev \
             libproj-dev \
+            rapidjson-dev
 
       
       - name: Backend build
