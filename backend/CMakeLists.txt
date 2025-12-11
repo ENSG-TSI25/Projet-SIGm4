@@ -11,7 +11,6 @@ pkg_check_modules(PQXX REQUIRED libpqxx)
 pkg_check_modules(GDAL REQUIRED gdal)
 pkg_check_modules(PROJ REQUIRED proj)
 
-find_package(RapidJSON REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -38,7 +37,7 @@ target_include_directories(sigm4_backend PUBLIC
     ${GDAL_INCLUDE_DIRS}
     ${PQXX_INCLUDE_DIRS}
     ${PROJ_INCLUDE_DIRS}
-    ${RAPIDJSON_INCLUDE_DIRS})
+    )
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     add_executable(backend_app src/main.cpp)
