@@ -5,7 +5,7 @@
 #include <QString>
 #include <QComboBox>
 #include "Carte.h"
-#include "Layer.h"
+#include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
@@ -21,12 +21,14 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <core/Project.hpp>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class Layer; 
+class LayerManager; 
 
 class MainWindow : public QMainWindow
 {
@@ -43,13 +45,15 @@ public:
     float computeDate(int day, int month, int year);
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
+    void getSRCSelected();
 
     Ui::MainWindow* getUi();
 
 private:
     Ui::MainWindow *ui;
     Carte* carte;
-    Layer* layer;
+    Project* currentProject;
+    LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     void zoomIn_button();
