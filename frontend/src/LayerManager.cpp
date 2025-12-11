@@ -8,6 +8,10 @@
 #include <qgsmapcanvas.h>
 #include <QWidget>
 
+#include <core/DataManager.hpp>
+#include <core/RasterLayer.hpp>
+#include <QDebug>
+
 
 LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
 {
@@ -70,3 +74,50 @@ void LayerManager::renameLayer(Dialog* dialog) {
 
 
 LayerManager::~LayerManager() {}
+
+
+void LayerManager::loadRasterLayer() {
+    QString file = QFileDialog::getOpenFileName(
+        nullptr, "Charger Raster", "/app/data", "GeoPackage (*.gpkg)");
+    
+    if (file.isEmpty()) return;
+    
+    RasterLayer* raster = mw->getDataManager().loadRaster(file.toStdString());
+    if (!raster) return;
+    
+    QString gpkgUri = QString::fromStdString(raster->getFilePath());
+    QgsRasterLayer* layer = new QgsRasterLayer(
+        gpkgUri, QString::fromStdString(raster->getName()), "gdal");
+    
+    if (layer->isValid()) {
+        QgsProject::instance()->addMapLayer(layer);
+        
+        // Récupère tous les layers
+        QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
+        
+        // Ordre: raster data layers, puis basemaps
+        QList<QgsMapLayer*> newOrder;
+        for (auto* l : allLayers) {
+            if (l->name() != "OSM" && l->name() != "Satellite") {
+                newOrder.prepend(l);  // Data layers en premier
+            }
+        }
+        for (auto* l : allLayers) {
+            if (l->name() == "OSM" || l->name() == "Satellite") {
+                newOrder.append(l);  // Basemaps en dernier 
+            }
+        }
+        
+        mw->getCarte()->getCanvas()->setLayers(newOrder);
+        
+        // Zoom avec transformation CRS
+        QgsCoordinateTransform transform(layer->crs(), 
+            QgsCoordinateReferenceSystem("EPSG:3857"),
+            QgsProject::instance());
+        mw->getCarte()->getCanvas()->setExtent(
+            transform.transformBoundingBox(layer->extent()));
+        mw->getCarte()->getCanvas()->refresh();
+    } else {
+        delete layer;
+    }
+}
