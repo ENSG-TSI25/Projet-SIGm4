@@ -39,9 +39,9 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
-    void loadRasterLayer(); 
-
-        
+    
+    void loadRasterLayerFromFile(const QString& file);
+    void loadVectorLayerFromFile(const QString& file);
 
 
 private:
