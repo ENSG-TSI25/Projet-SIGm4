@@ -1,5 +1,5 @@
 #include "../include/mainwindow.h"
-#include "../include/Layer.h"
+#include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
 #include <QFileDialog>
 #include <QComboBox>
@@ -28,9 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow) 
 {
     ui->setupUi(this);
-    layer = new Layer(this);
+    layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
@@ -61,20 +61,20 @@ MainWindow::MainWindow(QWidget *parent)
     Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]() {
-                layer->duplicateLayer(dialog);
+                layerManager->duplicateLayer(dialog);
             });
 
     connect(dig->buttonRename, &QPushButton::clicked,
             this, [this]() {
-                layer->renameLayer(dialog);
+                layerManager->renameLayer(dialog);
             });
-
+    //connect (crsLabel)
 
 }
 
 MainWindow::~MainWindow()
 {
-    delete layer;
+    delete layerManager;
     delete ui;
 }
 
@@ -120,29 +120,47 @@ void MainWindow::getDateSelected(const QDate &date){
 
 }
 
+void MainWindow::getSRCSelected(){
+    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+}
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
+    //Creating new project
+
     //Creation of the dialog window
     QDialog chosingCRSDialog;
-    chosingCRSDialog.setWindowTitle("Choix du CRS");
+    
+    
+    chosingCRSDialog.setWindowTitle("Nouveau projet");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
     QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+    
+    //Widget for choosing the name of the project
+    QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
+    nameTextZone->setPlaceholderText("Entrez le nom du projet");
+    
+    //Widget for choosing the CRS of the project
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
     crsList->setPlaceholderText("Entrez le code EPSG du CRS");
     setCrsList(crsList);
+    
+    //Widget for choosing the epoch0 of the project by entering the exact geodectic date
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
-    //On crée un validateur pour vérifier que l'utilisateur ne rentre bien que des doubles
+    
+    //Widget for choosing the epoch0 of the project by selecting the date on a calendar
+    QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
+    
+    //The validator for blocking the user to enter a wrong date//TO FIX
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
-    //range and decimals
+    //Setting range and decimals for the validator
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    //On intègre le validateur à la zone de texte
+    //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
     
-    QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
     QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);   
     getCalendarDays(calendar, decimalDate);
      
@@ -150,12 +168,15 @@ void MainWindow::setNewProject(){
 
     connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
         QDate selectedDate = calendar->selectedDate();
-        //emit getDateSelected(selectedDate);  // Émission du signal vers MainWindow
-        //this->getDateSelected(selectedDate);
         this->getDateSelected(selectedDate);
     });
+    connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
+        ui->crsLabel->setText("CRS : " + crsList->currentText());
+    
+    //connect (crsList, &QComboBox::currentTextChanged, this, &MainWindow::getSRCSelected);
+    });
 
-    //on ajoute les widgets
+    //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
@@ -167,6 +188,16 @@ void MainWindow::setNewProject(){
   
 
     chosingCRSDialog.exec();
+    
+    //for the moment, an empty project
+    Project* newProject = new Project("test_projet", 1950.0);
+
+
+    currentProject = newProject;
+
+    std::cout << newProject->getName();
+    std::cout << newProject->getEpoch0();
+
 }
 
 void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate){
