@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QString>
 #include <QComboBox>
-#include "Carte.h"
 #include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
@@ -29,6 +28,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class LayerManager; 
+class Carte;
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +46,10 @@ public:
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
     void getSRCSelected();
+    LayerManager* getLayerManager(); 
+    Project* getCurrentProject();
+    Carte* getCarte();
+
 
     Ui::MainWindow* getUi();
 

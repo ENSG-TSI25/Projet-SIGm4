@@ -16,21 +16,25 @@
 #include <qgsproject.h>
 #include <qgsmaplayer.h>
 #include <qgsmapcanvas.h>
+#include "../ui/ui_mainwindow.h"
+#include "mainwindow.h"
 
 
-
+class MainWindow;
 
 class Carte : public QObject
 {
     Q_OBJECT
 
 public:
-    Carte(QWidget* containerFrame);  // Prend le QFrame comme parent
+    Carte(QWidget* containerFrame, MainWindow* mw);  // Prend le QFrame comme parent
     ~Carte();
 
     QgsMapCanvas* getCanvas() { return canvas; }
+    std::string getCarteEpsg();
 
 private:
+    MainWindow* mw;
     // Canvas
     QgsMapCanvas* canvas;
 
@@ -43,6 +47,7 @@ private:
     // UI (facultatif si tu veux mettre les boutons ailleurs)
 
     QPushButton* toggleBasemap;
+    std::string carteEpsg;
 
     QVBoxLayout* layout;
 

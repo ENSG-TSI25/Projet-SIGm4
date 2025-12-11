@@ -11,8 +11,8 @@
 #include <qgsvectorlayer.h>
 #include <qgsrasterlayer.h>
 
-Carte::Carte(QWidget* containerFrame)
-    : osmVisible(true)
+Carte::Carte(QWidget* containerFrame, MainWindow* mw)
+    : osmVisible(true) , QObject(mw), mw(mw), carteEpsg("EPSG:2154")
 {
     initCanvas(containerFrame);
     initLayers();
@@ -24,12 +24,10 @@ Carte::Carte(QWidget* containerFrame)
 
 Carte::~Carte() {}
 
-QgsPointXY Carte::wgs84ToMercator(double lon, double lat)
-{
-    double x = lon * 20037508.34 / 180.0;
-    double y = std::log(std::tan((90.0 + lat) * M_PI / 360.0)) / (M_PI / 180.0);
-    y = y * 20037508.34 / 180.0;
-    return QgsPointXY(x, y);
+
+
+std::string Carte::getCarteEpsg(){
+    return carteEpsg;
 }
 
 void Carte::initCanvas(QWidget* containerFrame)
@@ -48,7 +46,7 @@ void Carte::initCanvas(QWidget* containerFrame)
     canvas->enableAntiAliasing(true);
 
     // *** IMPORTANT ***
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsMapToolPan* panTool = new QgsMapToolPan(canvas);
     canvas->setMapTool(panTool);
@@ -59,7 +57,7 @@ void Carte::initCanvas(QWidget* containerFrame)
 
 void Carte::initLayers()
 {
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     osmLayer = new QgsRasterLayer(
         "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0",
@@ -73,8 +71,8 @@ void Carte::initLayers()
         "wms"
     );
 
-    osmLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
-    satLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    osmLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
+    satLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsProject::instance()->addMapLayer(osmLayer);
     QgsProject::instance()->addMapLayer(satLayer);
