@@ -43,6 +43,8 @@ public:
     void listDimension();
     void openDialog();
     void setNewProject();
+    void openExistingProject();
+    void saveCurrentProject();
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);

@@ -56,6 +56,12 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
+    //When the "Ouvrir" button is clicked, open the file manager to choose a new project to open
+    connect (ui->btnOpen, &QPushButton::clicked, this, &MainWindow::openExistingProject);
+
+    //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
+    connect (ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveCurrentProject);
+
     //Dialog management
     dialog = new Dialog();
     connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
@@ -175,6 +181,24 @@ void MainWindow::setNewProject(){
         ui->crsLabel->setText("CRS : " + crsList->currentText());
     });
 
+
+    // connect the calendar with the epoch textzone
+
+    connect(calendar, &QCalendarWidget::selectionChanged, this, [calendar, epochTextZone]() {
+        QDate selectedDate = calendar->selectedDate();
+        // epoch calculated from the date (à changer avec le truc de blandine)
+        double decimalYear = selectedDate.year() + 
+                            (selectedDate.dayOfYear() - 1) / 
+                            (selectedDate.isLeapYear(selectedDate.year()) ? 366.0 : 365.0);
+        epochTextZone->setText(QString::number(decimalYear, 'f', 3));
+    });
+
+    // manual entry of the epoch 
+
+    connect(epochTextZone, &QLineEdit::textChanged, this, [decimalDate, epochTextZone]() {
+        decimalDate->setText("Date décimale : " + epochTextZone->text());
+    });
+
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
     layout->addWidget(crsList);
@@ -183,21 +207,52 @@ void MainWindow::setNewProject(){
     layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-    newProjectDialog.exec();
-    
-    //for the moment, an empty mock project
-    Project* newProject = new Project("test_projet", 1950.03636363);
+    // check if the user has created the project
+        if (newProjectDialog.exec() == QDialog::Accepted) {
 
-    //Updating the currentProject attribute
+    // get the name 
+    QString projectName = nameTextZone-> text();
+    if (projectName.isEmpty()) {
+        projectName = "Projet sans nom"; 
+    }
+
+    // get the CRS 
+    QString selectedCRS = crsList->currentText();
+
+    //EPSG code 
+    int startIndex = selectedCRS.indexOf('(');
+    int endIndex = selectedCRS.indexOf(')');
+    QString epsgCode;
+        
+    if (startIndex != -1 && endIndex != -1) {
+            epsgCode = "EPSG:" + selectedCRS.mid(startIndex + 1, endIndex - startIndex - 1);
+    } else {
+            epsgCode = "EPSG:4326";  //  default value
+        }
+        
+    //epoch
+    double epoch = epochTextZone->text().toDouble();
+        
+    Project* newProject = new Project(
+            projectName.toStdString(),     // name
+            epoch,                         // epoxh
+            epsgCode.toStdString()        // CRS
+        );
+        
     currentProject = newProject;
+        
 
-    //Updating the display epoch of the project
-    ui->epochDisplayZone->setText("Époque du projet: " + QString::number(currentProject->getEpoch0()));
+    // cout
+        std::cout << "Projet créé avec succès !" << std::endl;
+        std::cout << "Nom : " << newProject->getName() << std::endl;
+        std::cout << "Époque : " << newProject->getEpoch0() << std::endl;
+        std::cout << "CRS : " << newProject->getCrs() << std::endl;
+        
+    } else {
+        std::cout << "Création du projet annulée" << std::endl;
+        currentProject = nullptr;
 
-
-    //Debug
-    std::cout << newProject->getName();
-    std::cout << newProject->getEpoch0();
+        }
 
 }
 
@@ -231,7 +286,6 @@ float MainWindow::computeDate(int day, int month, int year){
     return deci_date;
 }
 
-
 //Function to set the targetted comboBox to show the list of CRS accepted by the project
 void MainWindow::setCrsList(QComboBox *comboBox){
         comboBox->clear();
@@ -251,3 +305,84 @@ void MainWindow::setCrsList(QComboBox *comboBox){
         };
         comboBox->addItems(items);
 }
+
+// Function to open an already existing project
+
+    void MainWindow::openExistingProject(){
+
+        std::cout << "début ouverture projet" << std::endl;
+            QDialog openProjectDialog;
+    openProjectDialog.setWindowTitle("Ouvrir un projet");
+    
+    QVBoxLayout *layout = new QVBoxLayout(&openProjectDialog);
+    
+    QLabel *dialogText = new QLabel("Sélectionnez le fichier projet à ouvrir", &openProjectDialog);
+    
+    // Widget de chemin de fichier
+    QHBoxLayout *filePathLayout = new QHBoxLayout();
+    
+    QLineEdit *pathTextZone = new QLineEdit(&openProjectDialog);
+    pathTextZone->setPlaceholderText("Chemin du fichier...");
+    
+    QPushButton *browseButton = new QPushButton("Parcourir", &openProjectDialog);
+    
+    filePathLayout->addWidget(pathTextZone);
+    filePathLayout->addWidget(browseButton);
+    
+    QPushButton *acceptationButton = new QPushButton("OK", &openProjectDialog);
+    QPushButton *cancelButton = new QPushButton("Annuler", &openProjectDialog);
+    
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(cancelButton);
+    buttonLayout->addWidget(acceptationButton);
+    
+    // Ajouter les widgets au layout
+    layout->addWidget(dialogText);
+    layout->addLayout(filePathLayout);
+    layout->addLayout(buttonLayout);
+    
+    // Connexion du bouton Parcourir
+    connect(browseButton, &QPushButton::clicked, [&]() {
+        QString filePath = QFileDialog::getOpenFileName(
+            &openProjectDialog,
+            "Sélectionner un fichier projet",
+            QDir::homePath(),
+            "Fichiers projet (*.proj *.xml);;Tous les fichiers (*.*)"
+        );
+        
+        if (!filePath.isEmpty()) {
+            pathTextZone->setText(filePath);
+        }
+    });
+    
+    // Connexions des boutons
+    connect(acceptationButton, &QPushButton::clicked, &openProjectDialog, &QDialog::accept);
+    connect(cancelButton, &QPushButton::clicked, &openProjectDialog, &QDialog::reject);
+    
+    // Exécuter le dialogue
+    if (openProjectDialog.exec() == QDialog::Accepted) {
+        QString selectedPath = pathTextZone->text();
+        
+        if (!selectedPath.isEmpty()) {
+            // Vérifier que le fichier existe
+            QFileInfo fileInfo(selectedPath);
+            if (fileInfo.exists()) {
+                std::cout << "Ouverture du fichier : " << selectedPath.toStdString() << std::endl;
+                
+                // TODO: Charger le projet depuis le fichier
+                // loadProjectFromFile(selectedPath);
+                
+            } else {
+                std::cerr << "Erreur : le fichier n'existe pas" << std::endl;
+            }
+        }
+    } else {
+        std::cout << "Ouverture annulée" << std::endl;
+    }
+    }
+
+// Function to open an already existing project 
+
+    void MainWindow::saveCurrentProject(){
+        std::cout << "fermeture sauvegarde projet" << std::endl;
+    }
