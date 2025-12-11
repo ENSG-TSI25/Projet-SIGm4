@@ -22,9 +22,7 @@ class ProjectCarateristicsDisplay: public QWidget
 
         QLabel *nameLabel;
         QLabel *CRSLabel;
-        QLabel *epoch0Label;
-
-        
+        QLabel *epoch0Label;      
 
     public: 
         QVBoxLayout *layout;
