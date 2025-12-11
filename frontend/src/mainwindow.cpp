@@ -308,14 +308,14 @@ void MainWindow::setCrsList(QComboBox *comboBox){
     void MainWindow::openExistingProject(){
 
         std::cout << "début ouverture projet" << std::endl;
-            QDialog openProjectDialog;
+    QDialog openProjectDialog;
     openProjectDialog.setWindowTitle("Ouvrir un projet");
     
     QVBoxLayout *layout = new QVBoxLayout(&openProjectDialog);
     
     QLabel *dialogText = new QLabel("Sélectionnez le fichier projet à ouvrir", &openProjectDialog);
     
-    // Widget de chemin de fichier
+    // Widget file path 
     QHBoxLayout *filePathLayout = new QHBoxLayout();
     
     QLineEdit *pathTextZone = new QLineEdit(&openProjectDialog);
@@ -332,13 +332,13 @@ void MainWindow::setCrsList(QComboBox *comboBox){
     QHBoxLayout *buttonLayout = new QHBoxLayout();
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addWidget(acceptationButton);
-    
-    // Ajouter les widgets au layout
+
+    //Add the widget to the layout
     layout->addWidget(dialogText);
     layout->addLayout(filePathLayout);
     layout->addLayout(buttonLayout);
     
-    // Connexion du bouton Parcourir
+    // connection to the buttons
     connect(browseButton, &QPushButton::clicked, [&]() {
         QString filePath = QFileDialog::getOpenFileName(
             &openProjectDialog,
@@ -351,17 +351,16 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             pathTextZone->setText(filePath);
         }
     });
-    
-    // Connexions des boutons
+
     connect(acceptationButton, &QPushButton::clicked, &openProjectDialog, &QDialog::accept);
     connect(cancelButton, &QPushButton::clicked, &openProjectDialog, &QDialog::reject);
     
-    // Exécuter le dialogue
+    // Dialog
     if (openProjectDialog.exec() == QDialog::Accepted) {
         QString selectedPath = pathTextZone->text();
         
         if (!selectedPath.isEmpty()) {
-            // Vérifier que le fichier existe
+            // Verify the file existence
             QFileInfo fileInfo(selectedPath);
             if (fileInfo.exists()) {
                 std::cout << "Ouverture du fichier : " << selectedPath.toStdString() << std::endl;
@@ -382,4 +381,74 @@ void MainWindow::setCrsList(QComboBox *comboBox){
 
     void MainWindow::saveCurrentProject(){
         std::cout << "fermeture sauvegarde projet" << std::endl;
+        // Création de la fenêtre de dialogue
+    QDialog saveProjectDialog;
+    saveProjectDialog.setWindowTitle("Enregistrer le projet");
+    
+    QVBoxLayout *layout = new QVBoxLayout(&saveProjectDialog);
+    
+    QLabel *dialogText = new QLabel("Choisissez l'emplacement de sauvegarde", &saveProjectDialog);
+    
+    // file path widget
+    QHBoxLayout *filePathLayout = new QHBoxLayout();
+    
+    QLineEdit *pathTextZone = new QLineEdit(&saveProjectDialog);
+    pathTextZone->setPlaceholderText("Chemin du fichier...");
+    
+    // Set a default name if a project is open
+    if (currentProject != nullptr) {
+        pathTextZone->setText(QString::fromStdString(currentProject->getName()) + ".proj");
+    }
+    
+    QPushButton *browseButton = new QPushButton("Parcourir", &saveProjectDialog);
+    
+    filePathLayout->addWidget(pathTextZone);
+    filePathLayout->addWidget(browseButton);
+    
+    QPushButton *acceptationButton = new QPushButton("Enregistrer", &saveProjectDialog);
+    QPushButton *cancelButton = new QPushButton("Annuler", &saveProjectDialog);
+    
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(cancelButton);
+    buttonLayout->addWidget(acceptationButton);
+    
+    // add the widget to the layout
+    layout->addWidget(dialogText);
+    layout->addLayout(filePathLayout);
+    layout->addLayout(buttonLayout);
+    
+    // connecting the buttons
+    connect(browseButton, &QPushButton::clicked, [&]() {
+        QString filePath = QFileDialog::getSaveFileName(
+            &saveProjectDialog,
+            "Enregistrer le projet",
+            pathTextZone->text().isEmpty() ? QDir::homePath() : pathTextZone->text(),
+            "Fichiers projet (*.proj);;Fichiers XML (*.xml)"
+        );
+        
+        if (!filePath.isEmpty()) {
+            pathTextZone->setText(filePath);
+        }
+    });
+    
+    // connexion
+    connect(acceptationButton, &QPushButton::clicked, &saveProjectDialog, &QDialog::accept);
+    connect(cancelButton, &QPushButton::clicked, &saveProjectDialog, &QDialog::reject);
+    
+    // Dialog
+    if (saveProjectDialog.exec() == QDialog::Accepted) {
+        QString selectedPath = pathTextZone->text();
+        
+        if (!selectedPath.isEmpty()) {
+            std::cout << "Sauvegarde du projet à : " << selectedPath.toStdString() << std::endl;
+            
+            // TODO: Sauvegarder le projet dans le fichier
+            // saveProjectToFile(selectedPath);
+            
+        } else {
+            std::cerr << "Erreur : chemin vide" << std::endl;
+        }
+    } else {
+        std::cout << "Sauvegarde annulée" << std::endl;
+    }
     }
