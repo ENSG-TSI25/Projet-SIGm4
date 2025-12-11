@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]() {
                 layerManager->renameLayer(dialog);
             });
-
+    //connect (crsLabel)
 
 }
 
@@ -119,6 +119,9 @@ void MainWindow::getDateSelected(const QDate &date){
 
 }
 
+void MainWindow::getSRCSelected(){
+    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+}
 
 //The function to set the name, the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
@@ -164,6 +167,11 @@ void MainWindow::setNewProject(){
     connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
         QDate selectedDate = calendar->selectedDate();
         this->getDateSelected(selectedDate);
+    });
+    connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
+        ui->crsLabel->setText("CRS : " + crsList->currentText());
+    
+    //connect (crsList, &QComboBox::currentTextChanged, this, &MainWindow::getSRCSelected);
     });
 
     //Laying all widgets on the layout
