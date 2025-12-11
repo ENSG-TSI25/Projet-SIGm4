@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    //connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
     //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
 
     //Dialog management
@@ -116,15 +115,13 @@ void MainWindow::openDialog() {
 }
 
 void MainWindow::getDateSelected(const QDate &date){
-    //QDate initalDate= ui->calendar->selectedDate();
     ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
 
 }
 
 
-//The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
+//The function to set the name, the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject(){
-    //Creating new project
 
     //Creation of the dialog window
     QDialog chosingCRSDialog;
@@ -154,7 +151,7 @@ void MainWindow::setNewProject(){
     //The validator for blocking the user to enter a wrong date//TO FIX
     QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     //Setting range and decimals for the validator
-    doubleValidator->setRange(0, 2030, 3);
+    doubleValidator->setRange(1950, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
@@ -166,8 +163,6 @@ void MainWindow::setNewProject(){
 
     connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
         QDate selectedDate = calendar->selectedDate();
-        //emit getDateSelected(selectedDate);  // Émission du signal vers MainWindow
-        //this->getDateSelected(selectedDate);
         this->getDateSelected(selectedDate);
     });
 
@@ -176,20 +171,21 @@ void MainWindow::setNewProject(){
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    
     layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-  
-
     chosingCRSDialog.exec();
     
-    //for the moment, an empty project
-    Project* newProject = new Project("test_projet", 1950.0);
+    //for the moment, an empty mock project
+    Project* newProject = new Project("test_projet", 1950.03636363);
 
-
+    //Updating the currentProject attribute
     currentProject = newProject;
 
+    //Updating the display epoch of the project
+    ui->date->setText("Époque du projet:" + QString::number(currentProject->getEpoch0()));
+
+    //Debug
     std::cout << newProject->getName();
     std::cout << newProject->getEpoch0();
 
@@ -216,6 +212,7 @@ void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
         
 }
 
+//Function to compute the calendar date into decimal date
 float MainWindow::computeDate(int day, int month, int year){
     
     QDate start (year,1,1);

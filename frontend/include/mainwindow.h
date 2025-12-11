@@ -21,6 +21,9 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <string.h>
+
+
 #include <core/Project.hpp>
 
 
