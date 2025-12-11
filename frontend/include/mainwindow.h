@@ -21,7 +21,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
-class Layer; 
+class LayerManager; 
 
 class MainWindow : public QMainWindow
 {
@@ -32,7 +32,7 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
-    Projet* setNewProject();
+    void setNewProject();
     void updateScaleLabel(int scaleValue);
     Ui::MainWindow* getUi();
 
@@ -40,7 +40,8 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
-    Layer* layer;
+    Project* currentProject;
+    LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     void zoomIn_button();

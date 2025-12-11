@@ -9,13 +9,13 @@
 #include <QWidget>
 
 
-Layer::Layer(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
+LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
 {
 }
 
 
 
-void Layer::listFiles(){
+void LayerManager::listFiles(){
     mw->getUi()->selectedFileLabel->setText("");
 
     QWidget* parentWidget = qobject_cast<QWidget*>(parent());
@@ -35,7 +35,7 @@ void Layer::listFiles(){
 
 }
 
-void Layer::addFileToWidget() { 
+void LayerManager::addFileToWidget() { 
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
         QString layerName = filenameChar.last();
@@ -51,7 +51,7 @@ void Layer::addFileToWidget() {
 
 
 //Duplicate the layer when it's clicked
-void Layer::duplicateLayer(Dialog* dialog) {
+void LayerManager::duplicateLayer(Dialog* dialog) {
     QString name = dialog-> nameLayer();
     QListWidgetItem *item = new QListWidgetItem(name);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -62,11 +62,11 @@ void Layer::duplicateLayer(Dialog* dialog) {
 }
 
 //Rename layer selected
-void Layer::renameLayer(Dialog* dialog) {
+void LayerManager::renameLayer(Dialog* dialog) {
     duplicateLayer(dialog);
     int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
     mw->getUi() -> layersList -> takeItem(currentIndex);
 }
 
 
-Layer::~Layer() {}
+LayerManager::~LayerManager() {}

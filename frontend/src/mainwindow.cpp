@@ -28,9 +28,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow) 
 {
     ui->setupUi(this);
-    layer = new Layer(this);
+    layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layer, &Layer::listFiles);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, layer, &Layer::addFileToWidget);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
@@ -58,12 +58,12 @@ MainWindow::MainWindow(QWidget *parent)
     Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]() {
-                layer->duplicateLayer(dialog);
+                layerManager->duplicateLayer(dialog);
             });
 
     connect(dig->buttonRename, &QPushButton::clicked,
             this, [this]() {
-                layer->renameLayer(dialog);
+                layerManager->renameLayer(dialog);
             });
 
 
@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete layer;
+    delete layerManager;
     delete ui;
 }
 
@@ -112,20 +112,21 @@ void MainWindow::openDialog() {
 }
 
 //The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
-Project* MainWindow::setNewProject(){
+void MainWindow::setNewProject(){
     //Creating new project
-    Project* newProject = new Project("test");
 
     //Creation of the dialog window
     QDialog chosingCRSDialog;
     
     
-    chosingCRSDialog.setWindowTitle("Choix du CRS");
+    chosingCRSDialog.setWindowTitle("Nouveau projet");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
     QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
     
     //Widget for choosing the name of the project
+    QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
+    nameTextZone->setPlaceholderText("Entrez le nom du projet");
     
     //Widget for choosing the CRS of the project
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
@@ -165,7 +166,15 @@ Project* MainWindow::setNewProject(){
 
     chosingCRSDialog.exec();
     
-    return newProject;
+    //for the moment, an empty project
+    Project* newProject = new Project("test_projet", 1950.0);
+
+
+    currentProject = newProject;
+
+    std::cout << newProject->getName();
+    std::cout << newProject->getEpoch0();
+
 }
 
 /*void MainWindow::getCalendarDays(QCalendarWidget *calendarwidget){
