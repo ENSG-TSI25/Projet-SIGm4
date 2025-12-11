@@ -34,17 +34,18 @@ MainWindow::MainWindow(QWidget *parent)
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
+
+
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
+
+
     listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte);
     connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
-    //connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected); 
       
-    
-
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 

@@ -291,7 +291,7 @@
        <item>
         <widget class="QLabel" name="date">
          <property name="text">
-          <string>TextLabel</string>
+          <string>Epoch du projet</string>
          </property>
         </widget>
        </item>
