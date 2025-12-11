@@ -23,6 +23,8 @@
 
 #include <core/Project.hpp>
 
+#include <core/DataManager.hpp>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -48,6 +50,9 @@ public:
     void getSRCSelected();
 
     Ui::MainWindow* getUi();
+    
+    Carte* getCarte() { return carte; }
+    DataManager& getDataManager() { return dataManager; }
 
 private:
     Ui::MainWindow *ui;
@@ -59,6 +64,7 @@ private:
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
+    DataManager dataManager;
 
 };
 #endif // MAINWINDOW_H
