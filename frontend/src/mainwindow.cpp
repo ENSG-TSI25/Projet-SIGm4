@@ -172,8 +172,6 @@ void MainWindow::setNewProject(){
     });
     connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
         ui->crsLabel->setText("CRS : " + crsList->currentText());
-    
-    //connect (crsList, &QComboBox::currentTextChanged, this, &MainWindow::getSRCSelected);
     });
 
 
@@ -193,8 +191,6 @@ void MainWindow::setNewProject(){
     connect(epochTextZone, &QLineEdit::textChanged, this, [decimalDate, epochTextZone]() {
         decimalDate->setText("Date décimale : " + epochTextZone->text());
     });
-
-
 
     //Laying all widgets on the layout
     layout->addWidget(dialogText);
@@ -246,28 +242,11 @@ void MainWindow::setNewProject(){
         std::cout << "Époque : " << newProject->getEpoch0() << std::endl;
         std::cout << "CRS : " << newProject->getCrs() << std::endl;
         
-        // // Mettre à jour l'interface avec les informations du projet
-        // ui->crsLabel->setText("CRS : " + selectedCRS);
-        
     } else {
         std::cout << "Création du projet annulée" << std::endl;
         currentProject = nullptr;
 
         }
-
-    // chosingCRSDialog.exec();
-
-    // //for the moment, an empty project
-    // Project* newProject = new Project("test_projet", 1950.0);
-
-
-    // Project* newProject = new Project()
-    // std::cout << "TEST";
-
-    // currentProject = newProject;
-
-    // std::cout << newProject->getName();
-    // std::cout << newProject->getEpoch0();
 
 }
 
