@@ -12,16 +12,19 @@ void Layer::setCrs(const std::string& c)
 
     if (srs.SetFromUserInput(c.c_str()) == OGRERR_NONE) {
         srs.GetLinearUnits(&unitName);
-        if (unitName == "metre"){
-            coords_type = "cartesian";  
-        if (unitName == "degree"){
-            coords_type = "geographic";
+        if (srs.IsGeographic()) {
+            coords_type = "geodetic"; // Lat/Lon (Degrees)
+        } 
+        else if (srs.IsProjected()) {
+            coords_type = "projected"; // Lambert, UTM, etc. (Meters on map)
+        } 
+        else if (srs.IsGeocentric()) {
+            coords_type = "geocentric"; // Cartesian XYZ (Meters from Earth's center)
         }
         else {
             std::cout << "Invalid coordinate units";
             coords_type = "unknown";
         }
-    }
     } else {
         std::cout << "Invalid CRS input";
         coords_type = "unknown";

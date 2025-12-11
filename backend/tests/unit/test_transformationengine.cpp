@@ -13,32 +13,6 @@ protected:
     void SetUp() override {
         GDALAllRegister();
     }
-    
-    // Crée un GeoPackage de test avec timestamp
-    std::string createTestGpkg() {
-        std::string path = "/tmp/test_data.gpkg";
-        std::remove(path.c_str());
-        
-        GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
-        GDALDataset* ds = driver->Create(path.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
-        
-        OGRLayer* layer = ds->CreateLayer("test_layer", nullptr, wkbPoint, nullptr);
-        
-        // Ajoute un champ timestamp
-        OGRFieldDefn timeField("timestamp", OFTReal);
-        layer->CreateField(&timeField);
-        
-        // Ajoute une feature avec timestamp
-        OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
-        OGRPoint point(2.0, 48.0);
-        feature->SetGeometry(&point);
-        feature->SetField("timestamp", 2024.5);
-        layer->CreateFeature(feature);
-        OGRFeature::DestroyFeature(feature);
-        
-        GDALClose(ds);
-        return path;
-    }
 };
 
 // Builder
@@ -49,7 +23,6 @@ TEST_F(TransformationEngineTest, Constructor) {
 
 // Loading Valid File
 TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
-    //std::string path = createTestGpkg();
     std::string path = "/app/data/test_data.gpkg";
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
@@ -58,18 +31,26 @@ TEST_F(TransformationEngineTest, transformLayerAtEpoch) {
     
     TransformationEngine engine;
     VectorLayer* transformedLayer = engine.transformLayerAtEpoch(*layer, "4326");
-    
+    ASSERT_NE(transformedLayer, nullptr);
+
     auto geometries = transformedLayer->getGeometries();
     ASSERT_FALSE(geometries.empty());
     
     auto geom = geometries[0];
     OGRGeometry* ogrGeom = geom->getGeometry();
+    ASSERT_NE(ogrGeom, nullptr);
     OGRPoint* point = ogrGeom->toPoint();
+    ASSERT_NE(point, nullptr);
+
+    // Tolerances : 
+    double DEG_EPS = 1e-4; 
+    double H_EPS = 1e-3;
+
+    EXPECT_NEAR(point->getX(), 45.1232, DEG_EPS);
     
-    EXPECT_DOUBLE_EQ(point->getX(), -4893.69);
-    EXPECT_DOUBLE_EQ(point->getY(), -1618.46);
-    EXPECT_DOUBLE_EQ(point->getZ(), 0);
-    EXPECT_DOUBLE_EQ(geom->getT(),  1.18178e+09);
+    EXPECT_NEAR(point->getY(), -12.7136, DEG_EPS);
     
-    std::remove(path.c_str());
+    EXPECT_NEAR(point->getZ(), 0, H_EPS);
+    EXPECT_EQ(geom->getT(), 1.181779200e+09);
+    
 }
