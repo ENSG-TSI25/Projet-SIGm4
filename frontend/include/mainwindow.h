@@ -21,6 +21,9 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <string.h>
+
+
 #include <core/Project.hpp>
 
 
@@ -43,8 +46,7 @@ public:
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
-    void getDateSelected(const QDate &date);
-    void updateSelectedDate(const QDate &date);
+    void displayEpochProject(const QDate &date);
     void getSRCSelected();
 
     Ui::MainWindow* getUi();
