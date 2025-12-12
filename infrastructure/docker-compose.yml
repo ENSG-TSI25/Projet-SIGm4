@@ -54,7 +54,7 @@ services:
       - ${HOME}:/home/user 
 
     network_mode: "host"
-    command: tail -f /dev/null
+    # command: tail -f /dev/null
 
 volumes:
   pgdata:

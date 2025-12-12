@@ -47,28 +47,8 @@ MainWindow::MainWindow(QWidget *parent)
     // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
-    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
-    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
-    listDimension(); //dimension pour afficher le contenu de la combobox
-    carte = new Carte(ui->carte, this);
-    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
-    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
-    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
-    //connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected); 
-      
-    
 
-    connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
-    connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
-
-    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
-
-    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
-    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    //connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
-    //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
-
-    //Dialog management
+    // Dialog management
     connect(ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect(ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
     listDimension(); // dimension pour afficher le contenu de la combobox
@@ -167,8 +147,7 @@ void MainWindow::getSRCSelected()
     ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
-Project* MainWindow::getCurrentProject() { return currentProject; }
-
+Project *MainWindow::getCurrentProject() { return currentProject; }
 
 void MainWindow::setNewProject()
 {
@@ -190,7 +169,7 @@ void MainWindow::setNewProject()
     setCrsList(crsList);
 
     // Validation pour l'époque
-    QDoubleValidator* doubleValidator = new QDoubleValidator(&chosingCRSDialog);
+    QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
 
@@ -277,7 +256,6 @@ void MainWindow::setNewProject()
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
     qDebug() << "  Époque :" << currentProject->getEpoch0();
 }
-
 
 void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
 {
@@ -368,7 +346,6 @@ void MainWindow::saveProject()
         QMessageBox::critical(this, "Error", "Failed to save project.");
     }
 }
-
 
 // No parameters - for the "Open" button in UI
 void MainWindow::loadProject()
