@@ -204,7 +204,6 @@ GeodeticTransformer::Result GeodeticTransformer::projectedToGeocentric(
 // ----------------------------------------------------
 // 9. applyDefModel - GEODETIC (lon, lat, h)
 // ----------------------------------------------------
-// 
 GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeodetic(
     double lon_deg, double lat_deg, double h, double t_epoch,
     const std::string& json_model_path,
@@ -234,7 +233,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeodetic(
     };
 }
 
-// // ----------------------------------------------------
+// ----------------------------------------------------
 // 10. applyDefModel - GEOCENTRIC (X, Y, Z)
 // ----------------------------------------------------
 GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeocentric(
@@ -267,7 +266,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeocentric(
 // ----------------------------------------------------
 // 11. applyDefModel - PROJECTED (E, N, H)
 // ----------------------------------------------------
-Result applyDefModelProjected(
+GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
     double E, double N, double H, double t_epoch,
     const std::string& json_model_path,
     bool inverse)
