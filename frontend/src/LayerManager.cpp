@@ -13,6 +13,10 @@
 #include <QDebug>
 #include <gdal_priv.h>
 #include <qgsvectorlayer.h>
+#include <QMessageBox>
+
+#include "core/Project.hpp"
+#include "core/VectorLayer.hpp"
 
 
 LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
@@ -34,46 +38,42 @@ void LayerManager::listFiles(){
     
     if (fileName.isEmpty()) return;
     
-    // Display selected file
-    QStringList filenameChar = fileName.split(u'/');
-    mw->getUi()->selectedFileLabel->setText(
-        QString("Fichier sélectionné: %1").arg(filenameChar.last())
-    );
-    mw->getUi()->selectedFileLabel->setWordWrap(true);
-    
-    // Check if raster or vector
-    GDALAllRegister();
-    GDALDataset* dataset = (GDALDataset*)GDALOpenEx(
-        fileName.toStdString().c_str(),
-        GDAL_OF_READONLY | GDAL_OF_RASTER | GDAL_OF_VECTOR,
-        nullptr, nullptr, nullptr
-    );
-    
-    if (!dataset) {
-        qWarning() << "Cannot open file:" << fileName;
-        return;
-    }
-    
-    bool isRaster = (dataset->GetRasterCount() > 0);
-    GDALClose(dataset);
-    
-    // Route to appropriate loader
-    if (isRaster) {
-        loadRasterLayerFromFile(fileName);
-    } else {
-        loadVectorLayerFromFile(fileName);
-    }
+
 }
 
 void LayerManager::addFileToWidget() { 
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
         QString layerName = filenameChar.last();
-        QListWidgetItem *item = new QListWidgetItem(layerName);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
 
-        mw->getUi()->layersList->addItem(item);
+
+        mw->getUi()->selectedFileLabel->setText(
+            QString("Fichier sélectionné: %1").arg(filenameChar.last())
+        );
+        mw->getUi()->selectedFileLabel->setWordWrap(true);
+        
+        // Check if raster or vector
+        GDALAllRegister();
+        GDALDataset* dataset = (GDALDataset*)GDALOpenEx(
+            fileName.toStdString().c_str(),
+            GDAL_OF_READONLY | GDAL_OF_RASTER | GDAL_OF_VECTOR,
+            nullptr, nullptr, nullptr
+        );
+        
+        if (!dataset) {
+            qWarning() << "Cannot open file:" << fileName;
+            return;
+        }
+        
+        bool isRaster = (dataset->GetRasterCount() > 0);
+        GDALClose(dataset);
+        
+        // Route to appropriate loader
+        if (isRaster) {
+            loadRasterLayerFromFile(fileName);
+        } else {
+            loadVectorLayerFromFile(fileName);
+        }
 
         fileName = "";
     }
@@ -114,6 +114,14 @@ void LayerManager::loadRasterLayerFromFile(const QString& file) {
     
     if (layer->isValid()) {
         QgsProject::instance()->addMapLayer(layer);
+
+        QStringList filenameChar = fileName.split(u'/');
+        QString layerName = filenameChar.last();
+        QListWidgetItem *item = new QListWidgetItem(layerName);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Checked);
+
+        mw->getUi()->layersList->addItem(item);
         
         QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
         QList<QgsMapLayer*> newOrder;
@@ -146,6 +154,17 @@ void LayerManager::loadRasterLayerFromFile(const QString& file) {
 }
 
 void LayerManager::loadVectorLayerFromFile(const QString& file) {
+    Project* proj = mw->getCurrentProject();
+    if (!proj) {
+        QMessageBox::warning(
+            nullptr,
+            "Projet manquant",
+            "Aucun projet actif. Impossible d'ajouter une couche."
+        );
+        return;
+    }
+
+
     qDebug() << "Loading vector layer from:" << file;
     
     // Open vector layer with OGR
@@ -159,6 +178,12 @@ void LayerManager::loadVectorLayerFromFile(const QString& file) {
     
     // Add to project
     QgsProject::instance()->addMapLayer(layer);
+
+    QListWidgetItem* item = new QListWidgetItem(QFileInfo(file).baseName());
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+    mw->getUi()->layersList->addItem(item);
+
     
     // Layer ordering (data layers before basemaps)
     QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();

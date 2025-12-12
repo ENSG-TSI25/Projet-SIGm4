@@ -31,6 +31,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class LayerManager; 
+class Carte;
 
 class MainWindow : public QMainWindow
 {
@@ -53,6 +54,9 @@ public:
     
     Carte* getCarte() { return carte; }
     DataManager& getDataManager() { return dataManager; }
+
+
+    Project* getCurrentProject();
 
 private:
     Ui::MainWindow *ui;

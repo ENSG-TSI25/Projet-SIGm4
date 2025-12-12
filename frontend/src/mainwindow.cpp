@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
     listDimension(); //dimension pour afficher le contenu de la combobox
-    carte = new Carte(ui->carte);
+    carte = new Carte(ui->carte, this);
     connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
@@ -124,79 +124,106 @@ void MainWindow::getSRCSelected(){
     ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
-//The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
-void MainWindow::setNewProject(){
-    //Creating new project
+Project* MainWindow::getCurrentProject() { return currentProject; }
 
-    //Creation of the dialog window
+//The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
+void MainWindow::setNewProject() {
+    // Création de la fenêtre de dialogue
     QDialog chosingCRSDialog;
-    
-    
     chosingCRSDialog.setWindowTitle("Nouveau projet");
-    QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
-    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
-    QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
-    
-    //Widget for choosing the name of the project
-    QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
+    QVBoxLayout* layout = new QVBoxLayout(&chosingCRSDialog);
+
+    QLabel* dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QPushButton* acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+
+    // Zone de texte pour le nom du projet
+    QLineEdit* nameTextZone = new QLineEdit(&chosingCRSDialog);
     nameTextZone->setPlaceholderText("Entrez le nom du projet");
-    
-    //Widget for choosing the CRS of the project
-    QComboBox *crsList = new QComboBox(&chosingCRSDialog);
+
+    // ComboBox pour le CRS
+    QComboBox* crsList = new QComboBox(&chosingCRSDialog);
     crsList->setPlaceholderText("Entrez le code EPSG du CRS");
     setCrsList(crsList);
-    
-    //Widget for choosing the epoch0 of the project by entering the exact geodectic date
-    QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
+
+    // Zone de texte pour l'époque
+    QLineEdit* epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
-    
-    //Widget for choosing the epoch0 of the project by selecting the date on a calendar
-    QCalendarWidget *calendar= new QCalendarWidget(&chosingCRSDialog);
-    
-    //The validator for blocking the user to enter a wrong date//TO FIX
-    QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
-    //Setting range and decimals for the validator
+
+    // Validation pour l'époque
+    QDoubleValidator* doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
-    
-    QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);   
+
+    // Calendrier pour choisir la date
+    QCalendarWidget* calendar = new QCalendarWidget(&chosingCRSDialog);
+    QLabel* decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);   
     getCalendarDays(calendar, decimalDate);
-     
+
+    // Connexions
     QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
 
     connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
         QDate selectedDate = calendar->selectedDate();
         this->getDateSelected(selectedDate);
     });
-    connect (crsList, &QComboBox::currentTextChanged, this, [this, crsList] () {
+
+    connect(crsList, &QComboBox::currentTextChanged, this, [this, crsList]() {
         ui->crsLabel->setText("CRS : " + crsList->currentText());
-    
-    //connect (crsList, &QComboBox::currentTextChanged, this, &MainWindow::getSRCSelected);
     });
 
-    //Laying all widgets on the layout
+    // Layout
     layout->addWidget(dialogText);
+    layout->addWidget(nameTextZone);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    
     layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-  
+    // Exécution du dialogue
+    if (chosingCRSDialog.exec() != QDialog::Accepted) {
+        qDebug() << "Création de projet annulée.";
+        return;
+    }
 
-    chosingCRSDialog.exec();
-    
-    //for the moment, an empty project
-    Project* newProject = new Project("test_projet", 1950.0);
+    // Récupérer les valeurs saisies par l'utilisateur
+    QString projectName = nameTextZone->text().trimmed();
+    QString selectedCrs = crsList->currentText().trimmed();
+    double epoch = epochTextZone->text().toDouble();
+
+    // Valeurs par défaut si l'utilisateur n'a rien saisi
+    if (projectName.isEmpty()) projectName = "ProjetSansNom";
+    if (selectedCrs.isEmpty()) {
+        selectedCrs = "EPSG:2154"; // CRS par défaut
+    } else {
+        // Extraire le code EPSG si le format est "Nom (xxxx)"
+        QRegExp rx("\\((\\d+)\\)");
+        if (rx.indexIn(selectedCrs) != -1) {
+            QString code = rx.cap(1);
+            selectedCrs = "EPSG:" + code;  // Convertit en format standard EPSG
+        }
+    }
 
 
+    // Création d'un nouveau projet avec les valeurs saisies
+    Project* newProject = new Project(
+        projectName.toStdString(),   // Nom du projet
+        epoch,                       // Époque
+        selectedCrs.toStdString()    // CRS (format "EPSG:xxxx")
+    );
+
+    // Stocker dans currentProject
     currentProject = newProject;
 
-    std::cout << newProject->getName();
-    std::cout << newProject->getEpoch0();
+    qDebug() << "Nom du projet :" << projectName;
+    qDebug() << "CRS sélectionné :" << selectedCrs;
+    qDebug() << "Époque :" << epoch;
+
+    qDebug() << "Nouveau projet créé :";
+    qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
+    qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
+    qDebug() << "  Époque :" << currentProject->getEpoch0();
 
 }
 
@@ -248,6 +275,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "ETRF2000 (9067)",
             "RGF93v2b (9784)",
             "RGM23 (10673)",
+            "RGF93v1 (2154)",
             
         };
         comboBox->addItems(items);
