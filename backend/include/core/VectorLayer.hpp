@@ -11,7 +11,7 @@ private:
 
 public:
     VectorLayer(const std::string& nom_, const std::string& crs_ = "EPSG:4326",
-                double epoque_ = 0.0, std::string coords_type_ = "geographic", const std::string& dataSource_ = "")
+                double epoque_ = 0.0, std::string coords_type_ = "geodetic", const std::string& dataSource_ = "")
         : Layer(nom_, crs_, epoque_, coords_type_, dataSource_) {}
 
     

@@ -93,6 +93,6 @@ VectorLayer* TransformationEngine::transformLayerAtEpoch(VectorLayer& inputLayer
     //     std::cout<<"Coordonnées après projection : "<< x_out << " " << y_out << " " << z_out << " " << t_out << "\n";
     // }
 
-    inputLayer.setCrs(epsg_dst);
+    inputLayer.setCrs("EPSG:"+epsg_dst);
     return &inputLayer;
 }

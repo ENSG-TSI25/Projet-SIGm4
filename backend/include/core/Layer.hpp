@@ -27,7 +27,7 @@ public:
     std::string getDataSource() const { return dataSource; }
 
     void setName(const std::string &n) { nom = n; }
-    void setCrs(const std::string &c) { crs = c; }
+    void setCrs(const std::string &c);
     void setEpoque(double e) { epoque = e; }
     void setDataSource(const std::string& path) { dataSource = path; }
 
