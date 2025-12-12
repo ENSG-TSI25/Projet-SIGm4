@@ -8,6 +8,17 @@
 #include <QWheelEvent>
 #include <qgsmapcanvas.h>
 #include <QWidget>
+
+#include <core/DataManager.hpp>
+#include <core/RasterLayer.hpp>
+#include <QDebug>
+#include <gdal_priv.h>
+#include <qgsvectorlayer.h>
+#include <QMessageBox>
+
+#include "core/Project.hpp"
+#include "core/VectorLayer.hpp"
+
 #include <qgsmapcanvas.h>
 #include <QDebug>
 #include <core/DataManager.hpp>
@@ -22,26 +33,17 @@ LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(" ")
 
 void LayerManager::listFiles() {
     mw->getUi()->selectedFileLabel->setText("");
-
     QWidget* parentWidget = qobject_cast<QWidget*>(parent());
-
+    
     fileName = QFileDialog::getOpenFileName(
         parentWidget,
         tr("Open window"),
         "$PWD",
         tr("Files (*.gpkg)")
     );
-
-    if (fileName.isEmpty()) {
-        return;
-    }
-
-    QStringList filenameChar = fileName.split(u'/');
-    mw->getUi()->selectedFileLabel->setText(
-        QString("Fichier sélectionné: %1").arg(filenameChar.last())
-    );
-    mw->getUi()->selectedFileLabel->setWordWrap(true);
-    qDebug() << "FileName: " << fileName;
+    
+    if (fileName.isEmpty()) return;
+    
 
 }
 
@@ -49,6 +51,36 @@ void LayerManager::addFileToWidget() {
     if (!fileName.isEmpty()) {
         QStringList filenameChar = fileName.split(u'/');
         QString layerName = filenameChar.last();
+
+
+        mw->getUi()->selectedFileLabel->setText(
+            QString("Fichier sélectionné: %1").arg(filenameChar.last())
+        );
+        mw->getUi()->selectedFileLabel->setWordWrap(true);
+        
+        // Check if raster or vector
+        GDALAllRegister();
+        GDALDataset* dataset = (GDALDataset*)GDALOpenEx(
+            fileName.toStdString().c_str(),
+            GDAL_OF_READONLY | GDAL_OF_RASTER | GDAL_OF_VECTOR,
+            nullptr, nullptr, nullptr
+        );
+        
+        if (!dataset) {
+            qWarning() << "Cannot open file:" << fileName;
+            return;
+        }
+        
+        bool isRaster = (dataset->GetRasterCount() > 0);
+        GDALClose(dataset);
+        
+        // Route to appropriate loader
+        if (isRaster) {
+            loadRasterLayerFromFile(fileName);
+        } else {
+            loadVectorLayerFromFile(fileName);
+        }
+
         QListWidgetItem *item = new QListWidgetItem(layerName);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
@@ -154,6 +186,7 @@ void LayerManager::addFileToWidget() {
         
         fileName = "";
     }
+
 }
 
 
@@ -251,3 +284,116 @@ void LayerManager::displayLayerFromFile(const std::string& filepath, const std::
 
 
 LayerManager::~LayerManager() {}
+
+
+void LayerManager::loadRasterLayerFromFile(const QString& file) {
+    RasterLayer* raster = mw->getDataManager().loadRaster(file.toStdString());
+    if (!raster) return;
+    
+    QString gpkgUri = QString::fromStdString(raster->getFilePath());
+    QgsRasterLayer* layer = new QgsRasterLayer(
+        gpkgUri, QString::fromStdString(raster->getName()), "gdal"
+    );
+    
+    if (layer->isValid()) {
+        QgsProject::instance()->addMapLayer(layer);
+
+        QStringList filenameChar = fileName.split(u'/');
+        QString layerName = filenameChar.last();
+        QListWidgetItem *item = new QListWidgetItem(layerName);
+        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        item->setCheckState(Qt::Checked);
+
+        mw->getUi()->layersList->addItem(item);
+        
+        QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
+        QList<QgsMapLayer*> newOrder;
+        
+        for (auto* l : allLayers) {
+            if (l->name() != "OSM" && l->name() != "Satellite") {
+                newOrder.prepend(l);
+            }
+        }
+        for (auto* l : allLayers) {
+            if (l->name() == "OSM" || l->name() == "Satellite") {
+                newOrder.append(l);
+            }
+        }
+        
+        mw->getCarte()->getCanvas()->setLayers(newOrder);
+        
+        QgsCoordinateTransform transform(
+            layer->crs(), 
+            QgsCoordinateReferenceSystem("EPSG:3857"),
+            QgsProject::instance()
+        );
+        mw->getCarte()->getCanvas()->setExtent(
+            transform.transformBoundingBox(layer->extent())
+        );
+        mw->getCarte()->getCanvas()->refresh();
+    } else {
+        delete layer;
+    }
+}
+
+void LayerManager::loadVectorLayerFromFile(const QString& file) {
+    Project* proj = mw->getCurrentProject();
+    if (!proj) {
+        QMessageBox::warning(
+            nullptr,
+            "Projet manquant",
+            "Aucun projet actif. Impossible d'ajouter une couche."
+        );
+        return;
+    }
+
+
+    qDebug() << "Loading vector layer from:" << file;
+    
+    // Open vector layer with OGR
+    QgsVectorLayer* layer = new QgsVectorLayer(file, QFileInfo(file).baseName(), "ogr");
+    
+    if (!layer->isValid()) {
+        qWarning() << "Invalid vector layer:" << file;
+        delete layer;
+        return;
+    }
+    
+    // Add to project
+    QgsProject::instance()->addMapLayer(layer);
+
+    QListWidgetItem* item = new QListWidgetItem(QFileInfo(file).baseName());
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+    mw->getUi()->layersList->addItem(item);
+
+    
+    // Layer ordering (data layers before basemaps)
+    QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
+    QList<QgsMapLayer*> newOrder;
+    
+    for (auto* l : allLayers) {
+        if (l->name() != "OSM" && l->name() != "Satellite") {
+            newOrder.prepend(l);
+        }
+    }
+    for (auto* l : allLayers) {
+        if (l->name() == "OSM" || l->name() == "Satellite") {
+            newOrder.append(l);
+        }
+    }
+    
+    mw->getCarte()->getCanvas()->setLayers(newOrder);
+    
+    // Zoom to layer extent with CRS transform
+    QgsCoordinateTransform transform(
+        layer->crs(), 
+        QgsCoordinateReferenceSystem("EPSG:3857"),
+        QgsProject::instance()
+    );
+    
+    mw->getCarte()->getCanvas()->setExtent(
+        transform.transformBoundingBox(layer->extent())
+    );
+    mw->getCarte()->getCanvas()->refresh();
+}

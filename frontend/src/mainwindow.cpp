@@ -47,6 +47,28 @@ MainWindow::MainWindow(QWidget *parent)
     // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
+    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
+    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
+    listDimension(); //dimension pour afficher le contenu de la combobox
+    carte = new Carte(ui->carte, this);
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
+    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+    //connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected); 
+      
+    
+
+    connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
+    connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
+
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
+
+    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
+    //connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
+    //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
+
+    //Dialog management
     connect(ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect(ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
     listDimension(); // dimension pour afficher le contenu de la combobox
@@ -145,6 +167,24 @@ void MainWindow::getSRCSelected()
     ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
+Project* MainWindow::getCurrentProject() { return currentProject; }
+
+//The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
+void MainWindow::setNewProject() {
+    // Création de la fenêtre de dialogue
+    QDialog chosingCRSDialog;
+    chosingCRSDialog.setWindowTitle("Nouveau projet");
+    QVBoxLayout* layout = new QVBoxLayout(&chosingCRSDialog);
+
+    QLabel* dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QPushButton* acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+
+    // Zone de texte pour le nom du projet
+    QLineEdit* nameTextZone = new QLineEdit(&chosingCRSDialog);
+    nameTextZone->setPlaceholderText("Entrez le nom du projet");
+
+    // ComboBox pour le CRS
+    QComboBox* crsList = new QComboBox(&chosingCRSDialog);
 // The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject()
 {
@@ -166,6 +206,11 @@ void MainWindow::setNewProject()
     setCrsList(crsList);
 
     // Zone de texte pour l'époque
+    QLineEdit* epochTextZone = new QLineEdit(&chosingCRSDialog);
+    epochTextZone->setPlaceholderText("Entrez l'époque");
+
+    // Validation pour l'époque
+    QDoubleValidator* doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
 

@@ -12,7 +12,7 @@
 #include <qgsrasterlayer.h>
 
 Carte::Carte(QWidget* containerFrame, MainWindow* mw)
-    : osmVisible(true) , QObject(mw), mw(mw), carteEpsg("EPSG:2154")
+    : osmVisible(true) , QObject(mw), mw(mw)
 {
     initCanvas(containerFrame);
     initLayers();
@@ -21,14 +21,8 @@ Carte::Carte(QWidget* containerFrame, MainWindow* mw)
     canvas->zoomToFullExtent();
     canvas->refresh();
 }
-
 Carte::~Carte() {}
 
-
-
-std::string Carte::getCarteEpsg(){
-    return carteEpsg;
-}
 
 void Carte::initCanvas(QWidget* containerFrame)
 {

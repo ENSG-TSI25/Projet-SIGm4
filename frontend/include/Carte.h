@@ -41,7 +41,6 @@ private:
     // Layers
     QgsRasterLayer* osmLayer;
     QgsRasterLayer* satLayer;
-
     bool osmVisible;
 
     // UI (facultatif si tu veux mettre les boutons ailleurs)
@@ -58,5 +57,4 @@ private:
     void updateLabels();
 
     void toggleBaseLayer();
-    QgsPointXY wgs84ToMercator(double lon, double lat);
 };

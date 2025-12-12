@@ -22,6 +22,8 @@
 
 #include <core/Project.hpp>
 
+#include <core/DataManager.hpp>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -52,6 +54,12 @@ public:
     void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
+    
+    Carte* getCarte() { return carte; }
+    DataManager& getDataManager() { return dataManager; }
+
+
+    Project* getCurrentProject();
 
 
 private:
@@ -64,6 +72,7 @@ private:
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
+    DataManager dataManager;
 
 
 private slots:
