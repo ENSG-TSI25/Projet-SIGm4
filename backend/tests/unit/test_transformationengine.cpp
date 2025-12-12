@@ -36,9 +36,9 @@ protected:
         srs.importFromEPSG(epsgCode);
         srs.SetAxisMappingStrategy(OAMS_TRADITIONAL_GIS_ORDER); // Lon/X, Lat/Y
 
-        // Détection du type pour savoir quelles coordonnées injecter
-        bool isProjected = srs.IsProjected();
-        bool isGeocentric = srs.IsGeocentric();
+        // Coordinate type check
+        bool isGeocentric = srs.IsGeocentric() || epsgCode == 4978 || epsgCode == 4936;
+        bool isProjected = srs.IsProjected() || epsgCode == 3857 || epsgCode == 9794;
         
         // Layer initialization
         OGRLayer* layer = ds->CreateLayer("layer_0", &srs, wkbPoint25D, nullptr);
@@ -47,21 +47,19 @@ protected:
         OGRFieldDefn fieldEpoch("epoch", OFTReal);
         layer->CreateField(&fieldEpoch);
 
-        // Feature
+        // Feature initialization
         OGRFeature* feature = OGRFeature::CreateFeature(layer->GetLayerDefn());
         
-        // COORDONNÉES DE TEST (Champs-sur-Marne)
+        // CTest point coordinates
         OGRPoint point;
         
         if (isGeocentric) {
             // XYZ (approx ITRF/WGS84 ECEF)
-            // X=4201713, Y=195245, Z=4779483
             point.setX(4201713.4);
             point.setY(195245.7);
             point.setZ(4779483.5);
         }
         else if (isProjected) {
-            // Coordonnées approximatives selon le système pour éviter d'être hors zone
             if (epsgCode == 3857) { // WebMercator
                 point.setX(296183.7); point.setY(6242493.5); point.setZ(0.0);
             }
@@ -69,16 +67,15 @@ protected:
                 point.setX(659341.0); point.setY(6856536.0); point.setZ(0.0);
             }
             else { 
-                // Fallback UTM ou autre (Mètres génériques)
+                // UTM or other projected CRS
                 point.setX(500000.0); point.setY(5000000.0); point.setZ(0.0);
             }
         }
         else {
-            // Géographique (Degrés)
-            // Lon ~ 2.66, Lat ~ 48.81
+            // Geodetic (Degrees)
             point.setX(2.660663); 
             point.setY(48.808875); 
-            point.setZ(100.0); // Hauteur ellipsoïdale
+            point.setZ(100.0);
         }
 
         feature->SetGeometry(&point);
@@ -94,10 +91,10 @@ protected:
 
 // ---------------------------------------------------------------------------
 // TEST 1 : Projected (WebMercator) -> Geodetic (ETRF2000)
-// [Format: Mètres -> Degrés]
+// [Format: Metres -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
-    // 1. Source : WebMercator (3857) - Mètres
+    // Source : WebMercator (3857) - Metres
     std::string path = createGpkgForEPSG(3857, "WebMercator", 2025.0);
     
     DataManager dm;
@@ -105,104 +102,194 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
     ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:3857");
 
-    // 2. Cible : ETRF2000 Geo (EPSG:9067) - Degrés
+    // Target : ETRF2000 Geo (EPSG:9067) - Degrees
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9067");
     
     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
-    // Verification (Lon ~2.66, Lat ~48.81)
+    // Verification
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
     EXPECT_NEAR(p->getY(), 48.80887, 1e-4);
 }
 
 // ---------------------------------------------------------------------------
 // TEST 2 : Geodetic 2D (ITRF2014) -> Projected (Lambert-93)
-// [Format: Degrés -> Mètres]
+// [Format: Degrees -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
-    // 1. Source : ITRF2014 2D (9000) - Degrés
+    // Source : ITRF2014 2D (9000) - Degrees
     std::string path = createGpkgForEPSG(9000, "ITRF2014", 2025.0);
     
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
     ASSERT_NE(layer, nullptr);
 
-    // 2. Cible : RGF93 / Lambert-93 (EPSG:9794) - Mètres
+    // Cible : RGF93 / Lambert-93 (EPSG:9794) - Metres
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9794");
 
     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
-    // Verification Lambert-93 (approx 659k, 6856k)
+    // Verification
     EXPECT_NEAR(p->getX(), 675078.85, 10.0);
     EXPECT_NEAR(p->getY(), 6856587.17, 10.0);
 }
 
 // ---------------------------------------------------------------------------
 // TEST 3 : Geodetic 3D (ITRF2014) -> Geodetic 3D (ETRF2000)
-// [Format: Degrés -> Degrés]
+// [Format: Degrees -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
-    // 1. Source : ITRF2014 3D (7912)
+    // Source : ITRF2014 3D (7912)
     std::string path = createGpkgForEPSG(7912, "ITRF2014_3D", 2025.0);
     
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
 
-    // 2. Cible : ETRF2000 3D (7931)
+    // Cible : ETRF2000 3D (7931)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:7931");
 
     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
-    // Verification : Doit rester en degrés
+    // Verification
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
     EXPECT_NEAR(p->getY(), 48.80887, 1e-4);
-    // Le Z et les coords bougent légèrement à cause du changement de plaque tectonique
 }
 
 // ---------------------------------------------------------------------------
 // TEST 4 : Geocentric (XYZ) -> Geodetic (LatLon)
-// [Format: Mètres -> Degrés]
+// [Format: Metres -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
-    // 1. Source : WGS84 Geocentric (4978) - XYZ
-    // Note: createGpkgForEPSG va générer des coordonnées XYZ ~4M
+    // Source : WGS84 Geocentric (4978) - XYZ
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
     
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
     
-    // 2. Cible : RGF93 LatLon (EPSG:4171)
+    // Cible : RGF93 LatLon (EPSG:4171)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4171");
 
     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
-    // Verification : On doit retrouver nos degrés
-    EXPECT_NEAR(p->getX(), 2.66, 0.1); // Tolérance large car XYZ approximatif généré
+    // Verification
+    EXPECT_NEAR(p->getX(), 2.66, 0.1);
     EXPECT_NEAR(p->getY(), 48.80, 0.1);
 }
 
 // ---------------------------------------------------------------------------
-// TEST 5 : Projected -> Projected (Lambert-93 -> WebMercator)
-// [Format: Mètres -> Mètres]
+// TEST 5 : Geodetic (LatLon) (XYZ) -> Geocentric
+// [Format: Metres -> Degrees]
+// ---------------------------------------------------------------------------
+TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
+    // Source : RGF93 LatLon (EPSG:4171)
+    std::string path = createGpkgForEPSG(4171, "RGF93_LatLon", 2025.0);
+    DataManager dm; VectorLayer* layer = dm.loadVector(path);
+    
+    // Cible : WGS84 Geocentric (4978) - XYZ
+    TransformationEngine engine;
+    VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
+
+    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+
+    // Verification XYZ
+    EXPECT_NEAR(p->getX(), 4203981.7, 10.0);
+    EXPECT_NEAR(p->getY(), 195362.1, 10.0);
+    EXPECT_NEAR(p->getZ(), 4776663.0, 10.0);
+}
+
+// ---------------------------------------------------------------------------
+// TEST 6 : Projected -> Projected (Lambert-93 -> WebMercator)
+// [Format: Metres -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
-    // 1. Source : Lambert-93 (9794)
+    // Source : Lambert-93 (9794)
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
     
     DataManager dm;
     VectorLayer* layer = dm.loadVector(path);
 
-    // 2. Cible : WebMercator (3857)
+    // Cible : WebMercator (3857)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:3857");
 
     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
-    // Verification WebMercator
+    // Verification
     EXPECT_NEAR(p->getX(), 272329.82, 10.0);
     EXPECT_NEAR(p->getY(), 6242280.42, 10.0);
+}
+
+// ---------------------------------------------------------------------------
+// TEST 7 : Geocentric (XYZ) -> Geocentric (XYZ)
+// [Format: Metres -> Metres]
+// ---------------------------------------------------------------------------
+TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
+    // Source : WGS84 Geocentric (4978) - XYZ
+    std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
+    
+    DataManager dm;
+    VectorLayer* layer = dm.loadVector(path);
+    ASSERT_NE(layer, nullptr);
+    ASSERT_EQ(layer->getCrs(), "EPSG:4978");
+
+    // Target : ETRF2000 Geocentric (EPSG:4936)
+    TransformationEngine engine;
+    VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4936");
+
+    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+
+    // Verification 
+    EXPECT_NEAR(p->getX(), 4201713.4, 10.0); 
+    EXPECT_NEAR(p->getY(), 195245.7, 10.0);
+    EXPECT_NEAR(p->getZ(), 4779483.5, 10.0);
+    
+}
+
+// ---------------------------------------------------------------------------
+// TEST 8 : Geocentric (XYZ) -> Projected (Lambert-93)
+// [Format: Mètres -> Metres]
+// ---------------------------------------------------------------------------
+TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
+    // Source : WGS84 Geocentric (4978) - XYZ
+    std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
+    
+    DataManager dm;
+    VectorLayer* layer = dm.loadVector(path);
+
+    // Target : RGF93 / Lambert-93 (EPSG:9794)
+    TransformationEngine engine;
+    VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9794");
+
+    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+
+    // Verification
+    EXPECT_NEAR(p->getX(), 675083.16, 10.0);
+    EXPECT_NEAR(p->getY(), 6860152.98, 10.0);
+    EXPECT_NEAR(p->getZ(), 727.69, 10.0);
+}
+// ---------------------------------------------------------------------------
+// TEST 9 : Projected (Lambert-93) -> Geocentric (XYZ)
+// [Format: Metres -> Metres]
+// ---------------------------------------------------------------------------
+TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
+    // Source : Lambert-93 (9794) - Metres
+    std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
+    DataManager dm;
+    VectorLayer* layer = dm.loadVector(path);
+    ASSERT_EQ(layer->getCrs(), "EPSG:9794");
+
+    // Target : WGS84 Geocentric (EPSG:4978) - XYZ
+    TransformationEngine engine;
+    VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
+
+    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+
+    // Verification 
+    EXPECT_NEAR(p->getX(), 4204722.53, 10.0);
+    EXPECT_NEAR(p->getY(), 179639.87, 10.0);
+    EXPECT_NEAR(p->getZ(), 4776495.43, 10.0);
 }
