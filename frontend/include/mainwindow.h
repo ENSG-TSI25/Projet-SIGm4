@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QString>
 #include <QComboBox>
-#include "Carte.h"
 #include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
@@ -49,6 +48,10 @@ public:
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
     void getSRCSelected();
+    LayerManager* getLayerManager(); 
+    Project* getCurrentProject();
+    Carte* getCarte();
+    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
     
@@ -57,6 +60,7 @@ public:
 
 
     Project* getCurrentProject();
+
 
 private:
     Ui::MainWindow *ui;
@@ -70,5 +74,9 @@ private:
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
 
+
+private slots:
+    void saveProject();
+    void loadProject();
 };
 #endif // MAINWINDOW_H

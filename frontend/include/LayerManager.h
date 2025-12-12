@@ -42,6 +42,7 @@ public:
     
     void loadRasterLayerFromFile(const QString& file);
     void loadVectorLayerFromFile(const QString& file);
+    void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
 
 
 private:

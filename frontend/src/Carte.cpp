@@ -40,7 +40,7 @@ void Carte::initCanvas(QWidget* containerFrame)
     canvas->enableAntiAliasing(true);
 
     // *** IMPORTANT ***
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsMapToolPan* panTool = new QgsMapToolPan(canvas);
     canvas->setMapTool(panTool);
@@ -51,7 +51,7 @@ void Carte::initCanvas(QWidget* containerFrame)
 
 void Carte::initLayers()
 {
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     osmLayer = new QgsRasterLayer(
         "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0",
@@ -65,8 +65,8 @@ void Carte::initLayers()
         "wms"
     );
 
-    osmLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
-    satLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    osmLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
+    satLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsProject::instance()->addMapLayer(osmLayer);
     QgsProject::instance()->addMapLayer(satLayer);

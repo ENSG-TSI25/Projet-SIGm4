@@ -19,6 +19,7 @@
 #include "../ui/ui_mainwindow.h"
 #include "mainwindow.h"
 
+
 class MainWindow;
 
 class Carte : public QObject
@@ -30,6 +31,7 @@ public:
     ~Carte();
 
     QgsMapCanvas* getCanvas() { return canvas; }
+    std::string getCarteEpsg();
 
 private:
     MainWindow* mw;
@@ -44,6 +46,7 @@ private:
     // UI (facultatif si tu veux mettre les boutons ailleurs)
 
     QPushButton* toggleBasemap;
+    std::string carteEpsg;
 
     QVBoxLayout* layout;
 
