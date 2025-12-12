@@ -169,23 +169,7 @@ void MainWindow::getSRCSelected()
 
 Project* MainWindow::getCurrentProject() { return currentProject; }
 
-//The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
-void MainWindow::setNewProject() {
-    // Création de la fenêtre de dialogue
-    QDialog chosingCRSDialog;
-    chosingCRSDialog.setWindowTitle("Nouveau projet");
-    QVBoxLayout* layout = new QVBoxLayout(&chosingCRSDialog);
 
-    QLabel* dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
-    QPushButton* acceptationButton = new QPushButton("OK", &chosingCRSDialog);
-
-    // Zone de texte pour le nom du projet
-    QLineEdit* nameTextZone = new QLineEdit(&chosingCRSDialog);
-    nameTextZone->setPlaceholderText("Entrez le nom du projet");
-
-    // ComboBox pour le CRS
-    QComboBox* crsList = new QComboBox(&chosingCRSDialog);
-// The function to set the CRS and the epoch of a new project when clicking on "Nouveau"
 void MainWindow::setNewProject()
 {
     // Création de la fenêtre de dialogue
@@ -205,17 +189,12 @@ void MainWindow::setNewProject()
     crsList->setPlaceholderText("Entrez le code EPSG du CRS");
     setCrsList(crsList);
 
-    // Zone de texte pour l'époque
-    QLineEdit* epochTextZone = new QLineEdit(&chosingCRSDialog);
-    epochTextZone->setPlaceholderText("Entrez l'époque");
-
     // Validation pour l'époque
     QDoubleValidator* doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Entrez l'époque");
 
     // Validation pour l'époque
-    QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     doubleValidator->setRange(0, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
     epochTextZone->setValidator(doubleValidator);
@@ -299,7 +278,6 @@ void MainWindow::setNewProject()
     qDebug() << "  Époque :" << currentProject->getEpoch0();
 }
 
-Project *MainWindow::getCurrentProject() { return currentProject; }
 
 void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
 {

@@ -55,11 +55,9 @@ public:
 
     Ui::MainWindow* getUi();
     
-    Carte* getCarte() { return carte; }
     DataManager& getDataManager() { return dataManager; }
 
 
-    Project* getCurrentProject();
 
 
 private:

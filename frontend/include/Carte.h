@@ -31,7 +31,7 @@ public:
     ~Carte();
 
     QgsMapCanvas* getCanvas() { return canvas; }
-    std::string getCarteEpsg();
+    std::string getCarteEpsg() { return carteEpsg; }
 
 private:
     MainWindow* mw;
