@@ -49,11 +49,10 @@ public:
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();
-
+    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
 
-    Project* getCurrentProject() { return currentProject; }
 
 private:
     Ui::MainWindow *ui;
@@ -65,10 +64,10 @@ private:
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
-    
+
 
 private slots:
     void saveProject();
-
+    void loadProject();
 };
 #endif // MAINWINDOW_H

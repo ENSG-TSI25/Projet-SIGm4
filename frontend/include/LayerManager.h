@@ -36,8 +36,7 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
-
-        
+    void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
 
 
 private:
