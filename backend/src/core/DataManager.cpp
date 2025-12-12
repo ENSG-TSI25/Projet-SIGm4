@@ -1,5 +1,4 @@
 #include <core/DataManager.hpp>
-#include <core/GeoPackageReader.hpp>
 #include <iostream>
 
 
@@ -20,6 +19,10 @@ std::vector<VectorLayer*> DataManager::loadVector(const std::string &chemin)
     auto couches = reader.listLayers();
     if (couches.empty())
         return loadedLayers;
+
+    // Lecture des métadonnées de la première couche
+    auto metadata = reader.getLayerMetadata(couches[0]);
+    auto layer = std::make_shared<VectorLayer>(couches[0], metadata.crs, metadata.referenceEpoch, metadata.coords_type);
 
 
      for (const auto& layerName : couches)

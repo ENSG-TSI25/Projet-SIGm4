@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.14)
-
 # Google Test
 cmake_minimum_required(VERSION 3.28)
 include(FetchContent)
@@ -30,6 +28,8 @@ add_executable(unit_tests
     test_geometry4d.cpp
     test_datamanager.cpp
     test_geopackagereader.cpp
+    test_proj.cpp
+    test_transformationengine.cpp
     test_project_class.cpp
     ${TEST_SOURCES}
 )

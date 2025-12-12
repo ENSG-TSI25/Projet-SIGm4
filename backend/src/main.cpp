@@ -1,10 +1,8 @@
 #include <Application.hpp>
 #include <iostream>
-#include "core/proj_test.hpp"
 
 int main() {
     try {
-        // proj_test();
         Application app;
         app.initialize();
         app.run();

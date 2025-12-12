@@ -2,6 +2,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <core/GeoPackageReader.hpp>
 #include <core/VectorLayer.hpp>
 #include <core/RasterLayer.hpp>
 
