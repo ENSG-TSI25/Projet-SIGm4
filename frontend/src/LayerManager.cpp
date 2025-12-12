@@ -9,11 +9,14 @@
 #include <QWidget>
 
 #include <core/DataManager.hpp>
+#include <core/Layer.hpp>
 #include <core/RasterLayer.hpp>
+#include <core/Project.hpp>
 #include <QDebug>
+#include <vector>
 
 
-LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName("")
+LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), layerRaster()
 {
 }
 
@@ -46,7 +49,7 @@ void LayerManager::addFileToWidget() {
         QListWidgetItem *item = new QListWidgetItem(layerName);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
-
+        
         mw->getUi()->layersList->addItem(item);
 
         fileName = "";
@@ -82,11 +85,12 @@ void LayerManager::loadRasterLayer() {
     if (!raster) return;
     
     QString gpkgUri = QString::fromStdString(raster->getFilePath());
-    QgsRasterLayer* layer = new QgsRasterLayer(
+    layerRaster = new QgsRasterLayer(
         gpkgUri, QString::fromStdString(raster->getName()), "gdal");
     
-    if (layer->isValid()) {
-        QgsProject::instance()->addMapLayer(layer);
+    if (layerRaster->isValid()) {
+        qDebug() << "TEST TEST TEST";
+        QgsProject::instance()->addMapLayer(layerRaster);
         
         // Récupère tous les layers
         QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
@@ -107,13 +111,30 @@ void LayerManager::loadRasterLayer() {
         mw->getCarte()->getCanvas()->setLayers(newOrder);
         
         // Zoom avec transformation CRS
-        QgsCoordinateTransform transform(layer->crs(), 
+        QgsCoordinateTransform transform(layerRaster->crs(), 
             QgsCoordinateReferenceSystem("EPSG:3857"),
             QgsProject::instance());
         mw->getCarte()->getCanvas()->setExtent(
-            transform.transformBoundingBox(layer->extent()));
+            transform.transformBoundingBox(layerRaster->extent()));
         mw->getCarte()->getCanvas()->refresh();
     } else {
-        delete layer;
+        delete layerRaster;
     }
+}
+
+//Connect checkbox with the project layers
+void LayerManager::displayLayer() {
+    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
+    QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
+
+    Project* proj = mw -> getCurrentProject();
+    std::vector<Layer> layerList = proj -> getLayers();
+    Layer test = layerList[currentIndex];
+
+    if (item -> checkState() == Qt::Checked) {
+        mw -> getCurrentProject()-> addLayer(test);      
+    }
+    if (item -> checkState() == Qt::Unchecked) {
+        mw -> getCurrentProject()-> rmLayer(test);
+    }   
 }

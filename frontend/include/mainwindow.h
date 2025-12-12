@@ -53,6 +53,7 @@ public:
     
     Carte* getCarte() { return carte; }
     DataManager& getDataManager() { return dataManager; }
+    Project* getCurrentProject() { return currentProject; }
 
 private:
     Ui::MainWindow *ui;

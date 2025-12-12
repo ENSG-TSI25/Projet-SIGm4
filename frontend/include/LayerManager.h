@@ -7,6 +7,7 @@
 #include <QFileDialog>
 
 #include <qgsmapcanvas.h>
+#include <qgsmaplayer.h>
 #include <qgsvectorlayer.h>
 #include <qgsproject.h>
 #include <qgsmaptoolpan.h>
@@ -39,7 +40,8 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
-    void loadRasterLayer(); 
+    void loadRasterLayer();
+    void displayLayer(); 
 
         
 
@@ -47,5 +49,6 @@ public:
 private:
     MainWindow* mw;
     QString fileName;
+    QgsRasterLayer* layerRaster;
 
 };

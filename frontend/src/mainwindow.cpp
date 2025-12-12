@@ -19,6 +19,7 @@
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include <iostream>
 #include <QDate>
 
@@ -56,9 +57,13 @@ MainWindow::MainWindow(QWidget *parent)
     //connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
     //connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
 
+    //checkbox
+    qDebug() << "++++++";
+    connect (ui->layersList, &QListWidget::itemChanged, layerManager, &LayerManager::displayLayer);
+
     //Dialog management
     dialog = new Dialog();
-    connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
+    connect (ui->layersList, &QListWidget::itemDoubleClicked, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]() {
