@@ -31,6 +31,7 @@ add_executable(unit_tests
     test_proj.cpp
     test_transformationengine.cpp
     test_project_class.cpp
+    test_projectmanager.cpp
     ${TEST_SOURCES}
 )
 

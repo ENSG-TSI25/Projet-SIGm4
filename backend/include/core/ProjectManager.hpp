@@ -1,17 +1,23 @@
 #pragma once
 #include <vector>
-#include <proj.h>
+#include <memory>
 #include "Layer.hpp"
 #include "Project.hpp"
+#include "TransformationEngine.hpp"
 
-class ProjectManager
-{
+class ProjectManager {
 private:
     Project project;
+    std::unique_ptr<TransformationEngine> engine;
 
 public:
-    ProjectManager(Project project__);
+    explicit ProjectManager(const Project& project_);
     ~ProjectManager();
 
-    std::vector<Layer> applyProjectParameters(Project projet_);
+    // Applique les transformations du projet sur toutes les couches
+    std::vector<std::shared_ptr<Layer>> applyProjectParameters();
+    
+    // Accesseurs
+    const Project& getProject() const { return project; }
+    void setProject(const Project& proj) { project = proj; }
 };

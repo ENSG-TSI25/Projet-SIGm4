@@ -18,15 +18,16 @@ Project::~Project() {
     layerList.clear();
 }
 
-void Project::addLayer(const Layer &l) {
+void Project::addLayer(std::shared_ptr<Layer> l) {
     layerList.push_back(l);
 }
 
-void Project::rmLayer(const Layer &l) {
-    std::vector<Layer>::iterator it = std::find(layerList.begin(), layerList.end(), l);
-    if (it != layerList.end()) {
-        layerList.erase(it);
-    }
+void Project::rmLayer(const std::shared_ptr<Layer>& l) {
+    layerList.erase(
+        std::remove_if(layerList.begin(), layerList.end(),
+            [&l](const auto& layer) { return *layer == *l; }),
+        layerList.end()
+    );
 }
 
 bool Project::save(const std::string& filepath) const {
@@ -45,12 +46,11 @@ bool Project::save(const std::string& filepath) const {
     Value layersArray(kArrayType);
     for (const auto& layer : layerList) {
         Value layerObj(kObjectType);
-        layerObj.AddMember("name", Value(layer.getName().c_str(), allocator), allocator);
-        layerObj.AddMember("crs", Value(layer.getCrs().c_str(), allocator), allocator);
-        layerObj.AddMember("epoch", layer.getEpoch(), allocator);
-        
+        layerObj.AddMember("name", Value(layer->getName().c_str(), allocator), allocator);
+        layerObj.AddMember("crs", Value(layer->getCrs().c_str(), allocator), allocator);
+        layerObj.AddMember("epoch", layer->getEpoch(), allocator);
+        layerObj.AddMember("dataSource", Value(layer->getDataSource().c_str(), allocator), allocator);
 
-        layerObj.AddMember("dataSource", Value(layer.getDataSource().c_str(), allocator), allocator);
         
         layersArray.PushBack(layerObj, allocator);
     }
@@ -108,7 +108,7 @@ Project Project::load(const std::string& filepath) {
             dataSource = layerObj["dataSource"].GetString();
         }
         
-        layers.push_back(Layer(layerName, layerCrs, layerEpoch, dataSource));
+        layers.push_back(Layer(layerName, layerCrs, layerEpoch, "geodetic", dataSource));
     }
     
     std::cout << "Projet chargé: " << filepath << std::endl;
@@ -117,5 +117,9 @@ Project Project::load(const std::string& filepath) {
     std::cout << "  - Époque: " << epoch0 << std::endl;
     std::cout << "  - Couches: " << layers.size() << std::endl;
     
-    return Project(name, epoch0, crs, layers);
+    std::vector<std::shared_ptr<Layer>> sharedLayers;
+    for (auto& layer : layers) {
+        sharedLayers.push_back(std::make_shared<Layer>(layer));
+    }
+    return Project(name, epoch0, crs, sharedLayers);
 }

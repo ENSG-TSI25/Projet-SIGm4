@@ -7,6 +7,11 @@
 #include <cmath>
 #include <core/Project.hpp>
 #include <core/Layer.hpp>
+#include <core/ProjectManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <core/RasterLayer.hpp>
+
+
 Application::Application()
 {
     DBConfig cfg = DBConfig::loadFromEnv();
@@ -152,17 +157,19 @@ void Application::run()
         Project testProject("Projet Test Vendée", 2025.0, "EPSG:2154");
 
         // Ajouter des couches avec le chemin source
+
         for (size_t i = 0; i < layers.size(); ++i)
         {
             auto *vectorLayer = layers[i];
-            Layer simpleLayer(
+            auto simpleLayer = std::make_shared<Layer>(
                 vectorLayer->getName(),
                 vectorLayer->getCrs(),
                 vectorLayer->getEpoch(),
+                "geodetic",
                 vectorLayer->getDataSource());
             testProject.addLayer(simpleLayer);
             std::cout << "Couche ajoutée: " << vectorLayer->getName()
-                      << " (source: " << vectorLayer->getDataSource() << ")" << std::endl;
+                    << " (source: " << vectorLayer->getDataSource() << ")" << std::endl;
         }
 
         std::cout << "Projet créé avec " << testProject.getLayers().size() << " couches" << std::endl;
@@ -199,8 +206,8 @@ void Application::run()
             std::cout << "\nCouches et leurs sources:" << std::endl;
             for (const auto &layer : loadedProject.getLayers())
             {
-                std::cout << "  - " << layer.getName()
-                          << " -> " << layer.getDataSource() << std::endl;
+                std::cout << "  - " << layer->getName()
+                        << " -> " << layer->getDataSource() << std::endl;
             }
 
             // Afficher le contenu du fichier JSON
@@ -251,4 +258,51 @@ void Application::run()
             }
         }
     }
+
+    std::cout << "\n=======================================" << std::endl;
+    std::cout << "=== TEST PROJECT MANAGER TRANSFORM (VECTOR ONLY) ===" << std::endl;
+    std::cout << "=======================================" << std::endl;
+
+    // Projet cible différent du CRS source
+    Project pmProject("PM Test", 2025.0, "EPSG:4326");
+
+    for (auto* vlayer : layers)
+    {
+        auto sharedVec = std::shared_ptr<VectorLayer>(vlayer, [](VectorLayer*) {});
+        pmProject.addLayer(sharedVec);
+
+        std::cout << "Added VectorLayer: "
+                << sharedVec->getName()
+                << " | CRS=" << sharedVec->getCrs()
+                << " | CoordsType=" << sharedVec->getCoordsType()
+                << std::endl;
+    }
+
+    ProjectManager pm(pmProject);
+    auto resultLayers = pm.applyProjectParameters();
+
+    for (const auto& layer : resultLayers)
+    {
+        auto vec = std::dynamic_pointer_cast<VectorLayer>(layer);
+        if (!vec)
+            continue;
+
+        std::cout << "VectorLayer: " << vec->getName()
+                << " | CRS after PM: " << vec->getCrs()
+                << " | CoordsType=" << vec->getCoordsType()
+                << std::endl;
+
+        // Assertion correcte
+        if (vec->getCrs() == pmProject.getCrs())
+        {
+            std::cout << "✓ CRS applied by ProjectManager" << std::endl;
+        }
+        else
+        {
+            std::cerr << "❌ CRS not applied correctly" << std::endl;
+        }
+    }
+
+
+
 }
