@@ -34,7 +34,7 @@ void Application::run()
     DataManager dm;
 
     // Test with your data file
-    std::string filePath = "/app/backend/data/ZoneSensible_MYT.gpkg";
+    std::string filePath = "/app/backend/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg";
     auto layers = dm.loadVector(filePath);
 
     if (layers.empty())

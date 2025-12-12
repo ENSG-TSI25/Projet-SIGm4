@@ -27,8 +27,8 @@ public:
     void setEpoque(double e) { epoque = e; }
     void setDataSource(const std::string& path) { dataSource = path; }
 
-    bool operator==(const Layer& other) const {
+      bool operator==(const Layer& other) const {
         return nom == other.nom && crs == other.crs && 
                epoque == other.epoque && dataSource == other.dataSource;
-    bool operator==(const Layer &other) const
+    }
 };
