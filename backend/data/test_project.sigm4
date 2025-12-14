@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "format": "SIGM4",
+  "name": "Projet Test Vendée",
+  "crs": "EPSG:2154",
+  "epoch0": 2025.0,
+  "layers": [
+    {
+      "name": "ZoneSensible_MYT",
+      "crs": "EPSG:4471",
+      "epoch": 0.0,
+      "dataSource": "/app/backend/data/ZoneSensible_MYT.gpkg"
+    }
+  ]
+}
