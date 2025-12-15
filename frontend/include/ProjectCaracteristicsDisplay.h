@@ -1,11 +1,12 @@
 #ifndef PROJECTCARACTERISTICSDISPLAY_H
 #define PROJECTCARACTERISTICSDISPLAY_H
 
-
+//Qt library
 #include <QWidget>
 #include <QLabel>
 #include <QVBoxLayout>
 
+//Backend library
 #include <core/Project.hpp>
 
 class MainWindow;

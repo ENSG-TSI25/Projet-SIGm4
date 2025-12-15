@@ -1,46 +1,4 @@
 #include "../include/mainwindow.h"
-#include "../include/LayerManager.h"
-#include "../include/TransformCRS.h"
-
-#include <QFileDialog>
-#include <QComboBox>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QWheelEvent>
-#include <qgsmapcanvas.h>
-#include <QLineEdit>
-#include <QLabel>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QDoubleValidator>
-#include <QDialog>
-#include <QCalendarWidget>
-#include <QDialogButtonBox>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include <QString>
-#include <QStringList>
-#include <QListWidget>
-#include <iostream>
-#include <QDate>
-#include <QDebug>
-#include "../include/Carte.h"
-
-#include <core/Project.hpp>
-#include <QMessageBox>
-
-#include <QMessageBox>
-#include <QDir>
-
-#include <core/DataManager.hpp>
-#include <core/VectorLayer.hpp>
-#include <qgsvectorlayer.h>
-#include <qgsfield.h>
-#include <qgsfeature.h>
-#include <qgsgeometry.h>
-#include <qgsproject.h>
-
-#include <gdal_priv.h>    //Updating the display of the project
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)

@@ -1,31 +1,60 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QString>
-#include <QComboBox>
+//Standard libraries
+#include <string.h>
+#include <iostream>
+
+//Backend library
+#include <core/DataManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <core/RasterLayer.hpp>
+#include <core/Project.hpp>
+
+//Frontend files
 #include "LayerManager.h"
+#include "ProjectCaracteristicsDisplay.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
+#include "Carte.h"
+
+//Qt library
+#include <QWidget>
+#include <QMainWindow>
+#include <QString>
+#include <QStringList>
+#include <QComboBox>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>
-#include <qgsmapcanvas.h>
-#include <QLabel>
 #include <QCalendarWidget>
 #include <QPushButton>
 #include <QLineEdit>
-#include <QComboBox>
 #include <QVBoxLayout>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QLabel>
+#include <QDoubleValidator>
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QListWidget>
 #include <QDate>
+#include <QDebug>
+#include <QMessageBox>
+#include <QDir>
 
-#include <string.h>
+//Qgis cpp API library
+#include <qgsmapcanvas.h>
+#include <qgsvectorlayer.h>
+#include <qgsfield.h>
+#include <qgsfeature.h>
+#include <qgsgeometry.h>
+#include <qgsproject.h>
 
-#include "../include/ProjectCaracteristicsDisplay.h"
-#include <core/Project.hpp>
-
-#include <core/DataManager.hpp>
+//Importing Gdal for updating the display of the project
+#include <gdal_priv.h>    
 
 
 QT_BEGIN_NAMESPACE
@@ -52,7 +81,7 @@ public:
     QCalendarWidget *calendar,
     QLabel *decimalDate,
     QLineEdit *epochEdit
-);
+    );
 
     float computeDate(int day, int month, int year);
     void updateSelectedDate(const QDate &date);
@@ -64,9 +93,6 @@ public:
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
-
-
-
 
 private:
     Ui::MainWindow *ui;
@@ -82,9 +108,9 @@ private:
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
 
-
 private slots:
     void saveProject();
     void loadProject();
 };
+
 #endif // MAINWINDOW_H
