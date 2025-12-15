@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "format": "SIGM4",
-  "name": "Projet Test Vendée",
+  "name": "Test Project",
   "crs": "EPSG:2154",
   "epoch0": 2025.0,
   "layers": [

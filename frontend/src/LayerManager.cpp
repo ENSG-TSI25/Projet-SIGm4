@@ -25,6 +25,8 @@
 #include "core/Project.hpp"
 #include "core/VectorLayer.hpp"
 #include "core/DataManager.hpp"
+#include <core/GeoPackageReader.hpp>
+
 
 LayerManager::LayerManager(MainWindow *mw) : QObject(mw), mw(mw), fileName(" ")
 {
@@ -419,7 +421,26 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
         {
             l->setDataSource(file.toStdString());
             proj->addLayer(*l);
-            qDebug() << "Added to backend Project:" << QString::fromStdString(l->getName());
+
+            // Check temporal data
+            if (!l->hasTemporalData())
+            {
+                QMessageBox::StandardButton reply = QMessageBox::question(
+                    nullptr,
+                    "No Temporal Field Detected",
+                    QString("Layer '%1' has no temporal field (t, time, date).\nWould you like to add one?")
+                        .arg(QString::fromStdString(l->getName())),
+                    QMessageBox::Yes | QMessageBox::No);
+
+                if (reply == QMessageBox::Yes)
+                {
+                    showAddTemporalFieldDialog(file, l->getName());
+                }
+            }
+            else
+            {
+                qDebug() << "Layer has temporal field:" << QString::fromStdString(l->getTimestampField());
+            }
         }
     }
 
@@ -468,4 +489,56 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
 
     mw->getCarte()->getCanvas()->setExtent(transformedExtent);
     mw->getCarte()->getCanvas()->refresh();
+}
+
+void LayerManager::showAddTemporalFieldDialog(const QString &filePath, const std::string &layerName)
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Add Temporal Field");
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel("Field name:"));
+
+    QLineEdit *fieldInput = new QLineEdit("t");
+    layout->addWidget(fieldInput);
+
+    layout->addWidget(new QLabel("Default epoch value:"));
+    QLineEdit *epochInput = new QLineEdit("2025.0");
+    layout->addWidget(epochInput);
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            QString fieldName = fieldInput->text();
+            double epochValue = epochInput->text().toDouble();
+
+            GeoPackageReader reader(filePath.toStdString());
+            if (reader.open())
+            {
+                bool success = reader.addTemporalField(layerName, fieldName.toStdString(), epochValue);
+                reader.close();
+
+                if (success)
+                {
+                    QMessageBox::information(nullptr, "Success",
+                                             QString("Temporal field '%1' added successfully").arg(fieldName));
+                    // Reload layer
+                    loadVectorLayerFromFile(filePath);
+                }
+                else
+                {
+                    QMessageBox::critical(nullptr, "Error", "Failed to add temporal field");
+                }
+            }
+        }
+        QMessageBox::information(nullptr, "Info",
+                                 "Backend function to add temporal field not yet implemented");
+    }
 }
