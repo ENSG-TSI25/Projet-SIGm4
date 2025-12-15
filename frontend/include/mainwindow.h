@@ -55,9 +55,7 @@ public:
 );
 
     float computeDate(int day, int month, int year);
-    void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
-    void getSRCSelected();
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();

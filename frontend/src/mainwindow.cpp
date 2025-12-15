@@ -181,17 +181,6 @@ Carte *MainWindow::getCarte()
     return carte;
 }
 
-void MainWindow::getDateSelected(const QDate &date)
-{
-    // QDate initalDate= ui->calendar->selectedDate();
-    // ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
-}
-
-void MainWindow::getSRCSelected()
-{
-    // ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
-}
-
 Project *MainWindow::getCurrentProject() { return currentProject; }
 
 
@@ -395,29 +384,6 @@ float MainWindow::computeDate(int day, int month, int year)
     return deci_date;
 }
 
-// // Function to set the targetted comboBox to show the list of CRS accepted by the project
-// void MainWindow::setCrsList(QComboBox *comboBox)
-// {
-//     comboBox->clear();
-//     QStringList items = {
-//         "ITRF2020 (9990)",
-//         "ITRF2014 (9000)",
-//         "ITRF2008 (8999)",
-//         "ITRF2005 (8998)",
-//         "ITRF2000 (8987)",
-//         "ETRF2020 (10571)",
-//         "ETRF2014 (9069)",
-//         "ETRF2005 (9068)",
-//         "ETRF2000 (9067)",
-//         "RGF93v2b (9784)",
-//         "RGM23 (10673)",
-//         "RGF93v1 (2154)",
-
-//     };
-//     comboBox->addItems(items);
-// }
-
-
 void MainWindow::setCrsList(QComboBox *comboBox){
     comboBox->clear();
     
@@ -571,17 +537,11 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getCrs(),
             loadedProject.getLayers());
 
-        // Update UI with project information
-        //for now commentend because problem
-        // ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
-
         double epoch = currentProject->getEpoch0();
         int year = static_cast<int>(epoch);
         double fractionalYear = epoch - year;
         int dayOfYear = static_cast<int>(fractionalYear * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
-        //for now commentend because problem
-        // ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
 
         ui->layersList->clear();
 
