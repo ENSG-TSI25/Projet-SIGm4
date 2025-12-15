@@ -340,9 +340,14 @@ void MainWindow::setNewProject()
     carte->getCanvas()->setDestinationCrs(projectCrs);
 
     qDebug() << "Nouveau projet créé :";
-    qDebug() << "  Nom   :" << projectName;
-    qDebug() << "  CRS   :" << selectedCrs;
-    qDebug() << "  Epoch :" << epoch;
+    qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
+    qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
+    qDebug() << "  Époque :" << currentProject->getEpoch0();
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }
 
 
@@ -720,10 +725,6 @@ void MainWindow::loadProject(const QString &filepath)
                 }
             }
         }
-    //Updating the display of the project
-    // projectDisplay->updateDisplayName();
-    // projectDisplay->updateDisplayCRS();
-    // projectDisplay->updateDisplayEpoch0();
         canvas->refresh();
 
         QMessageBox::information(
@@ -742,4 +743,9 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }
