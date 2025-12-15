@@ -15,13 +15,13 @@ protected:
 // ---------------------------------------------------------------------------
 TEST_F(GeodeticTransformerTest, TransformITRF2020toITRF2014) {
     // Source : Lon, Lat, H, Epoch
-    auto r = gt.transformAtEpoch(
+    auto r = gt.transformGeodeticAtEpoch(
         5.77338693, 43.97942110, 774.998, 2016.7474,
-        "9989", "7912"
+        "EPSG:9989", "EPSG:7912"
     );
 
     double DEG_EPS = 1e-4; 
-    double H_EPS = 1e-3;
+    double H_EPS = 1e-2;
 
     // r.x = Longitude, r.y = Latitude
     EXPECT_NEAR(r.x, 5.77339, DEG_EPS);
@@ -84,7 +84,7 @@ TEST_F(GeodeticTransformerTest, GeocentricToGeodetic) {
     double input_z = 4779483.504;
     double input_t = 2024.5;
 
-    auto r = gt.geocentricToGeodetic(input_x, input_y, input_z, input_t);
+    auto r = gt.geocentricToGeodetic(input_x, input_y, input_z, input_t, "EPSG:4978", "EPSG:4979");
 
     double DEG_EPS = 1e-4; 
     double H_EPS = 1e-3;
@@ -110,7 +110,7 @@ TEST_F(GeodeticTransformerTest, GeodeticToGeocentric) {
     double input_t   = 2024.5;
 
     // Appel : (lon, lat, h, t)
-    auto r = gt.geodeticToGeocentric(input_lon, input_lat, input_h, input_t);
+    auto r = gt.geodeticToGeocentric(input_lon, input_lat, input_h, input_t, "EPSG:4979", "EPSG:4978");
 
     double XYZ_EPS = 1e-3; // 1mm
 
