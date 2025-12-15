@@ -25,6 +25,7 @@
 #include "../include/Carte.h"
 
 #include <core/Project.hpp>
+#include <QMessageBox>
 
 #include <QMessageBox>
 #include <QDir>
@@ -149,52 +150,75 @@ void MainWindow::getSRCSelected()
 
 Project *MainWindow::getCurrentProject() { return currentProject; }
 
+
+
 void MainWindow::setNewProject()
 {
-    // Création de la fenêtre de dialogue
-    QDialog chosingCRSDialog;
+    
+    QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
 
-    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QLabel *dialogText = new QLabel(
+        "Choisissez un CRS et une époque pour votre projet",
+        &chosingCRSDialog
+    );
+
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
 
-    // Zone de texte pour le nom du projet
+
     QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
     nameTextZone->setPlaceholderText("Entrez le nom du projet");
 
-    // ComboBox pour le CRS
+
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
-    crsList->setPlaceholderText("Entrez le code EPSG du CRS");
+    crsList->setPlaceholderText("Choisissez un CRS");
     setCrsList(crsList);
 
-    // Validation pour l'époque
-    QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
-    epochTextZone->setPlaceholderText("Entrez l'époque");
+    epochTextZone->setPlaceholderText("Ex : 2025.22");
+    epochTextZone->setLocale(QLocale::c());
 
-    // Validation pour l'époque
-    doubleValidator->setRange(0, 2030, 3);
-    doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    epochTextZone->setValidator(doubleValidator);
+    QDoubleValidator *epochValidator = new QDoubleValidator(0, 3000, 6, &chosingCRSDialog);
+    epochValidator->setNotation(QDoubleValidator::StandardNotation);
+    epochTextZone->setValidator(epochValidator);
 
-    // Calendrier pour choisir la date
+
     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
     QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
-    getCalendarDays(calendar, decimalDate);
 
-    // Connexions
-    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
+    // Met à jour epochTextZone quand on clique sur le calendrier
+    getCalendarDays(calendar, decimalDate, epochTextZone);
 
-    connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]()
-            {
-        QDate selectedDate = calendar->selectedDate();
-        this->getDateSelected(selectedDate); });
+    // Met à jour le calendrier quand on tape une epoch
+    connect(epochTextZone, &QLineEdit::editingFinished, this, [=]() {
+        bool ok = false;
+        double epoch = QLocale::c().toDouble(epochTextZone->text(), &ok);
+        if (!ok || epoch <= 0) return;
 
-    connect(crsList, &QComboBox::currentTextChanged, this, [this, crsList]()
-            { ui->crsLabel->setText("CRS : " + crsList->currentText()); });
+        int year = static_cast<int>(epoch);
+        double frac = epoch - year;
 
-    // Layout
+        int daysInYear = QDate::isLeapYear(year) ? 366 : 365;
+        int dayOfYear = static_cast<int>(frac * daysInYear);
+
+        QDate date(year, 1, 1);
+        date = date.addDays(dayOfYear);
+
+        if (date.isValid())
+            calendar->setSelectedDate(date);
+    });
+
+ 
+    connect(acceptationButton, &QPushButton::clicked,
+            &chosingCRSDialog, &QDialog::accept);
+
+    connect(crsList, &QComboBox::currentTextChanged,
+            this, [this, crsList]() {
+                ui->crsLabel->setText("CRS : " + crsList->currentText());
+            });
+
+
     layout->addWidget(dialogText);
     layout->addWidget(nameTextZone);
     layout->addWidget(crsList);
@@ -203,80 +227,113 @@ void MainWindow::setNewProject()
     layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-    // Exécution du dialogue
     if (chosingCRSDialog.exec() != QDialog::Accepted)
     {
         qDebug() << "Création de projet annulée.";
         return;
     }
 
-    // Récupérer les valeurs saisies par l'utilisateur
+
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
-    double epoch = epochTextZone->text().toDouble();
 
-    // Valeurs par défaut si l'utilisateur n'a rien saisi
+    bool epochOk = false;
+    double epoch = QLocale::c().toDouble(epochTextZone->text(), &epochOk);
+
+
     if (projectName.isEmpty())
-        projectName = "ProjetSansNom";
+    {
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez saisir un nom de projet.");
+        return;
+    }
+
     if (selectedCrs.isEmpty())
     {
-        selectedCrs = "EPSG:2154"; // CRS par défaut
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez sélectionner un CRS.");
+        return;
     }
-    else
+
+    if (!epochOk || epoch <= 0)
     {
-        // Extraire le code EPSG si le format est "Nom (xxxx)"
-        QRegExp rx("\\((\\d+)\\)");
-        if (rx.indexIn(selectedCrs) != -1)
-        {
-            QString code = rx.cap(1);
-            selectedCrs = "EPSG:" + code; // Convertit en format standard EPSG
-        }
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez saisir une époque valide.\n"
+                             "Exemple : 2025.22");
+        return;
     }
 
-    // Epoch par défaut si non valide
-    if (epoch <= 0)
-        epoch = 0.0;
+    // Extraire EPSG si nécessaire
+    QRegExp rx("\\((\\d+)\\)");
+    if (rx.indexIn(selectedCrs) != -1)
+    {
+        selectedCrs = "EPSG:" + rx.cap(1);
+    }
 
-    // Création d'un nouveau projet avec les valeurs saisies
     Project *newProject = new Project(
-        projectName.toStdString(), // Nom du projet
-        epoch,                     // Époque
-        selectedCrs.toStdString()  // CRS (format "EPSG:xxxx")
+        projectName.toStdString(),
+        epoch,
+        selectedCrs.toStdString()
     );
 
-    // Stocker dans currentProject
     currentProject = newProject;
 
-    qDebug() << "Nom du projet :" << projectName;
-    qDebug() << "CRS sélectionné :" << selectedCrs;
-    qDebug() << "Époque :" << epoch;
+    QgsCoordinateReferenceSystem projectCrs(
+        QString::fromStdString(currentProject->getCrs())
+    );
+
+    if (!projectCrs.isValid())
+    {
+        QMessageBox::critical(
+            this,
+            "CRS invalide",
+            "Le CRS sélectionné est invalide."
+        );
+        return;
+    }
+
+    QgsProject::instance()->setCrs(projectCrs);
+    carte->getCanvas()->setDestinationCrs(projectCrs);
 
     qDebug() << "Nouveau projet créé :";
-    qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
-    qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
-    qDebug() << "  Époque :" << currentProject->getEpoch0();
+    qDebug() << "  Nom   :" << projectName;
+    qDebug() << "  CRS   :" << selectedCrs;
+    qDebug() << "  Epoch :" << epoch;
 }
 
-void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
+
+void MainWindow::getCalendarDays(
+    QCalendarWidget *calendar,
+    QLabel *decimalDate,
+    QLineEdit *epochEdit
+)
 {
-    {
-        QDate initalDate = calendar->selectedDate();
-        float initalValue = computeDate(initalDate.day(),
-                                        initalDate.month(),
-                                        initalDate.year());
-        decimalDate->setText("Date décimale : " + QString::number(initalValue, 'f', 6));
+    auto updateFromCalendar = [=]() {
+        QDate date = calendar->selectedDate();
 
-        connect(calendar, &QCalendarWidget::selectionChanged,
-                [calendar, decimalDate, this]()
-                {
-                    ;
+        double dec = computeDate(
+            date.day(),
+            date.month(),
+            date.year()
+        );
 
-                    QDate date = calendar->selectedDate();
-                    float dec = computeDate(date.day(), date.month(), date.year());
-                    decimalDate->setText("Date décimale :" + QString::number(dec, 'f', 6));
-                });
-    }
+        decimalDate->setText(
+            "Date décimale : " + QString::number(dec, 'f', 6)
+        );
+
+        epochEdit->setText(
+            QLocale::c().toString(dec, 'f', 6)
+        );
+    };
+
+    // Initialisation
+    updateFromCalendar();
+
+    // Connexion calendrier et epoch
+    connect(calendar, &QCalendarWidget::selectionChanged,
+            this, updateFromCalendar);
 }
+
 
 float MainWindow::computeDate(int day, int month, int year)
 {
@@ -394,6 +451,15 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getEpoch0(),
             loadedProject.getCrs(),
             loadedProject.getLayers());
+
+        QgsCoordinateReferenceSystem projectCrs(
+        QString::fromStdString(currentProject->getCrs())
+    );
+
+    QgsProject::instance()->setCrs(projectCrs);
+    carte->getCanvas()->setDestinationCrs(projectCrs);
+
+    qDebug() << "CRS QGIS restauré :" << projectCrs.authid();
 
         // Update UI with project information
         ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));

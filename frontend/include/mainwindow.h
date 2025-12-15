@@ -43,7 +43,12 @@ public:
     void openDialog();
     void setNewProject();
     void updateScaleLabel(int scaleValue);
-    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    void getCalendarDays(
+    QCalendarWidget *calendar,
+    QLabel *decimalDate,
+    QLineEdit *epochEdit
+);
+
     float computeDate(int day, int month, int year);
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
