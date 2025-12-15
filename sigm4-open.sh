@@ -3,7 +3,7 @@
 FILE_PATH="$1"
 CONTAINER_PATH=$(echo "$FILE_PATH" | sed "s|^$HOME|/home/user|")
 
-cd ~/Bureau/Projet SIG 3D/projet dans github/Projet-SIGm4/infrastructure
+cd ~/SIGM4/Projet-SIGm4/infrastructure
 
 # Vérifier si le conteneur tourne déjà
 if ! docker ps --format '{{.Names}}' | grep -q "^qt_frontend$"; then

@@ -39,7 +39,6 @@ void Carte::initCanvas(QWidget* containerFrame)
     canvas->setCanvasColor(Qt::white);
     canvas->enableAntiAliasing(true);
 
-    // *** IMPORTANT ***
     canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsMapToolPan* panTool = new QgsMapToolPan(canvas);
