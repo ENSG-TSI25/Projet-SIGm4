@@ -42,9 +42,8 @@ public:
     void renameLayer(Dialog* dialog);
     void loadRasterLayer();
     void displayLayer(); 
-
+    void openDialogFile();
         
-
 
 private:
     MainWindow* mw;

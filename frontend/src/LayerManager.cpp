@@ -34,11 +34,39 @@ void LayerManager::listFiles(){
         tr("Files (*.gpkg)")
     );
 
+    if (!fileName.isEmpty()) {
+        openDialogFile();
+    }
+
     QStringList filenameChar = fileName.split(u'/');
     mw->getUi()->selectedFileLabel->setText(
         QString("Fichier sélectionné: %1").arg(filenameChar.last())
     );
     mw->getUi()->selectedFileLabel->setWordWrap(true);
+
+}
+
+void LayerManager::openDialogFile() {
+    qDebug() << "TEST dialog";
+    //Open a new dialog to show all information    
+    QDialog infoLayerDialog;
+    infoLayerDialog.setWindowTitle("Informations sur le fichier sélectionné");
+    infoLayerDialog.show();
+
+    Project* project = mw -> getCurrentProject();
+    std::string CRSProject = project -> getCrs();
+    double EpochProject = project -> getEpoch0();
+
+    // QStringList filenameChar = fileName.split(u'/');
+    // QString *dialogFileText = new QString("Fichier sélectionné: %1");
+    // dialogFileText->arg(filenameChar.last());
+
+
+    // QLabel *dialogTextCRSProject = new QLabel("CRS du projet :", &infoLayerDialog);
+    // QLabel *dialogTextCRSFile = new QLabel("CRS du fichier sélectionné :", &infoLayerDialog);
+    // QLabel *dialogTextDateProject = new QLabel("Date du projet :", &infoLayerDialog);
+    // QLabel *dialogTextDateFile = new QLabel("Date du fichier sélectionné :", &infoLayerDialog);
+    // QPushButton *acceptationButton = new QPushButton("OK", &infoLayerDialog);
 
 }
 
