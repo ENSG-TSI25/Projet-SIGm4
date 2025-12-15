@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
+    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayer);
     //For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
