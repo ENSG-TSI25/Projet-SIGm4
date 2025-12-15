@@ -48,7 +48,12 @@ public:
     void openExistingProject();
     void saveCurrentProject();
     void updateScaleLabel(int scaleValue);
-    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    void getCalendarDays(
+    QCalendarWidget *calendar,
+    QLabel *decimalDate,
+    QLineEdit *epochEdit
+);
+
     float computeDate(int day, int month, int year);
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
@@ -73,6 +78,7 @@ private:
     Dialog* dialog;
     TransformCRS* transform;
     ProjectCarateristicsDisplay* projectDisplay;
+      void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);

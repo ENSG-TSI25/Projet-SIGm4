@@ -1,7 +1,9 @@
 #include "../include/ProjectCaracteristicsDisplay.h"
+#include "../include/mainwindow.h" 
 
-ProjectCarateristicsDisplay::ProjectCarateristicsDisplay(MainWindow* mw){
-
+ProjectCarateristicsDisplay::ProjectCarateristicsDisplay(MainWindow* mw):
+    mw(mw)
+    {
     nameLabel = new QLabel("Nom du projet: ");
     CRSLabel = new QLabel("CRS du projet: ");
     epoch0Label = new QLabel("Époque du projet: ");
@@ -19,17 +21,15 @@ ProjectCarateristicsDisplay::~ProjectCarateristicsDisplay(){
 
 };
 
-void ProjectCarateristicsDisplay::setProjectName(std::string newName){
-    projectName = newName;
-    nameLabel->setText("Nom du projet: " + QString::fromStdString(projectName));
+void ProjectCarateristicsDisplay::updateDisplayName(){
+    nameLabel->setText("Nom du projet: " + QString::fromStdString(mw->getCurrentProject()->getName()));
 }
 
-void ProjectCarateristicsDisplay::setProjectEpoch0(double newEpoch0){
-    projectEpoch0 = newEpoch0;
-    epoch0Label->setText("Époque du projet: " + QString::number(projectEpoch0));
+void ProjectCarateristicsDisplay::updateDisplayEpoch0(){
+    qDebug() << QString::fromStdString(mw->getCurrentProject()->getName());
+    epoch0Label->setText("Époque du projet: " + QString::number(mw->getCurrentProject()->getEpoch0()));
 }
 
-void ProjectCarateristicsDisplay::setProjectCRS(std::string newCRS){
-    projectCRS = newCRS;
-    CRSLabel->setText("CRS du projet: " + QString::fromStdString(projectCRS));
+void ProjectCarateristicsDisplay::updateDisplayCRS(){
+    CRSLabel->setText("CRS du projet: " + QString::fromStdString(mw->getCurrentProject()->getCrs()));
 }

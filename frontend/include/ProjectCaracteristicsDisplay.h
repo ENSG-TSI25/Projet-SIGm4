@@ -6,7 +6,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include <string.h>
+#include <core/Project.hpp>
 
 class MainWindow;
 
@@ -16,10 +16,7 @@ class ProjectCarateristicsDisplay: public QWidget
     Q_OBJECT
 
     private:
-        std::string projectName;
-        std::string projectCRS;
-        double projectEpoch0;
-
+        MainWindow *mw;
         QLabel *nameLabel;
         QLabel *CRSLabel;
         QLabel *epoch0Label;      
@@ -28,9 +25,9 @@ class ProjectCarateristicsDisplay: public QWidget
         QVBoxLayout *layout;
         ProjectCarateristicsDisplay(MainWindow* mw);
         ~ProjectCarateristicsDisplay();
-        void setProjectName(std::string newName);
-        void setProjectEpoch0(double newEpoch0);
-        void setProjectCRS(std::string newProject);
+        void updateDisplayName();
+        void updateDisplayEpoch0();
+        void updateDisplayCRS();
 };
 
 #endif // PROJECTCARACTERISTICSDISPLAY_H
