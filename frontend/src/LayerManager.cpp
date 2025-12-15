@@ -307,66 +307,82 @@ void LayerManager::displayLayerFromFile(const std::string &filepath, const std::
 
 LayerManager::~LayerManager() {}
 
-void LayerManager::loadRasterLayerFromFile(const QString& file) {
-    RasterLayer* raster = mw->getDataManager().loadRaster(file.toStdString());
-    if (!raster) {
+void LayerManager::loadRasterLayerFromFile(const QString &file)
+{
+
+    Project *proj = mw->getCurrentProject();
+    if (!proj)
+    {
+        QMessageBox::warning(nullptr, "Projet manquant",
+                             "Aucun projet actif. Impossible d'ajouter une couche.");
+        return;
+    }
+
+    RasterLayer *raster = mw->getDataManager().loadRaster(file.toStdString());
+    if (!raster)
+    {
         qDebug() << "ERROR: loadRaster returned nullptr for" << file;
         return;
     }
-    
+
     QString tableName = QString::fromStdString(raster->getName());
     QString gpkgUri = QString("GPKG:%1:%2").arg(file).arg(tableName);
-    
-    QgsRasterLayer* layer = new QgsRasterLayer(gpkgUri, tableName, "gdal");
-    
-    if (!layer->isValid()) {
+
+    QgsRasterLayer *layer = new QgsRasterLayer(gpkgUri, tableName, "gdal");
+
+    if (!layer->isValid())
+    {
         qDebug() << "Raster layer error:" << layer->error().message();
         delete layer;
         return;
     }
-    
+
     QgsProject::instance()->addMapLayer(layer);
-    
+
+    raster->setDataSource(file.toStdString());
+    proj->addLayer(*raster);
+    qDebug() << "Added raster to backend Project:" << QString::fromStdString(raster->getName());
+
     QListWidgetItem *item = new QListWidgetItem(tableName);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->addItem(item);
-    
-    QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
-    QList<QgsMapLayer*> newOrder;
-    
-    for (auto* l : allLayers) {
-        if (l->name() != "OSM" && l->name() != "Satellite") {
+
+    QList<QgsMapLayer *> allLayers = QgsProject::instance()->mapLayers().values();
+    QList<QgsMapLayer *> newOrder;
+
+    for (auto *l : allLayers)
+    {
+        if (l->name() != "OSM" && l->name() != "Satellite")
+        {
             newOrder.prepend(l);
         }
     }
-    for (auto* l : allLayers) {
-        if (l->name() == "OSM" || l->name() == "Satellite") {
+    for (auto *l : allLayers)
+    {
+        if (l->name() == "OSM" || l->name() == "Satellite")
+        {
             newOrder.append(l);
         }
     }
-    
+
     mw->getCarte()->getCanvas()->setLayers(newOrder);
-    
+
     QgsCoordinateReferenceSystem canvasCrs = mw->getCarte()->getCanvas()->mapSettings().destinationCrs();
-    if (!canvasCrs.isValid()) {
+    if (!canvasCrs.isValid())
+    {
         mw->getCarte()->getCanvas()->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
     }
-    
+
     QgsCoordinateTransform transform(
-        layer->crs(), 
+        layer->crs(),
         QgsCoordinateReferenceSystem("EPSG:3857"),
-        QgsProject::instance()
-    );
-    
+        QgsProject::instance());
+
     mw->getCarte()->getCanvas()->setExtent(
-        transform.transformBoundingBox(layer->extent())
-    );
+        transform.transformBoundingBox(layer->extent()));
     mw->getCarte()->getCanvas()->refresh();
 }
-
-
-
 
 void LayerManager::loadVectorLayerFromFile(const QString &file)
 {
@@ -394,6 +410,18 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
 
     // Add to project
     QgsProject::instance()->addMapLayer(layer);
+
+    DataManager dm;
+    std::vector<VectorLayer *> backendLayers = dm.loadVector(file.toStdString());
+    if (!backendLayers.empty())
+    {
+        for (auto *l : backendLayers)
+        {
+            l->setDataSource(file.toStdString());
+            proj->addLayer(*l);
+            qDebug() << "Added to backend Project:" << QString::fromStdString(l->getName());
+        }
+    }
 
     QListWidgetItem *item = new QListWidgetItem(QFileInfo(file).baseName());
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
