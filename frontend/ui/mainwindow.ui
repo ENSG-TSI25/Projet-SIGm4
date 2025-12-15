@@ -198,6 +198,19 @@
            <number>0</number>
           </property>
           <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>140</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnNew">
             <property name="text">
              <string>Nouveau</string>
@@ -231,6 +244,19 @@
              <string>Zoom-</string>
             </property>
            </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>140</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </widget>
@@ -274,11 +300,8 @@
          </property>
         </widget>
        </item>
-        <item>
-        <!-- Layout for displaying the project caracterisitcs -->
-        <layout class ="QVBoxLayout" name="projectCaracteristicsDisplay">
-
-        </layout>
+       <item>
+        <layout class="QVBoxLayout" name="projectCaracteristicsDisplay"/>
        </item>
       </layout>
      </widget>
