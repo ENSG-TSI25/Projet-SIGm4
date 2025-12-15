@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
     , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
+    setProjectActionsEnabled(false);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
     connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
@@ -108,6 +109,33 @@ MainWindow::~MainWindow()
 Ui::MainWindow *MainWindow::getUi()
 {
     return ui;
+}
+
+void MainWindow::setProjectActionsEnabled(bool enabled)
+{
+    // Project-related buttons
+    ui->importBtn->setEnabled(enabled);
+    ui->transformBtn->setEnabled(enabled);
+    ui->addToMapBtn->setEnabled(enabled);
+    ui->btnSave->setEnabled(enabled);
+    
+    // Zoom buttons
+    ui->btnZoomPlus->setEnabled(enabled);
+    ui->btnZoomMinus->setEnabled(enabled);
+    
+    // ComboBoxes
+    ui->sourceCRSCombo->setEnabled(enabled);
+    ui->targetCRSCombo->setEnabled(enabled);
+    ui->dimensionCombo->setEnabled(enabled);
+    
+    // LineEdit
+    ui->epochEdit->setEnabled(enabled);
+    
+    // Layers
+    ui->layersList->setEnabled(enabled);
+    
+    // Map
+    ui->carte->setEnabled(enabled);
 }
 
 void MainWindow::updateScaleLabel(int scaleValue)
@@ -278,6 +306,7 @@ void MainWindow::setNewProject(){
 
     // Stocker dans currentProject
     currentProject = newProject;
+    setProjectActionsEnabled(true);
 
     qDebug() << "Nom du projet :" << projectName;
     qDebug() << "CRS sélectionné :" << selectedCrs;
@@ -396,6 +425,7 @@ void MainWindow::loadProject()
 
     // Call the overloaded version with the filepath
     loadProject(filepath);
+    setProjectActionsEnabled(true);
 }
 
 // With filepath parameter - for command-line/file association

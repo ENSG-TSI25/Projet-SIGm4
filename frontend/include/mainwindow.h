@@ -73,6 +73,7 @@ private:
     Dialog* dialog;
     TransformCRS* transform;
     ProjectCarateristicsDisplay* projectDisplay;
+      void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
