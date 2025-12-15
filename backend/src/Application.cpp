@@ -4,6 +4,7 @@
 #include <gdal/gdal.h>
 #include <iostream>
 #include <fstream>
+#include <iomanip> 
 #include <cmath>
 #include <core/Project.hpp>
 #include <core/Layer.hpp>
