@@ -51,6 +51,30 @@ void LayerManager::listFiles()
     mw->getUi()->selectedFileLabel->setText(fileName);
 }
 
+void LayerManager::openDialogFile() {
+    qDebug() << "TEST dialog";
+    //Open a new dialog to show all information    
+    QDialog infoLayerDialog;
+    infoLayerDialog.setWindowTitle("Informations sur le fichier sélectionné");
+    infoLayerDialog.show();
+
+    Project* project = mw -> getCurrentProject();
+    std::string CRSProject = project -> getCrs();
+    double EpochProject = project -> getEpoch0();
+
+    // QStringList filenameChar = fileName.split(u'/');
+    // QString *dialogFileText = new QString("Fichier sélectionné: %1");
+    // dialogFileText->arg(filenameChar.last());
+
+
+    // QLabel *dialogTextCRSProject = new QLabel("CRS du projet :", &infoLayerDialog);
+    // QLabel *dialogTextCRSFile = new QLabel("CRS du fichier sélectionné :", &infoLayerDialog);
+    // QLabel *dialogTextDateProject = new QLabel("Date du projet :", &infoLayerDialog);
+    // QLabel *dialogTextDateFile = new QLabel("Date du fichier sélectionné :", &infoLayerDialog);
+    // QPushButton *acceptationButton = new QPushButton("OK", &infoLayerDialog);
+
+}
+
 // ENTRY POINT
 
 void LayerManager::addFileToWidget()
@@ -335,4 +359,21 @@ void LayerManager::renameLayer(Dialog* dialog)
     if (index < 0) return;
 
     mw->getUi()->layersList->item(index)->setText(dialog->nameLayer());
+}
+
+//Connect checkbox with the project layers
+void LayerManager::displayLayer() {
+    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
+    QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
+
+    Project* project = mw -> getCurrentProject();
+    std::vector<Layer> layerList = project -> getLayers();
+    Layer test = layerList[currentIndex];
+
+    if (item -> checkState() == Qt::Checked) {
+        mw -> getCurrentProject()-> addLayer(test);      
+    }
+    if (item -> checkState() == Qt::Unchecked) {
+        mw -> getCurrentProject()-> rmLayer(test);
+    }   
 }
