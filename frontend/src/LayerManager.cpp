@@ -111,13 +111,15 @@ void LayerManager::addFileToWidget()
         // --- Ajouter chaque layer au projet avec le dataSource ---
         for (auto *l : layers)
         {
-            // Définir le dataSource avant d'ajouter
             l->setDataSource(fileName.toStdString());
-
-            proj->addLayer(*l);
+            
+            // Create shared_ptr from the raw pointer
+            auto sharedLayer = std::make_shared<VectorLayer>(*l);
+            proj->addLayer(sharedLayer);
+            
             qDebug() << "Couche ajoutée au projet :" << QString::fromStdString(l->getName())
-                     << "avec dataSource :" << fileName;
-
+                    << "avec dataSource :" << fileName;
+            
             QString layerName = QString::fromStdString(l->getName());
             QListWidgetItem *item = new QListWidgetItem(layerName);
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);

@@ -412,15 +412,15 @@ void MainWindow::loadProject(const QString &filepath)
         ui->layersList->clear();
 
         // Get layers from the project
-        std::vector<Layer> layers = currentProject->getLayers();
+        auto layers = currentProject->getLayers();
 
         qDebug() << "Reloading" << layers.size() << "layer(s)...";
 
         // Reload each layer
         for (const auto &layer : layers)
         {
-            QString layerName = QString::fromStdString(layer.getName());
-            QString dataSource = QString::fromStdString(layer.getDataSource());
+            QString layerName = QString::fromStdString(layer->getName());
+            QString dataSource = QString::fromStdString(layer->getDataSource());
 
             qDebug() << "Loading layer:" << layerName;
             qDebug() << "  Source:" << dataSource;
@@ -443,7 +443,7 @@ void MainWindow::loadProject(const QString &filepath)
                     // Find the corresponding layer
                     for (auto *vLayer : reloadedLayers)
                     {
-                        if (vLayer->getName() == layer.getName())
+                        if (vLayer->getName() == layer->getName())
                         {
                             // Create QgsVectorLayer for display
                             QString qlayerName = QString::fromStdString(vLayer->getName());
