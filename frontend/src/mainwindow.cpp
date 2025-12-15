@@ -16,7 +16,8 @@
 #include <QDialog>
 #include <QCalendarWidget>
 #include <QDialogButtonBox>
-
+#include <QStandardItemModel>
+#include <QStandardItem>
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
@@ -389,27 +390,99 @@ float MainWindow::computeDate(int day, int month, int year)
     return deci_date;
 }
 
-// Function to set the targetted comboBox to show the list of CRS accepted by the project
-void MainWindow::setCrsList(QComboBox *comboBox)
-{
-    comboBox->clear();
-    QStringList items = {
-        "ITRF2020 (9990)",
-        "ITRF2014 (9000)",
-        "ITRF2008 (8999)",
-        "ITRF2005 (8998)",
-        "ITRF2000 (8987)",
-        "ETRF2020 (10571)",
-        "ETRF2014 (9069)",
-        "ETRF2005 (9068)",
-        "ETRF2000 (9067)",
-        "RGF93v2b (9784)",
-        "RGM23 (10673)",
-        "RGF93v1 (2154)",
+// // Function to set the targetted comboBox to show the list of CRS accepted by the project
+// void MainWindow::setCrsList(QComboBox *comboBox)
+// {
+//     comboBox->clear();
+//     QStringList items = {
+//         "ITRF2020 (9990)",
+//         "ITRF2014 (9000)",
+//         "ITRF2008 (8999)",
+//         "ITRF2005 (8998)",
+//         "ITRF2000 (8987)",
+//         "ETRF2020 (10571)",
+//         "ETRF2014 (9069)",
+//         "ETRF2005 (9068)",
+//         "ETRF2000 (9067)",
+//         "RGF93v2b (9784)",
+//         "RGM23 (10673)",
+//         "RGF93v1 (2154)",
 
+//     };
+//     comboBox->addItems(items);
+// }
+
+
+void MainWindow::setCrsList(QComboBox *comboBox){
+    comboBox->clear();
+    
+    QStandardItemModel *model = new QStandardItemModel(this);
+    
+    QStandardItem *cat3D = new QStandardItem("3D");
+    cat3D->setFlags(cat3D->flags() & ~Qt::ItemIsEnabled); 
+    QFont font = cat3D->font();
+    font.setBold(true);
+    cat3D->setFont(font);
+    model->appendRow(cat3D);
+    
+    QStringList items3D = {
+            "ITRF2020 (9990)",
+            "ITRF2014 (9000)",
+            "ITRF2008 (8999)",
+            "ITRF2005 (8998)",
+            "ITRF2000 (8987)",
+            "ETRF2020 (10571)",
+            "ETRF2014 (9069)",
+            "ETRF2005 (9068)",
+            "ETRF2000 (9067)",
+            "RGF93v2b (9784)",
+            "RGM23 (10673)",
     };
-    comboBox->addItems(items);
+    for(const QString &item : items3D){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    // Catégorie 2D
+    QStandardItem *cat2D = new QStandardItem("2D");
+    cat2D->setFlags(cat2D->flags() & ~Qt::ItemIsEnabled);
+    cat2D->setFont(font);
+    model->appendRow(cat2D);
+    
+    QStringList items2D = {
+        "ITRF2020 (9989)",
+            "ITRF2014 (7912)",
+            "ITRF2008 (7911)",
+            "ITRF2005 (7910)",
+            "ITRF2000 (7909)",
+            "ETRF2020 (10570)",
+            "ETRF2014 (8403)",
+            "ETRF2005 (8399)",
+            "ETRF2000 (7931)",
+            "RGF93v2b (9783)",
+            "RGM23 (10672)",
+    };
+    for(const QString &item : items2D){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    // Catégorie Projeté
+    QStandardItem *catProj = new QStandardItem("Projeté");
+    catProj->setFlags(catProj->flags() & ~Qt::ItemIsEnabled);
+    catProj->setFont(font);
+    model->appendRow(catProj);
+    
+    QStringList itemsProj = {
+       "RGF93v2b (9794)",
+       "RGM23 (10674)",
+    };
+    for(const QString &item : itemsProj){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    comboBox->setModel(model);
+    comboBox->setCurrentIndex(1); // Sélectionne le premier item sélectionnable
 }
+
 
 void MainWindow::saveProject()
 {
