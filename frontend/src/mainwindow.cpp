@@ -1,6 +1,7 @@
 #include "../include/mainwindow.h"
 #include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
+
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -15,7 +16,8 @@
 #include <QDialog>
 #include <QCalendarWidget>
 #include <QDialogButtonBox>
-
+#include <QStandardItemModel>
+#include <QStandardItem>
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
@@ -25,6 +27,7 @@
 #include "../include/Carte.h"
 
 #include <core/Project.hpp>
+#include <QMessageBox>
 
 #include <QMessageBox>
 #include <QDir>
@@ -37,12 +40,15 @@
 #include <qgsgeometry.h>
 #include <qgsproject.h>
 
-#include <gdal_priv.h>
+#include <gdal_priv.h>    //Updating the display of the project
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
+    setProjectActionsEnabled(false);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
     connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
@@ -50,27 +56,33 @@ MainWindow::MainWindow(QWidget *parent)
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
 
-    // Dialog management
-    connect(ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
-    connect(ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
-    listDimension(); // dimension pour afficher le contenu de la combobox
+
+    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
+    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
+
+
+    listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte, this);
-    connect(carte->getCanvas(), &QgsMapCanvas::scaleChanged, this, &MainWindow::updateScaleLabel);
-    connect(ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
-    connect(ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
-    // connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected);
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
+    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+      
+    connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
+    connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect(ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
-    connect(ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
-    connect(ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
+    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
-    // When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
-    connect(ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    // connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
-    // connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
+    //When the "Ouvrir" button is clicked, open the file manager to choose a new project to open
+    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
+            { loadProject(); });
 
-    // Dialog management
+    //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
+    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
+
+    //Dialog management
     dialog = new Dialog();
     connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog->getUI();
@@ -79,8 +91,12 @@ MainWindow::MainWindow(QWidget *parent)
             { layerManager->duplicateLayer(dialog); });
 
     connect(dig->buttonRename, &QPushButton::clicked,
-            this, [this]()
-            { layerManager->renameLayer(dialog); });
+            this, [this]() {
+                layerManager->renameLayer(dialog);
+            });
+    
+    //To show the careteristics of the current project
+    ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
     connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
     connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
@@ -97,6 +113,33 @@ MainWindow::~MainWindow()
 Ui::MainWindow *MainWindow::getUi()
 {
     return ui;
+}
+
+void MainWindow::setProjectActionsEnabled(bool enabled)
+{
+    // Project-related buttons
+    ui->importBtn->setEnabled(enabled);
+    ui->transformBtn->setEnabled(enabled);
+    ui->addToMapBtn->setEnabled(enabled);
+    ui->btnSave->setEnabled(enabled);
+    
+    // Zoom buttons
+    ui->btnZoomPlus->setEnabled(enabled);
+    ui->btnZoomMinus->setEnabled(enabled);
+    
+    // ComboBoxes
+    ui->sourceCRSCombo->setEnabled(enabled);
+    ui->targetCRSCombo->setEnabled(enabled);
+    ui->dimensionCombo->setEnabled(enabled);
+    
+    // LineEdit
+    ui->epochEdit->setEnabled(enabled);
+    
+    // Layers
+    ui->layersList->setEnabled(enabled);
+    
+    // Map
+    ui->carte->setEnabled(enabled);
 }
 
 void MainWindow::updateScaleLabel(int scaleValue)
@@ -141,144 +184,205 @@ Carte *MainWindow::getCarte()
 void MainWindow::getDateSelected(const QDate &date)
 {
     // QDate initalDate= ui->calendar->selectedDate();
-    ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
+    // ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
 }
 
 void MainWindow::getSRCSelected()
 {
-    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+    // ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
 Project *MainWindow::getCurrentProject() { return currentProject; }
 
+
+
 void MainWindow::setNewProject()
 {
-    // Création de la fenêtre de dialogue
-    QDialog chosingCRSDialog;
+    
+    QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
 
-    QLabel *dialogText = new QLabel("Choisissez un CRS et une époque pour votre projet", &chosingCRSDialog);
+    QLabel *dialogText = new QLabel(
+        "Choisissez un CRS et une époque pour votre projet",
+        &chosingCRSDialog
+    );
+
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
 
-    // Zone de texte pour le nom du projet
+
     QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
     nameTextZone->setPlaceholderText("Entrez le nom du projet");
 
-    // ComboBox pour le CRS
+
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
-    crsList->setPlaceholderText("Entrez le code EPSG du CRS");
+    crsList->setPlaceholderText("Choisissez un CRS");
     setCrsList(crsList);
 
-    // Validation pour l'époque
-    QDoubleValidator *doubleValidator = new QDoubleValidator(&chosingCRSDialog);
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
-    epochTextZone->setPlaceholderText("Entrez l'époque");
+    epochTextZone->setPlaceholderText("Ex : 2025.22");
+    epochTextZone->setLocale(QLocale::c());
 
-    // Validation pour l'époque
-    doubleValidator->setRange(0, 2030, 3);
-    doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    epochTextZone->setValidator(doubleValidator);
+    QDoubleValidator *epochValidator = new QDoubleValidator(0, 3000, 6, &chosingCRSDialog);
+    epochValidator->setNotation(QDoubleValidator::StandardNotation);
+    epochTextZone->setValidator(epochValidator);
 
-    // Calendrier pour choisir la date
+
     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
     QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
-    getCalendarDays(calendar, decimalDate);
 
-    // Connexions
-    QObject::connect(acceptationButton, &QPushButton::clicked, &chosingCRSDialog, &QDialog::accept);
+    // Met à jour epochTextZone quand on clique sur le calendrier
+    getCalendarDays(calendar, decimalDate, epochTextZone);
 
-    connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]()
-            {
-        QDate selectedDate = calendar->selectedDate();
-        this->getDateSelected(selectedDate); });
+    // Met à jour le calendrier quand on tape une epoch
+    connect(epochTextZone, &QLineEdit::editingFinished, this, [=]() {
+        bool ok = false;
+        double epoch = QLocale::c().toDouble(epochTextZone->text(), &ok);
+        if (!ok || epoch <= 0) return;
 
-    connect(crsList, &QComboBox::currentTextChanged, this, [this, crsList]()
-            { ui->crsLabel->setText("CRS : " + crsList->currentText()); });
+        int year = static_cast<int>(epoch);
+        double frac = epoch - year;
 
-    // Layout
+        int daysInYear = QDate::isLeapYear(year) ? 366 : 365;
+        int dayOfYear = static_cast<int>(frac * daysInYear);
+
+        QDate date(year, 1, 1);
+        date = date.addDays(dayOfYear);
+
+        if (date.isValid())
+            calendar->setSelectedDate(date);
+    });
+
+ 
+    connect(acceptationButton, &QPushButton::clicked,
+            &chosingCRSDialog, &QDialog::accept);
+
+    connect(crsList, &QComboBox::currentTextChanged,
+            this, [this, crsList]() {
+                // ui->crsLabel->setText("CRS : " + crsList->currentText());
+            });
+
+
     layout->addWidget(dialogText);
     layout->addWidget(nameTextZone);
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
-    // Exécution du dialogue
     if (chosingCRSDialog.exec() != QDialog::Accepted)
     {
         qDebug() << "Création de projet annulée.";
         return;
     }
 
-    // Récupérer les valeurs saisies par l'utilisateur
+
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
-    double epoch = epochTextZone->text().toDouble();
 
-    // Valeurs par défaut si l'utilisateur n'a rien saisi
+    bool epochOk = false;
+    double epoch = QLocale::c().toDouble(epochTextZone->text(), &epochOk);
+
+
     if (projectName.isEmpty())
-        projectName = "ProjetSansNom";
+    {
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez saisir un nom de projet.");
+        return;
+    }
+
     if (selectedCrs.isEmpty())
     {
-        selectedCrs = "EPSG:2154"; // CRS par défaut
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez sélectionner un CRS.");
+        return;
     }
-    else
+
+    if (!epochOk || epoch <= 0)
     {
-        // Extraire le code EPSG si le format est "Nom (xxxx)"
-        QRegExp rx("\\((\\d+)\\)");
-        if (rx.indexIn(selectedCrs) != -1)
-        {
-            QString code = rx.cap(1);
-            selectedCrs = "EPSG:" + code; // Convertit en format standard EPSG
-        }
+        QMessageBox::warning(this, "Erreur",
+                             "Veuillez saisir une époque valide.\n"
+                             "Exemple : 2025.22");
+        return;
     }
 
-    // Epoch par défaut si non valide
-    if (epoch <= 0)
-        epoch = 0.0;
+    // Extraire EPSG si nécessaire
+    QRegExp rx("\\((\\d+)\\)");
+    if (rx.indexIn(selectedCrs) != -1)
+    {
+        selectedCrs = "EPSG:" + rx.cap(1);
+    }
 
-    // Création d'un nouveau projet avec les valeurs saisies
     Project *newProject = new Project(
-        projectName.toStdString(), // Nom du projet
-        epoch,                     // Époque
-        selectedCrs.toStdString()  // CRS (format "EPSG:xxxx")
+        projectName.toStdString(),
+        epoch,
+        selectedCrs.toStdString()
     );
 
-    // Stocker dans currentProject
     currentProject = newProject;
+    setProjectActionsEnabled(true);
 
-    qDebug() << "Nom du projet :" << projectName;
-    qDebug() << "CRS sélectionné :" << selectedCrs;
-    qDebug() << "Époque :" << epoch;
+    QgsCoordinateReferenceSystem projectCrs(
+        QString::fromStdString(currentProject->getCrs())
+    );
+
+    if (!projectCrs.isValid())
+    {
+        QMessageBox::critical(
+            this,
+            "CRS invalide",
+            "Le CRS sélectionné est invalide."
+        );
+        return;
+    }
+
+    QgsProject::instance()->setCrs(projectCrs);
+    carte->getCanvas()->setDestinationCrs(projectCrs);
 
     qDebug() << "Nouveau projet créé :";
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
     qDebug() << "  Époque :" << currentProject->getEpoch0();
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }
 
-void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
+
+void MainWindow::getCalendarDays(
+    QCalendarWidget *calendar,
+    QLabel *decimalDate,
+    QLineEdit *epochEdit
+)
 {
-    {
-        QDate initalDate = calendar->selectedDate();
-        float initalValue = computeDate(initalDate.day(),
-                                        initalDate.month(),
-                                        initalDate.year());
-        decimalDate->setText("Date décimale : " + QString::number(initalValue, 'f', 6));
+    auto updateFromCalendar = [=]() {
+        QDate date = calendar->selectedDate();
 
-        connect(calendar, &QCalendarWidget::selectionChanged,
-                [calendar, decimalDate, this]()
-                {
-                    ;
+        double dec = computeDate(
+            date.day(),
+            date.month(),
+            date.year()
+        );
 
-                    QDate date = calendar->selectedDate();
-                    float dec = computeDate(date.day(), date.month(), date.year());
-                    decimalDate->setText("Date décimale :" + QString::number(dec, 'f', 6));
-                });
-    }
+        decimalDate->setText(
+            "Date décimale : " + QString::number(dec, 'f', 6)
+        );
+
+        epochEdit->setText(
+            QLocale::c().toString(dec, 'f', 6)
+        );
+    };
+
+    // Initialisation
+    updateFromCalendar();
+
+    // Connexion calendrier et epoch
+    connect(calendar, &QCalendarWidget::selectionChanged,
+            this, updateFromCalendar);
 }
+
 
 float MainWindow::computeDate(int day, int month, int year)
 {
@@ -291,27 +395,99 @@ float MainWindow::computeDate(int day, int month, int year)
     return deci_date;
 }
 
-// Function to set the targetted comboBox to show the list of CRS accepted by the project
-void MainWindow::setCrsList(QComboBox *comboBox)
-{
-    comboBox->clear();
-    QStringList items = {
-        "ITRF2020 (9990)",
-        "ITRF2014 (9000)",
-        "ITRF2008 (8999)",
-        "ITRF2005 (8998)",
-        "ITRF2000 (8987)",
-        "ETRF2020 (10571)",
-        "ETRF2014 (9069)",
-        "ETRF2005 (9068)",
-        "ETRF2000 (9067)",
-        "RGF93v2b (9784)",
-        "RGM23 (10673)",
-        "RGF93v1 (2154)",
+// // Function to set the targetted comboBox to show the list of CRS accepted by the project
+// void MainWindow::setCrsList(QComboBox *comboBox)
+// {
+//     comboBox->clear();
+//     QStringList items = {
+//         "ITRF2020 (9990)",
+//         "ITRF2014 (9000)",
+//         "ITRF2008 (8999)",
+//         "ITRF2005 (8998)",
+//         "ITRF2000 (8987)",
+//         "ETRF2020 (10571)",
+//         "ETRF2014 (9069)",
+//         "ETRF2005 (9068)",
+//         "ETRF2000 (9067)",
+//         "RGF93v2b (9784)",
+//         "RGM23 (10673)",
+//         "RGF93v1 (2154)",
 
+//     };
+//     comboBox->addItems(items);
+// }
+
+
+void MainWindow::setCrsList(QComboBox *comboBox){
+    comboBox->clear();
+    
+    QStandardItemModel *model = new QStandardItemModel(this);
+    
+    QStandardItem *cat3D = new QStandardItem("3D");
+    cat3D->setFlags(cat3D->flags() & ~Qt::ItemIsEnabled); 
+    QFont font = cat3D->font();
+    font.setBold(true);
+    cat3D->setFont(font);
+    model->appendRow(cat3D);
+    
+    QStringList items3D = {
+            "ITRF2020 (9990)",
+            "ITRF2014 (9000)",
+            "ITRF2008 (8999)",
+            "ITRF2005 (8998)",
+            "ITRF2000 (8987)",
+            "ETRF2020 (10571)",
+            "ETRF2014 (9069)",
+            "ETRF2005 (9068)",
+            "ETRF2000 (9067)",
+            "RGF93v2b (9784)",
+            "RGM23 (10673)",
     };
-    comboBox->addItems(items);
+    for(const QString &item : items3D){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    // Catégorie 2D
+    QStandardItem *cat2D = new QStandardItem("2D");
+    cat2D->setFlags(cat2D->flags() & ~Qt::ItemIsEnabled);
+    cat2D->setFont(font);
+    model->appendRow(cat2D);
+    
+    QStringList items2D = {
+        "ITRF2020 (9989)",
+            "ITRF2014 (7912)",
+            "ITRF2008 (7911)",
+            "ITRF2005 (7910)",
+            "ITRF2000 (7909)",
+            "ETRF2020 (10570)",
+            "ETRF2014 (8403)",
+            "ETRF2005 (8399)",
+            "ETRF2000 (7931)",
+            "RGF93v2b (9783)",
+            "RGM23 (10672)",
+    };
+    for(const QString &item : items2D){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    // Catégorie Projeté
+    QStandardItem *catProj = new QStandardItem("Projeté");
+    catProj->setFlags(catProj->flags() & ~Qt::ItemIsEnabled);
+    catProj->setFont(font);
+    model->appendRow(catProj);
+    
+    QStringList itemsProj = {
+       "RGF93v2b (9794)",
+       "RGM23 (10674)",
+    };
+    for(const QString &item : itemsProj){
+        model->appendRow(new QStandardItem(item));
+    }
+    
+    comboBox->setModel(model);
+    comboBox->setCurrentIndex(1); // Sélectionne le premier item sélectionnable
 }
+
 
 void MainWindow::saveProject()
 {
@@ -368,6 +544,7 @@ void MainWindow::loadProject()
 
     // Call the overloaded version with the filepath
     loadProject(filepath);
+    setProjectActionsEnabled(true);
 }
 
 void MainWindow::loadProject(const QString &filepath)
@@ -393,14 +570,17 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getCrs(),
             loadedProject.getLayers());
 
-        ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
+        // Update UI with project information
+        //for now commentend because problem
+        // ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
 
         double epoch = currentProject->getEpoch0();
         int year = static_cast<int>(epoch);
         double fractionalYear = epoch - year;
         int dayOfYear = static_cast<int>(fractionalYear * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
-        ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
+        //for now commentend because problem
+        // ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
 
         ui->layersList->clear();
 
@@ -544,7 +724,6 @@ void MainWindow::loadProject(const QString &filepath)
                 }
             }
         }
-
         canvas->refresh();
 
         QMessageBox::information(
@@ -563,4 +742,9 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }

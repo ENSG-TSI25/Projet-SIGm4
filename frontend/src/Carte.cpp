@@ -64,8 +64,10 @@ void Carte::initLayers()
         "wms"
     );
 
-    osmLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
-    satLayer->setCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
+    QgsCoordinateReferenceSystem webMercator("EPSG:3857");
+
+    osmLayer->setCrs(webMercator);
+    satLayer->setCrs(webMercator);
 
     QgsProject::instance()->addMapLayer(osmLayer);
     QgsProject::instance()->addMapLayer(satLayer);
@@ -92,14 +94,21 @@ void Carte::toggleBaseLayer()
 {
     osmVisible = !osmVisible;
 
-    if(osmVisible)
+    QgsMapCanvas* c = canvas;
+    QList<QgsMapLayer*> layers = c->layers();
+
+    layers.removeAll(osmLayer);
+    layers.removeAll(satLayer);
+
+    if (osmVisible)
     {
-        canvas->setLayers({  osmLayer });
+        layers.append(osmLayer);
     }
     else
     {
-        canvas->setLayers({ satLayer  });
+        layers.append(satLayer);
     }
 
-    canvas->refresh();
+    c->setLayers(layers);
+    c->refresh();
 }
