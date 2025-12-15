@@ -118,6 +118,41 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
         return;
     }
 
+
+    // --- Charger la ou les VectorLayer via DataManager EXISTANT ---
+    DataManager& dm = mw->getDataManager();
+
+    std::vector<VectorLayer*> Vlayers =
+        dm.loadVector(fileName.toStdString());
+
+    if (Vlayers.empty())
+    {
+        qDebug() << "Aucun layer chargé depuis :" << fileName;
+        return;
+    }
+
+    // --- Ajouter chaque layer au projet ---
+    for (VectorLayer* l : Vlayers)
+    {
+        if (!l) continue;
+
+        l->setDataSource(fileName.toStdString());
+
+        proj->addLayer(*l);
+
+        qDebug() << "Couche ajoutée au projet :"
+                << QString::fromStdString(l->getName())
+                << "dataSource :" << fileName;
+
+        QString layerName =
+        QString::fromStdString(l->getName());
+
+        qgsLayer->setName(layerName);
+
+
+    }
+
+
     // --- Add to QGIS project ---
     QgsProject::instance()->addMapLayer(qgsLayer);
 
@@ -134,6 +169,26 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->addItem(item);
+
+
+
+    qDebug() << "===== Couches du projet =====";
+
+    const auto& projectLayers = proj->getLayers();
+
+    if (projectLayers.empty())
+    {
+        qDebug() << "Aucune couche dans le projet.";
+    }
+    else
+    {
+        for (const auto& l : projectLayers)
+        {
+            qDebug() << " -"
+                    << QString::fromStdString(l.getName());
+        }
+    }
+
 }
 
 
@@ -197,12 +252,61 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
     canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
+
+
+    // --- Charger le RasterLayer via DataManager EXISTANT ---
+    DataManager& dm = mw->getDataManager();
+
+    RasterLayer* rlayer =
+        dm.loadRaster(fileName.toStdString());
+
+    if (!rlayer)
+    {
+        qDebug() << "Aucun raster chargé depuis :" << fileName;
+        return;
+    }
+
+    // --- Ajouter le raster au projet ---
+    rlayer->setDataSource(fileName.toStdString());
+
+    proj->addLayer(*rlayer);
+
+    QString layerName =
+        QString::fromStdString(rlayer->getName());
+
+    qgsLayer->setName(layerName);
+
+    qDebug() << "Raster ajouté au projet :"
+            << QString::fromStdString(rlayer->getName())
+            << "dataSource :" << fileName;
+
     // --- UI ---
     QListWidgetItem* item =
         new QListWidgetItem(qgsLayer->name());
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->addItem(item);
+
+
+
+
+    qDebug() << "===== Couches du projet =====";
+
+    const auto& projectLayers = proj->getLayers();
+
+    if (projectLayers.empty())
+    {
+        qDebug() << "Aucune couche dans le projet.";
+    }
+    else
+    {
+        for (const auto& l : projectLayers)
+        {
+            qDebug() << " -"
+                    << QString::fromStdString(l.getName());
+        }
+    }
+
 }
 
 // UI HELPERS

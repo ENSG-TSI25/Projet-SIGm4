@@ -622,3 +622,6 @@ void MainWindow::loadProject(const QString &filepath)
             QString("Failed to load project:\n%1").arg(e.what()));
     }
 }
+
+
+
