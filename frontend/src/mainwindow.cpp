@@ -526,16 +526,21 @@ void MainWindow::loadProject(const QString &filepath)
     {
         Project loadedProject = Project::load(filepath.toStdString());
 
-        if (currentProject != nullptr)
-        {
-            delete currentProject;
-        }
-
-        currentProject = new Project(
+        Project* newProject = new Project(
             loadedProject.getName(),
             loadedProject.getEpoch0(),
             loadedProject.getCrs(),
             loadedProject.getLayers());
+
+        // Delete the older project if already present
+        if (currentProject != nullptr)
+        {
+            delete currentProject;
+            qDebug() << "Already existing project";
+        }
+
+        // Assigning the newProject
+        currentProject = newProject;
 
         double epoch = currentProject->getEpoch0();
         int year = static_cast<int>(epoch);
@@ -695,6 +700,11 @@ void MainWindow::loadProject(const QString &filepath)
                 .arg(QString::fromStdString(currentProject->getCrs()))
                 .arg(currentProject->getEpoch0())
                 .arg(currentProject->getLayers().size()));
+
+        //Updating the display of the project
+        projectDisplay->updateDisplayName();
+        projectDisplay->updateDisplayCRS();
+        projectDisplay->updateDisplayEpoch0();
     }
     catch (const std::exception &e)
     {
@@ -704,8 +714,5 @@ void MainWindow::loadProject(const QString &filepath)
             QString("Failed to load project:\n%1").arg(e.what()));
     }
 
-    //Updating the display of the project
-    projectDisplay->updateDisplayName();
-    projectDisplay->updateDisplayCRS();
-    projectDisplay->updateDisplayEpoch0();
+
 }

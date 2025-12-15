@@ -71,7 +71,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
-    Project* currentProject;
+    Project* currentProject = nullptr;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
