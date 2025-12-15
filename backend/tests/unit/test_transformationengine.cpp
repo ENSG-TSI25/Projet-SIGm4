@@ -89,8 +89,12 @@ protected:
     }
 };
 
+//////////////////////////////////////////////////////////////////////////////
+// TRANSFORMATION BETWEEN DIFFERENT CRS TYPES UNIT TESTS
+//////////////////////////////////////////////////////////////////////////////
+
 // ---------------------------------------------------------------------------
-// TEST 1 : Projected (WebMercator) -> Geodetic (ETRF2000)
+// TEST 1a : Projected (WebMercator) -> Geodetic (ETRF2000)
 // [Format: Metres -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
@@ -114,7 +118,7 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 2 : Geodetic 2D (ITRF2014) -> Projected (Lambert-93)
+// TEST 1b : Geodetic 2D (ITRF2014) -> Projected (Lambert-93)
 // [Format: Degrees -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
@@ -137,7 +141,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 3 : Geodetic 3D (ITRF2014) -> Geodetic 3D (ETRF2000)
+// TEST 1c : Geodetic 3D (ITRF2014) -> Geodetic 3D (ETRF2000)
 // [Format: Degrees -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
@@ -159,7 +163,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 4 : Geocentric (XYZ) -> Geodetic (LatLon)
+// TEST 1d : Geocentric (XYZ) -> Geodetic (LatLon)
 // [Format: Metres -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
@@ -181,7 +185,7 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 5 : Geodetic (LatLon) (XYZ) -> Geocentric
+// TEST 1e : Geodetic (LatLon) (XYZ) -> Geocentric
 // [Format: Metres -> Degrees]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
@@ -202,7 +206,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 6 : Projected -> Projected (Lambert-93 -> WebMercator)
+// TEST 1f : Projected -> Projected (Lambert-93 -> WebMercator)
 // [Format: Metres -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
@@ -224,7 +228,7 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 7 : Geocentric (XYZ) -> Geocentric (XYZ)
+// TEST 1g : Geocentric (XYZ) -> Geocentric (XYZ)
 // [Format: Metres -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
@@ -250,7 +254,7 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
 }
 
 // ---------------------------------------------------------------------------
-// TEST 8 : Geocentric (XYZ) -> Projected (Lambert-93)
+// TEST 1h : Geocentric (XYZ) -> Projected (Lambert-93)
 // [Format: Mètres -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
@@ -272,7 +276,7 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
     EXPECT_NEAR(p->getZ(), 727.69, 10.0);
 }
 // ---------------------------------------------------------------------------
-// TEST 9 : Projected (Lambert-93) -> Geocentric (XYZ)
+// TEST 1i : Projected (Lambert-93) -> Geocentric (XYZ)
 // [Format: Metres -> Metres]
 // ---------------------------------------------------------------------------
 TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
@@ -293,3 +297,26 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
     EXPECT_NEAR(p->getY(), 179639.87, 10.0);
     EXPECT_NEAR(p->getZ(), 4776495.43, 10.0);
 }
+
+//////////////////////////////////////////////////////////////////////////////
+// MODEL DEFORMATION UNIT TESTS
+//////////////////////////////////////////////////////////////////////////////
+
+// TEST_F(TransformationEngineTest, ApplyDefModel_Geodetic) {
+//     // Source : RGF93 LatLon (EPSG:4171)
+//     std::string path = createGpkgForEPSG(4171, "RGF93_LatLon", 2025.0);
+//     DataManager dm; VectorLayer* layer = dm.loadVector(path);
+    
+//     // DefModel JSON (IGN France)
+//     std::string json_model_path = DATA_PATH + "defmodel_ign_france.json";
+
+//     // Apply DefModel
+//     TransformationEngine engine;
+//     VectorLayer* res = engine.applyDefModelLayer(*layer, json_model_path, false);
+
+//     OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+
+//     // Verification LatLon with DefModel applied
+//     EXPECT_NEAR(p->getX(), 2.66070, 1e-4);
+//     EXPECT_NEAR(p->getY(), 48.80890, 1e-4);
+// }

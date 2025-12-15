@@ -168,10 +168,10 @@ GeodeticTransformer::Result GeodeticTransformer::geodeticToProjected(
     if (!P) throw std::runtime_error("GeoD -> Proj failed");
 
     PJ_COORD in;
-    // INPUT : On inverse Lon(x)/Lat(y) -> Lat(x)/Lon(y)
     in.xyzt.x = y;
     in.xyzt.y = x;
-    in.xyzt.z = z; in.xyzt.t = t_epoch;
+    in.xyzt.z = z; 
+    in.xyzt.t = t_epoch;
 
     PJ_COORD out = proj_trans(P, PJ_FWD, in);
     proj_destroy(P);
@@ -241,10 +241,18 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeocentric(
     const std::string& json_model_path,
     bool inverse)
 {
-    std::string proj_str = "+proj=defmodel +model=" + json_model_path;
-    if (inverse) proj_str += " +inv";
+    std::ostringstream ss;
+    ss << "+proj=pipeline "
+       << "+step +proj=cart +inv +ellps=GRS80 " 
+       << "+step +proj=defmodel +model=" << json_model_path; 
 
-    PJ* P = proj_create(ctx_, proj_str.c_str());
+    if (inverse) {
+        ss << " +inv";
+    }
+
+    ss << " +step +proj=cart +ellps=GRS80";
+
+    PJ* P = proj_create(ctx_, ss.str().c_str());
     if (!P)
         throw std::runtime_error("Failed to load defmodel: " + json_model_path);
 
@@ -293,61 +301,126 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
              r.xyzt.t };
 }
 
+// ----------------------------------------------------
+// 12. applyGridDeformation - GEODETIC (lon, lat, h)
+// ----------------------------------------------------
 
+GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeodetic(
+    double lon_deg, double lat_deg, double h,
+    double t_epoch,
+    const std::string& grid_path,
+    double ref_epoch)
+{
+    // 1) Geodetic -> Cartesian (XYZ)
+    PJ* P_cart = proj_create(ctx_, "+proj=cart +ellps=GRS80");
+    if (!P_cart)
+        throw std::runtime_error("Failed to create PROJ cart converter");
 
+    PJ_COORD in_geo;
+    in_geo.lpzt.lam = proj_torad(lon_deg);
+    in_geo.lpzt.phi = proj_torad(lat_deg);
+    in_geo.lpzt.z   = h;
+    in_geo.lpzt.t   = t_epoch;
 
-// // -------------------------------
-// // 3. GRID-BASED DEFORMATION MODEL
-// // -------------------------------
+    PJ_COORD cart = proj_trans(P_cart, PJ_FWD, in_geo);
+    proj_destroy(P_cart);
 
-// /**
-//  * @brief Apply a grid-based spatio-temporal deformation (XYZ displacement grid).
-//  */
-// GeodeticTransformer::Result
-// GeodeticTransformer::applyGridDeformation(
-//     double lon_deg, double lat_deg, double h,
-//     double t_epoch,
-//     const std::string& grid_path,
-//     double ref_epoch)
-// {
-//     // 1) Geodetic (Lon, Lat) -> Cartesian (XYZ)
-//     PJ* P_cart = proj_create(ctx_, "+proj=cart +ellps=GRS80");
-//     if (!P_cart) throw std::runtime_error("Failed to create PROJ cart converter");
+    // 2) Apply deformation grid (XYZ)
+    std::ostringstream ss;
+    ss << "+proj=deformation +t_epoch=" << ref_epoch
+       << " +grids=" << grid_path;
 
-//     PJ_COORD in_geo;
-//     in_geo.lpzt.lam = proj_torad(lon_deg);
-//     in_geo.lpzt.phi = proj_torad(lat_deg);
-//     in_geo.lpzt.z   = h;
-//     in_geo.lpzt.t   = t_epoch;
+    PJ* P_def = proj_create(ctx_, ss.str().c_str());
+    if (!P_def)
+        throw std::runtime_error("Failed to create PROJ deformation transformer");
 
-//     PJ_COORD cart = proj_trans(P_cart, PJ_FWD, in_geo);
-//     proj_destroy(P_cart);
+    PJ_COORD cart2 = proj_trans(P_def, PJ_FWD, cart);
+    proj_destroy(P_def);
 
-//     // 2) Apply deformation grid in Cartesian
-//     std::ostringstream ss2;
-//     ss2 << "+proj=deformation +t_epoch=" << ref_epoch
-//         << " +grids=" << grid_path;
+    // 3) Cartesian -> Geodetic
+    PJ* P_cart_inv = proj_create(ctx_, "+proj=cart +ellps=GRS80");
+    if (!P_cart_inv)
+        throw std::runtime_error("Failed to create PROJ cart inverse converter");
 
-//     PJ* P_def = proj_create(ctx_, ss2.str().c_str());
-//     if (!P_def) throw std::runtime_error("Failed to create PROJ deformation transformer");
+    PJ_COORD out_geo = proj_trans(P_cart_inv, PJ_INV, cart2);
+    proj_destroy(P_cart_inv);
 
-//     PJ_COORD in_cart2 = cart; // Copy
-//     PJ_COORD cart2 = proj_trans(P_def, PJ_FWD, in_cart2);
-//     proj_destroy(P_def);
+    return {
+        proj_todeg(out_geo.lpzt.lam),
+        proj_todeg(out_geo.lpzt.phi),
+        out_geo.lpzt.z,
+        out_geo.lpzt.t
+    };
+}
 
-//     // 3) Cartesian (XYZ) -> Geodetic (Lon, Lat)
-//     // We recreate the object to be safe (or could reuse if kept alive)
-//     PJ* P_cart_inv = proj_create(ctx_, "+proj=cart +ellps=GRS80"); 
-    
-//     // Note: Applying PJ_INV on a "+proj=cart" definition
-//     PJ_COORD out_geo = proj_trans(P_cart_inv, PJ_INV, cart2);
-//     proj_destroy(P_cart_inv);
+// ----------------------------------------------------
+// 13. applyGridDeformation - GEOCENTRIC (X, Y, Z)
+// ----------------------------------------------------
 
-//     return { proj_todeg(out_geo.lpzt.lam),
-//              proj_todeg(out_geo.lpzt.phi),
-//              out_geo.lpzt.z,
-//              out_geo.lpzt.t };
-// };
+GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeocentric(
+    double X, double Y, double Z,
+    double t_epoch,
+    const std::string& grid_path,
+    double ref_epoch)
+{
+    std::ostringstream ss;
+    ss << "+proj=deformation +t_epoch=" << ref_epoch
+       << " +grids=" << grid_path
+       << " +ellps=GRS80";
 
+    PJ* P = proj_create(ctx_, ss.str().c_str());
+    if (!P)
+        throw std::runtime_error("Failed to create PROJ deformation transformer");
 
+    PJ_COORD in;
+    in.xyzt.x = X;
+    in.xyzt.y = Y;
+    in.xyzt.z = Z;
+    in.xyzt.t = t_epoch;
 
+    PJ_COORD r = proj_trans(P, PJ_FWD, in);
+    proj_destroy(P);
+
+    return {
+        r.xyzt.x,
+        r.xyzt.y,
+        r.xyzt.z,
+        r.xyzt.t
+    };
+}
+
+// ----------------------------------------------------
+// 14. applyGridDeformation - PROJECTED (E, N, H)
+// ----------------------------------------------------
+
+GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationProjected(
+    double E, double N, double H,
+    double t_epoch,
+    const std::string& grid_path,
+    double ref_epoch)
+{
+    std::ostringstream ss;
+    ss << "+proj=deformation +t_epoch=" << ref_epoch
+       << " +grids=" << grid_path
+       << " +ellps=GRS80";
+
+    PJ* P = proj_create(ctx_, ss.str().c_str());
+    if (!P)
+        throw std::runtime_error("Failed to create PROJ deformation transformer");
+
+    PJ_COORD in;
+    in.xyzt.x = E;   // Easting
+    in.xyzt.y = N;   // Northing
+    in.xyzt.z = H;   // Height
+    in.xyzt.t = t_epoch;
+
+    PJ_COORD r = proj_trans(P, PJ_FWD, in);
+    proj_destroy(P);
+
+    return {
+        r.xyzt.x,
+        r.xyzt.y,
+        r.xyzt.z,
+        r.xyzt.t
+    };
+}
