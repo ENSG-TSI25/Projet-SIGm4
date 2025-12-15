@@ -40,9 +40,6 @@
 #include <qgsproject.h>
 
 #include <gdal_priv.h>    //Updating the display of the project
-    projectDisplay->updateDisplayName();
-    projectDisplay->updateDisplayCRS();
-    projectDisplay->updateDisplayEpoch0();
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -233,7 +230,7 @@ void MainWindow::setNewProject()
 
     connect(crsList, &QComboBox::currentTextChanged,
             this, [this, crsList]() {
-                ui->crsLabel->setText("CRS : " + crsList->currentText());
+                // ui->crsLabel->setText("CRS : " + crsList->currentText());
             });
 
 
@@ -621,9 +618,9 @@ void MainWindow::loadProject(const QString &filepath)
             }
         }
     //Updating the display of the project
-    projectDisplay->updateDisplayName();
-    projectDisplay->updateDisplayCRS();
-    projectDisplay->updateDisplayEpoch0();
+    // projectDisplay->updateDisplayName();
+    // projectDisplay->updateDisplayCRS();
+    // projectDisplay->updateDisplayEpoch0();
         canvas->refresh();
 
         QMessageBox::information(
