@@ -19,6 +19,9 @@
 #include <QDialog>
 #include "dialogLayerManagement.h"
 
+#include <core/DataManager.hpp>
+#include <core/RasterLayer.hpp>
+
 
 
 class MainWindow;
@@ -36,8 +39,10 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
-
-        
+    
+    void loadRasterLayerFromFile(const QString& file);
+    void loadVectorLayerFromFile(const QString& file);
+    void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
 
 
 private:
