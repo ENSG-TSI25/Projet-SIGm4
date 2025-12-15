@@ -27,7 +27,6 @@
 #include "core/DataManager.hpp"
 #include <core/GeoPackageReader.hpp>
 
-
 LayerManager::LayerManager(MainWindow *mw) : QObject(mw), mw(mw), fileName(" ")
 {
 }
@@ -114,14 +113,14 @@ void LayerManager::addFileToWidget()
         for (auto *l : layers)
         {
             l->setDataSource(fileName.toStdString());
-            
+
             // Create shared_ptr from the raw pointer
             auto sharedLayer = std::make_shared<VectorLayer>(*l);
             proj->addLayer(sharedLayer);
-            
+
             qDebug() << "Couche ajoutée au projet :" << QString::fromStdString(l->getName())
-                    << "avec dataSource :" << fileName;
-            
+                     << "avec dataSource :" << fileName;
+
             QString layerName = QString::fromStdString(l->getName());
             QListWidgetItem *item = new QListWidgetItem(layerName);
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -344,7 +343,8 @@ void LayerManager::loadRasterLayerFromFile(const QString &file)
     QgsProject::instance()->addMapLayer(layer);
 
     raster->setDataSource(file.toStdString());
-    proj->addLayer(*raster);
+    auto rasterLayer = std::make_shared<RasterLayer>(*raster);
+    proj->addLayer(rasterLayer);
     qDebug() << "Added raster to backend Project:" << QString::fromStdString(raster->getName());
 
     QListWidgetItem *item = new QListWidgetItem(tableName);
@@ -422,8 +422,8 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
         for (auto *l : backendLayers)
         {
             l->setDataSource(file.toStdString());
-            proj->addLayer(*l);
-
+            auto vectorLayer = std::make_shared<VectorLayer>(*l);
+            proj->addLayer(vectorLayer);
             // Check temporal data
             if (!l->hasTemporalData())
             {
@@ -516,31 +516,28 @@ void LayerManager::showAddTemporalFieldDialog(const QString &filePath, const std
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        if (dialog.exec() == QDialog::Accepted)
+        QString fieldName = fieldInput->text();
+        double epochValue = epochInput->text().toDouble();
+
+        GeoPackageReader reader(filePath.toStdString());
+        if (reader.open())
         {
-            QString fieldName = fieldInput->text();
-            double epochValue = epochInput->text().toDouble();
+            bool success = reader.addTemporalField(layerName, fieldName.toStdString(), epochValue);
+            reader.close();
 
-            GeoPackageReader reader(filePath.toStdString());
-            if (reader.open())
+            if (success)
             {
-                bool success = reader.addTemporalField(layerName, fieldName.toStdString(), epochValue);
-                reader.close();
-
-                if (success)
-                {
-                    QMessageBox::information(nullptr, "Success",
-                                             QString("Temporal field '%1' added successfully").arg(fieldName));
-                    // Reload layer
-                    loadVectorLayerFromFile(filePath);
-                }
-                else
-                {
-                    QMessageBox::critical(nullptr, "Error", "Failed to add temporal field");
-                }
+                QMessageBox::information(nullptr, "Success",
+                                         QString("Temporal field '%1' added successfully").arg(fieldName));
+                // Reload layer
+                loadVectorLayerFromFile(filePath);
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, "Error", "Failed to add temporal field");
             }
         }
-        QMessageBox::information(nullptr, "Info",
-                                 "Backend function to add temporal field not yet implemented");
     }
+    QMessageBox::information(nullptr, "Info",
+                             "Backend function to add temporal field not yet implemented");
 }

@@ -370,7 +370,6 @@ void MainWindow::loadProject()
     loadProject(filepath);
 }
 
-// With filepath parameter - for command-line/file association
 void MainWindow::loadProject(const QString &filepath)
 {
     if (filepath.isEmpty() || !QFile::exists(filepath))
@@ -405,9 +404,7 @@ void MainWindow::loadProject(const QString &filepath)
 
         ui->layersList->clear();
 
-        // Get layers from the project
         auto layers = currentProject->getLayers();
-
         qDebug() << "Reloading" << layers.size() << "layer(s)...";
 
         Carte *carte = getCarte();
@@ -440,39 +437,6 @@ void MainWindow::loadProject(const QString &filepath)
 
                     if (!dataset)
                         continue;
-                    // Find the corresponding layer
-                    for (auto *vLayer : reloadedLayers)
-                    {
-                        if (vLayer->getName() == layer->getName())
-                        {
-                            // Create QgsVectorLayer for display
-                            QString qlayerName = QString::fromStdString(vLayer->getName());
-                            QgsVectorLayer *qlayer = new QgsVectorLayer(
-                                "Point?crs=" + QString::fromStdString(vLayer->getCrs()),
-                                qlayerName,
-                                "memory");
-
-                            // Add fields to the layer
-                            QList<QgsField> fieldList;
-                            fieldList << QgsField("id", QVariant::Int);
-                            qlayer->dataProvider()->addAttributes(fieldList);
-                            qlayer->updateFields();
-
-                            // Add geometries from EWKT format
-                            auto ewkts = vLayer->getEWKT();
-                            int fid = 0;
-                            for (const auto &ewkt : ewkts)
-                            {
-                                if (ewkt.empty())
-                                    continue;
-
-                                // Remove "SRID=xxxx;" prefix
-                                std::string wkt = ewkt;
-                                size_t pos = ewkt.find(';');
-                                if (pos != std::string::npos)
-                                {
-                                    wkt = ewkt.substr(pos + 1);
-                                }
 
                     bool isRaster = (dataset->GetRasterCount() > 0);
                     GDALClose(dataset);
@@ -513,7 +477,7 @@ void MainWindow::loadProject(const QString &filepath)
 
                         for (auto *vLayer : reloadedLayers)
                         {
-                            if (vLayer->getName() == layer.getName())
+                            if (vLayer->getName() == layer->getName())
                             {
                                 QString qlayerName = QString::fromStdString(vLayer->getName());
                                 QString layerCrs = QString::fromStdString(vLayer->getCrs());
