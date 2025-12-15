@@ -28,6 +28,16 @@ public:
         double timestamp;
     };
 
+    struct RasterMetadata {
+        std::string name;
+        std::string crs;
+        int srid;
+        int width, height;
+        double referenceEpoch;
+        double geoTransform[6];
+        std::string layerPath;
+    };
+
 private:
     std::string filePath;
     GDALDataset* dataset;
@@ -42,6 +52,10 @@ public:
     std::vector<std::string> listLayers() const;
     LayerMetadata getLayerMetadata(const std::string& layerName) const;
     std::vector<Feature> extractFeatures(const std::string& layerName) const;
+
+    bool isRasterLayer(const std::string& layerName) const;
+    RasterMetadata extractRasterMetadata(const std::string& layerName) const;
+    Geometry4D extractRasterExtent(const std::string& layerName, double timestamp) const;
 
 private:
     std::string detectTimestampField(const std::string& layerName) const;

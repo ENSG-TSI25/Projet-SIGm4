@@ -37,18 +37,12 @@ private:
     // Layers
     QgsRasterLayer* osmLayer;
     QgsRasterLayer* satLayer;
-    QgsVectorLayer* polyLayer;
-    QgsVectorLayer* pointLayer;
-    QgsVectorLayer* lineLayer;
 
     bool osmVisible;
 
     // UI (facultatif si tu veux mettre les boutons ailleurs)
-    QPushButton* zoomIn;
-    QPushButton* zoomOut;
+
     QPushButton* toggleBasemap;
-    QLabel* scaleLabel;
-    QLabel* projLabel;
 
     QVBoxLayout* layout;
 

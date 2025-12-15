@@ -122,7 +122,8 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
     std::string path = createGpkgForEPSG(9000, "ITRF2014", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
 
     // Cible : RGF93 / Lambert-93 (EPSG:9794) - Metres
