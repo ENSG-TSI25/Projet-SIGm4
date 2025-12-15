@@ -97,7 +97,6 @@ MainWindow::MainWindow(QWidget *parent)
     
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
-    // connect (crsLabel)
 }
 
 MainWindow::~MainWindow()
