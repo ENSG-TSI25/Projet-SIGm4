@@ -287,6 +287,11 @@ void MainWindow::setNewProject(){
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
     qDebug() << "  Époque :" << currentProject->getEpoch0();
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }
 
 void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
@@ -595,4 +600,9 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
+
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 }
