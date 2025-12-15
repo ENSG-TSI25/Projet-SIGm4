@@ -2,7 +2,7 @@
 #include <qgsapplication.h>
 #include <QFile>
 #include <QDebug>
-
+#include <QTimer>  
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +19,16 @@ int main(int argc, char *argv[])
 
     MainWindow w;
     w.show();
+    
+    if (argc > 1) {
+        QString filepath = QString::fromLocal8Bit(argv[1]);
+        if (filepath.endsWith(".sigm4")) {
+            qDebug() << "Loading project from command line:" << filepath;
+            QTimer::singleShot(200, [&w, filepath]() {
+                w.loadProject(filepath);
+            });
+        }
+    }
 
     int r = a.exec();
     QgsApplication::exitQgis();

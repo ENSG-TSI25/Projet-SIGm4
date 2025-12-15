@@ -22,7 +22,21 @@
 #include <QListWidget>
 #include <iostream>
 #include <QDate>
+#include <QDebug>
+#include "../include/Carte.h"
 
+#include <core/Project.hpp>
+
+#include <QMessageBox>
+#include <QDir>
+
+#include <core/DataManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <qgsvectorlayer.h>
+#include <qgsfield.h>
+#include <qgsfeature.h>
+#include <qgsgeometry.h>
+#include <qgsproject.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -32,8 +46,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
-    connect (ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
-    //For displaying the CRSs list on the source and target Comboboxes
+    connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
+    // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
 
@@ -43,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     listDimension(); //dimension pour afficher le contenu de la combobox
-    carte = new Carte(ui->carte);
+    carte = new Carte(ui->carte, this);
     connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
@@ -57,19 +71,19 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
     //When the "Ouvrir" button is clicked, open the file manager to choose a new project to open
-    connect (ui->btnOpen, &QPushButton::clicked, this, &MainWindow::openExistingProject);
+    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
+            { loadProject(); });
 
     //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
-    connect (ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveCurrentProject);
+    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
 
     //Dialog management
     dialog = new Dialog();
-    connect (ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
-    Ui::Dialog *dig = dialog -> getUI();
+    connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
+    Ui::Dialog *dig = dialog->getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
-            this, [this]() {
-                layerManager->duplicateLayer(dialog);
-            });
+            this, [this]()
+            { layerManager->duplicateLayer(dialog); });
 
     connect(dig->buttonRename, &QPushButton::clicked,
             this, [this]() {
@@ -79,6 +93,10 @@ MainWindow::MainWindow(QWidget *parent)
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
+    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
+    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
+            { loadProject(); });
+    // connect (crsLabel)
 }
 
 MainWindow::~MainWindow()
@@ -87,14 +105,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-Ui::MainWindow* MainWindow::getUi(){
+Ui::MainWindow *MainWindow::getUi()
+{
     return ui;
 }
 
 void MainWindow::updateScaleLabel(int scaleValue)
 {
-    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue/100)*100), 'f', 0)));
-
+    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue / 100) * 100), 'f', 0)));
 }
 
 void MainWindow::zoomIn_button()
@@ -102,26 +120,47 @@ void MainWindow::zoomIn_button()
     carte->getCanvas()->zoomIn();
 }
 
-
 void MainWindow::zoomOut_button()
 {
     carte->getCanvas()->zoomOut();
 }
 
-
-void MainWindow::listDimension(){
+void MainWindow::listDimension()
+{
 
     ui->dimensionCombo->clear();
     ui->dimensionCombo->addItem("2D");
     ui->dimensionCombo->addItem("4D");
-
 }
 
-
-//Open dialog when the layer is clicked
-void MainWindow::openDialog() {
-    dialog -> show();
+// Open dialog when the layer is clicked
+void MainWindow::openDialog()
+{
+    dialog->show();
 }
+
+LayerManager *MainWindow::getLayerManager()
+{
+    return layerManager;
+}
+
+Carte *MainWindow::getCarte()
+{
+    return carte;
+}
+
+void MainWindow::getDateSelected(const QDate &date)
+{
+    // QDate initalDate= ui->calendar->selectedDate();
+    // ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
+}
+
+void MainWindow::getSRCSelected()
+{
+    // ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+}
+
+Project *MainWindow::getCurrentProject() { return currentProject; }
 
 // void MainWindow::displayEpochProject(const QDate &date){
 //     ui->epochDisplayZone->setText("Époque du projet: " + date.toString("dd/MM/yyyy"));
@@ -164,12 +203,12 @@ void MainWindow::setNewProject(){
     //Setting range and decimals for the validator
     doubleValidator->setRange(1950, 2030, 3);
     doubleValidator->setNotation(QDoubleValidator::StandardNotation);
-    //Integrating the validator on the textzone
     epochTextZone->setValidator(doubleValidator);
      
     QObject::connect(acceptationButton, &QPushButton::clicked, &newProjectDialog, &QDialog::accept);
 
-    connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]() {
+    connect(calendar, &QCalendarWidget::selectionChanged, this, [this, calendar]()
+            {
         QDate selectedDate = calendar->selectedDate();
     });
 
@@ -196,58 +235,62 @@ void MainWindow::setNewProject(){
     layout->addWidget(calendar);
     layout->addWidget(acceptationButton);
 
-    // check if the user has created the project
-    if (newProjectDialog.exec() == QDialog::Accepted) {
-
-        // get the name 
-        QString projectName = nameTextZone->text();
-        if (projectName.isEmpty()) {
-            projectName = "Projet sans nom"; 
-        }
-
-        // get the CRS 
-        QString selectedCRS = crsList->currentText();
-
-        //EPSG code 
-        int startIndex = selectedCRS.indexOf('(');
-        int endIndex = selectedCRS.indexOf(')');
-        QString epsgCode;
-        
-        if (startIndex != -1 && endIndex != -1) {
-            epsgCode = "EPSG:" + selectedCRS.mid(startIndex + 1, endIndex - startIndex - 1);
-        } else {
-            epsgCode = "EPSG:4326";  //  default value
-        }
-        
-        //epoch
-        double epoch = epochTextZone->text().toDouble();
-        
-        Project* newProject = new Project(
-            projectName.toStdString(),     // name
-            epoch,                         // epoch
-            epsgCode.toStdString()        // CRS
-        );
-        currentProject = newProject;
-        
-        //Setting the parameters for the display
-        projectDisplay->setProjectName(projectName.toStdString());
-        projectDisplay->setProjectCRS(epsgCode.toStdString());
-        projectDisplay->setProjectEpoch0(epoch);
-
-        // cout
-        std::cout << "Projet créé avec succès !" << std::endl;
-        std::cout << "Nom : " << newProject->getName() << std::endl;
-        std::cout << "Époque : " << newProject->getEpoch0() << std::endl;
-        std::cout << "CRS : " << newProject->getCrs() << std::endl;
-        
-    } else {
-        std::cout << "Création du projet annulée" << std::endl;
-        currentProject = nullptr;
+    // Exécution du dialogue
+    if (newProjectDialog.exec() != QDialog::Accepted)
+    {
+        qDebug() << "Création de projet annulée.";
+        return;
     }
 
+    // Récupérer les valeurs saisies par l'utilisateur
+    QString projectName = nameTextZone->text().trimmed();
+    QString selectedCrs = crsList->currentText().trimmed();
+    double epoch = epochTextZone->text().toDouble();
+
+    // Valeurs par défaut si l'utilisateur n'a rien saisi
+    if (projectName.isEmpty())
+        projectName = "ProjetSansNom";
+    if (selectedCrs.isEmpty())
+    {
+        selectedCrs = "EPSG:2154"; // CRS par défaut
+    }
+    else
+    {
+        // Extraire le code EPSG si le format est "Nom (xxxx)"
+        QRegExp rx("\\((\\d+)\\)");
+        if (rx.indexIn(selectedCrs) != -1)
+        {
+            QString code = rx.cap(1);
+            selectedCrs = "EPSG:" + code; // Convertit en format standard EPSG
+        }
+    }
+
+    // Epoch par défaut si non valide
+    if (epoch <= 0)
+        epoch = 0.0;
+
+    // Création d'un nouveau projet avec les valeurs saisies
+    Project *newProject = new Project(
+        projectName.toStdString(), // Nom du projet
+        epoch,                     // Époque
+        selectedCrs.toStdString()  // CRS (format "EPSG:xxxx")
+    );
+
+    // Stocker dans currentProject
+    currentProject = newProject;
+
+    qDebug() << "Nom du projet :" << projectName;
+    qDebug() << "CRS sélectionné :" << selectedCrs;
+    qDebug() << "Époque :" << epoch;
+
+    qDebug() << "Nouveau projet créé :";
+    qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
+    qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
+    qDebug() << "  Époque :" << currentProject->getEpoch0();
 }
 
-void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate){
+void MainWindow::getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate)
+{
     {
         QDate initalDate= calendar->selectedDate();
         float initalValue = computeDate (initalDate.day(),
@@ -273,176 +316,283 @@ float MainWindow::computeDate(int day, int month, int year){
     QDate selected (year, month, day);
     float daysCount = start.daysTo(selected)+1;
     float daysInYear = QDate::isLeapYear(year) ? 366 : 365;
-    float deci_date = year + (daysCount-1)/(daysInYear);
+    float deci_date = year + (daysCount - 1) / (daysInYear);
     return deci_date;
 }
 
-//Function to set the targetted comboBox to show the list of CRS accepted by the project
-void MainWindow::setCrsList(QComboBox *comboBox){
-        comboBox->clear();
-        QStringList items = {
-            "ITRF2020 (9990)",
-            "ITRF2014 (9000)",
-            "ITRF2008 (8999)",
-            "ITRF2005 (8998)",
-            "ITRF2000 (8987)",
-            "ETRF2020 (10571)",
-            "ETRF2014 (9069)",
-            "ETRF2005 (9068)",
-            "ETRF2000 (9067)",
-            "RGF93v2b (9784)",
-            "RGM23 (10673)",
-            
-        };
-        comboBox->addItems(items);
+// Function to set the targetted comboBox to show the list of CRS accepted by the project
+void MainWindow::setCrsList(QComboBox *comboBox)
+{
+    comboBox->clear();
+    QStringList items = {
+        "ITRF2020 (9990)",
+        "ITRF2014 (9000)",
+        "ITRF2008 (8999)",
+        "ITRF2005 (8998)",
+        "ITRF2000 (8987)",
+        "ETRF2020 (10571)",
+        "ETRF2014 (9069)",
+        "ETRF2005 (9068)",
+        "ETRF2000 (9067)",
+        "RGF93v2b (9784)",
+        "RGM23 (10673)",
+        "RGF93v1 (2154)",
+
+    };
+    comboBox->addItems(items);
 }
 
-// Function to open an already existing project
+void MainWindow::saveProject()
+{
+    // Check if a project exists
+    if (currentProject == nullptr)
+    {
+        QMessageBox::warning(this, "Error", "No project to save. Create a project first with 'New'.");
+        return;
+    }
 
-    void MainWindow::openExistingProject(){
+    // Ask user where to save the project
+    QString filepath = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Project"),
+        "/home/user/" + QString::fromStdString(currentProject->getName()) + ".sigm4",
+        tr("SIGM4 Files (*.sigm4)"));
 
-        std::cout << "début ouverture projet" << std::endl;
-    QDialog openProjectDialog;
-    openProjectDialog.setWindowTitle("Ouvrir un projet");
-    
-    QVBoxLayout *layout = new QVBoxLayout(&openProjectDialog);
-    
-    QLabel *dialogText = new QLabel("Sélectionnez le fichier projet à ouvrir", &openProjectDialog);
-    
-    // Widget file path 
-    QHBoxLayout *filePathLayout = new QHBoxLayout();
-    
-    QLineEdit *pathTextZone = new QLineEdit(&openProjectDialog);
-    pathTextZone->setPlaceholderText("Chemin du fichier...");
-    
-    QPushButton *browseButton = new QPushButton("Parcourir", &openProjectDialog);
-    
-    filePathLayout->addWidget(pathTextZone);
-    filePathLayout->addWidget(browseButton);
-    
-    QPushButton *acceptationButton = new QPushButton("OK", &openProjectDialog);
-    QPushButton *cancelButton = new QPushButton("Annuler", &openProjectDialog);
-    
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(cancelButton);
-    buttonLayout->addWidget(acceptationButton);
+    // If user cancels the dialog
+    if (filepath.isEmpty())
+    {
+        return;
+    }
 
-    //Add the widget to the layout
-    layout->addWidget(dialogText);
-    layout->addLayout(filePathLayout);
-    layout->addLayout(buttonLayout);
-    
-    // connection to the buttons
-    connect(browseButton, &QPushButton::clicked, [&]() {
-        QString filePath = QFileDialog::getOpenFileName(
-            &openProjectDialog,
-            "Sélectionner un fichier projet",
-            QDir::homePath(),
-            "Fichiers projet (*.proj *.xml);;Tous les fichiers (*.*)"
-        );
-        
-        if (!filePath.isEmpty()) {
-            pathTextZone->setText(filePath);
+    // Save the project using the backend
+    bool success = currentProject->save(filepath.toStdString());
+
+    // Show success or error message
+    if (success)
+    {
+        QMessageBox::information(this, "Success", "Project saved successfully!");
+    }
+    else
+    {
+        QMessageBox::critical(this, "Error", "Failed to save project.");
+    }
+}
+
+// No parameters - for the "Open" button in UI
+void MainWindow::loadProject()
+{
+    // Ask user which file to load via file dialog
+    QString filepath = QFileDialog::getOpenFileName(
+        this,
+        tr("Open Project"),
+        "/home/user/",
+        tr("SIGM4 Files (*.sigm4)"));
+
+    // If user cancels the dialog
+    if (filepath.isEmpty())
+    {
+        return;
+    }
+
+    // Call the overloaded version with the filepath
+    loadProject(filepath);
+}
+
+// With filepath parameter - for command-line/file association
+void MainWindow::loadProject(const QString &filepath)
+{
+    // Validate filepath before attempting to load
+    if (filepath.isEmpty() || !QFile::exists(filepath))
+    {
+        qWarning() << "Invalid filepath:" << filepath;
+        return;
+    }
+
+    try
+    {
+        // Load project from backend using the Project class
+        Project loadedProject = Project::load(filepath.toStdString());
+
+        // Delete existing project if one exists
+        if (currentProject != nullptr)
+        {
+            delete currentProject;
         }
-    });
 
-    connect(acceptationButton, &QPushButton::clicked, &openProjectDialog, &QDialog::accept);
-    connect(cancelButton, &QPushButton::clicked, &openProjectDialog, &QDialog::reject);
-    
-    // Dialog
-    if (openProjectDialog.exec() == QDialog::Accepted) {
-        QString selectedPath = pathTextZone->text();
-        
-        if (!selectedPath.isEmpty()) {
-            // Verify the file existence
-            QFileInfo fileInfo(selectedPath);
-            if (fileInfo.exists()) {
-                std::cout << "Ouverture du fichier : " << selectedPath.toStdString() << std::endl;
-                
-                // TODO: Charger le projet depuis le fichier
-                // loadProjectFromFile(selectedPath);
-                
-            } else {
-                std::cerr << "Erreur : le fichier n'existe pas" << std::endl;
+        // Create new project instance with loaded data
+        currentProject = new Project(
+            loadedProject.getName(),
+            loadedProject.getEpoch0(),
+            loadedProject.getCrs(),
+            loadedProject.getLayers());
+
+        // Update UI with project information
+        //for now commentend because problem
+        // ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
+
+        // Update date label from epoch
+        double epoch = currentProject->getEpoch0();
+        int year = static_cast<int>(epoch);
+        double fractionalYear = epoch - year;
+        int dayOfYear = static_cast<int>(fractionalYear * 365);
+        QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
+        //for now commentend because problem
+        // ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
+
+        // RELOAD LAYERS
+
+        // Clear the layers list in the UI
+        ui->layersList->clear();
+
+        // Get layers from the project
+        std::vector<Layer> layers = currentProject->getLayers();
+
+        qDebug() << "Reloading" << layers.size() << "layer(s)...";
+
+        // Reload each layer
+        for (const auto &layer : layers)
+        {
+            QString layerName = QString::fromStdString(layer.getName());
+            QString dataSource = QString::fromStdString(layer.getDataSource());
+
+            qDebug() << "Loading layer:" << layerName;
+            qDebug() << "  Source:" << dataSource;
+
+            // Add layer to the layers list widget
+            QListWidgetItem *item = new QListWidgetItem(layerName);
+            item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+            item->setCheckState(Qt::Checked);
+            ui->layersList->addItem(item);
+
+            // If source file exists, reload the data
+            if (!dataSource.isEmpty() && QFile::exists(dataSource))
+            {
+                try
+                {
+                    // Use DataManager to reload the layer
+                    DataManager dm;
+                    std::vector<VectorLayer *> reloadedLayers = dm.loadVector(dataSource.toStdString());
+
+                    // Find the corresponding layer
+                    for (auto *vLayer : reloadedLayers)
+                    {
+                        if (vLayer->getName() == layer.getName())
+                        {
+                            // Create QgsVectorLayer for display
+                            QString qlayerName = QString::fromStdString(vLayer->getName());
+                            QgsVectorLayer *qlayer = new QgsVectorLayer(
+                                "Point?crs=" + QString::fromStdString(vLayer->getCrs()),
+                                qlayerName,
+                                "memory");
+
+                            // Add fields to the layer
+                            QList<QgsField> fieldList;
+                            fieldList << QgsField("id", QVariant::Int);
+                            qlayer->dataProvider()->addAttributes(fieldList);
+                            qlayer->updateFields();
+
+                            // Add geometries from EWKT format
+                            auto ewkts = vLayer->getEWKT();
+                            int fid = 0;
+                            for (const auto &ewkt : ewkts)
+                            {
+                                if (ewkt.empty())
+                                    continue;
+
+                                // Remove "SRID=xxxx;" prefix
+                                std::string wkt = ewkt;
+                                size_t pos = ewkt.find(';');
+                                if (pos != std::string::npos)
+                                {
+                                    wkt = ewkt.substr(pos + 1);
+                                }
+
+                                // Create QGIS geometry from WKT
+                                QgsGeometry qgsGeom = QgsGeometry::fromWkt(QString::fromStdString(wkt));
+                                if (!qgsGeom.isEmpty())
+                                {
+                                    QgsFeature feat;
+                                    feat.setGeometry(qgsGeom);
+                                    feat.setAttributes({fid++});
+                                    qlayer->dataProvider()->addFeature(feat);
+                                }
+                            }
+
+                            qlayer->updateExtents();
+
+                            // Add to QGIS project
+                            QgsProject::instance()->addMapLayer(qlayer, false);
+
+                            // Place layer above basemap
+                            Carte *carte = getCarte();
+                            QgsMapCanvas *canvas = carte->getCanvas();
+                            auto currentLayers = canvas->layers();
+                            currentLayers.prepend(qlayer);
+                            canvas->setLayers(currentLayers);
+                            canvas->refresh();
+
+                            qDebug() << "Layer reloaded with" << fid << "geometries";
+                            break;
+                        }
+                    }
+                }
+                catch (const std::exception &e)
+                {
+                    qDebug() << "Error reloading:" << e.what();
+                }
+            }
+            else
+            {
+                qDebug() << "Source file not found:" << dataSource;
             }
         }
-    } else {
-        std::cout << "Ouverture annulée" << std::endl;
-    }
-    }
 
-// Function to open an already existing project 
+        // Zoom to fit all vector layers
+        Carte *carte = getCarte();
+        QgsMapCanvas *canvas = carte->getCanvas();
+        QList<QgsMapLayer *> layerList = canvas->layers();
 
-    void MainWindow::saveCurrentProject(){
-        std::cout << "fermeture sauvegarde projet" << std::endl;
-        // Création de la fenêtre de dialogue
-    QDialog saveProjectDialog;
-    saveProjectDialog.setWindowTitle("Enregistrer le projet");
-    
-    QVBoxLayout *layout = new QVBoxLayout(&saveProjectDialog);
-    
-    QLabel *dialogText = new QLabel("Choisissez l'emplacement de sauvegarde", &saveProjectDialog);
-    
-    // file path widget
-    QHBoxLayout *filePathLayout = new QHBoxLayout();
-    
-    QLineEdit *pathTextZone = new QLineEdit(&saveProjectDialog);
-    pathTextZone->setPlaceholderText("Chemin du fichier...");
-    
-    // Set a default name if a project is open
-    if (currentProject != nullptr) {
-        pathTextZone->setText(QString::fromStdString(currentProject->getName()) + ".proj");
-    }
-    
-    QPushButton *browseButton = new QPushButton("Parcourir", &saveProjectDialog);
-    
-    filePathLayout->addWidget(pathTextZone);
-    filePathLayout->addWidget(browseButton);
-    
-    QPushButton *acceptationButton = new QPushButton("Enregistrer", &saveProjectDialog);
-    QPushButton *cancelButton = new QPushButton("Annuler", &saveProjectDialog);
-    
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(cancelButton);
-    buttonLayout->addWidget(acceptationButton);
-    
-    // add the widget to the layout
-    layout->addWidget(dialogText);
-    layout->addLayout(filePathLayout);
-    layout->addLayout(buttonLayout);
-    
-    // connecting the buttons
-    connect(browseButton, &QPushButton::clicked, [&]() {
-        QString filePath = QFileDialog::getSaveFileName(
-            &saveProjectDialog,
-            "Enregistrer le projet",
-            pathTextZone->text().isEmpty() ? QDir::homePath() : pathTextZone->text(),
-            "Fichiers projet (*.proj);;Fichiers XML (*.xml)"
-        );
-        
-        if (!filePath.isEmpty()) {
-            pathTextZone->setText(filePath);
+        QgsRectangle extent;
+        bool first = true;
+        for (auto *layer : layerList)
+        {
+            QgsVectorLayer *vectorLayer = qobject_cast<QgsVectorLayer *>(layer);
+            if (vectorLayer)
+            {
+                if (first)
+                {
+                    extent = vectorLayer->extent();
+                    first = false;
+                }
+                else
+                {
+                    extent.combineExtentWith(vectorLayer->extent());
+                }
+            }
         }
-    });
-    
-    // connexion
-    connect(acceptationButton, &QPushButton::clicked, &saveProjectDialog, &QDialog::accept);
-    connect(cancelButton, &QPushButton::clicked, &saveProjectDialog, &QDialog::reject);
-    
-    // Dialog
-    if (saveProjectDialog.exec() == QDialog::Accepted) {
-        QString selectedPath = pathTextZone->text();
-        
-        if (!selectedPath.isEmpty()) {
-            std::cout << "Sauvegarde du projet à : " << selectedPath.toStdString() << std::endl;
-            
-            // TODO: Sauvegarder le projet dans le fichier
-            // saveProjectToFile(selectedPath);
-            
-        } else {
-            std::cerr << "Erreur : chemin vide" << std::endl;
+        if (!first)
+        {
+            canvas->setExtent(extent);
         }
-    } else {
-        std::cout << "Sauvegarde annulée" << std::endl;
+
+        canvas->refresh();
+
+        // Show success message
+        QMessageBox::information(
+            this,
+            "Success",
+            QString("Project '%1' loaded successfully!\n\nCRS: %2\nEpoch: %3\nNumber of layers: %4")
+                .arg(QString::fromStdString(currentProject->getName()))
+                .arg(QString::fromStdString(currentProject->getCrs()))
+                .arg(currentProject->getEpoch0())
+                .arg(currentProject->getLayers().size()));
     }
+    catch (const std::exception &e)
+    {
+        // Handle loading errors
+        QMessageBox::critical(
+            this,
+            "Error",
+            QString("Failed to load project:\n%1").arg(e.what()));
     }
+}
