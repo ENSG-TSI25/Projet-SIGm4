@@ -371,7 +371,7 @@ void LayerManager::displayLayer() {
     Layer test = layerList[currentIndex];
 
     if (item -> checkState() == Qt::Checked) {
-        mw -> getCurrentProject()-> addLayer(test);      
+        mw -> getCurrentProject()-> addLayer(test);     
     }
     if (item -> checkState() == Qt::Unchecked) {
         mw -> getCurrentProject()-> rmLayer(test);

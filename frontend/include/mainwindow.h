@@ -66,7 +66,6 @@ public:
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
-    Project* getCurrentProject() { return currentProject; }
 
 
 

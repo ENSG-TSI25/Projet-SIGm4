@@ -71,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayer);
+    //connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayerFromFile);
     connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
