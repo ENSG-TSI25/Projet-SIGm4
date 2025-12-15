@@ -1,6 +1,7 @@
 #include "../include/mainwindow.h"
 #include "../include/LayerManager.h"
 #include "../include/TransformCRS.h"
+
 #include <QFileDialog>
 #include <QComboBox>
 #include <QGraphicsView>
@@ -38,10 +39,15 @@
 #include <qgsgeometry.h>
 #include <qgsproject.h>
 
-#include <gdal_priv.h>
+#include <gdal_priv.h>    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
     layerManager = new LayerManager(this);
@@ -51,27 +57,33 @@ MainWindow::MainWindow(QWidget *parent)
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
 
-    // Dialog management
-    connect(ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
-    connect(ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
-    listDimension(); // dimension pour afficher le contenu de la combobox
+
+    connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
+    connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
+
+
+    listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte, this);
-    connect(carte->getCanvas(), &QgsMapCanvas::scaleChanged, this, &MainWindow::updateScaleLabel);
-    connect(ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
-    connect(ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
-    // connect (ui->calendar, &QCalendarWidget::selectionChanged, this, &MainWindow::getDateSelected);
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
+    connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
+    connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
+      
+    connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
+    connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
-    connect(ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
-    connect(ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
+    connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
-    connect(ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
+    //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
+    connect (ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
 
-    // When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
-    connect(ui->btnNew, &QPushButton::clicked, this, &MainWindow::setNewProject);
-    // connect(ui->getDateSelected(), &QgsMapCanvas:: ,  this,&MainWindow::updateScaleLabel)
-    // connect(this, &MainWindow::getDateSelected, this, &MainWindow::getDateSelected);
+    //When the "Ouvrir" button is clicked, open the file manager to choose a new project to open
+    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
+            { loadProject(); });
 
-    // Dialog management
+    //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
+    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
+
+    //Dialog management
     dialog = new Dialog();
     connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
     Ui::Dialog *dig = dialog->getUI();
@@ -80,8 +92,12 @@ MainWindow::MainWindow(QWidget *parent)
             { layerManager->duplicateLayer(dialog); });
 
     connect(dig->buttonRename, &QPushButton::clicked,
-            this, [this]()
-            { layerManager->renameLayer(dialog); });
+            this, [this]() {
+                layerManager->renameLayer(dialog);
+            });
+    
+    //To show the careteristics of the current project
+    ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
     connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
     connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
@@ -142,12 +158,12 @@ Carte *MainWindow::getCarte()
 void MainWindow::getDateSelected(const QDate &date)
 {
     // QDate initalDate= ui->calendar->selectedDate();
-    ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
+    // ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
 }
 
 void MainWindow::getSRCSelected()
 {
-    ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
+    // ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
 Project *MainWindow::getCurrentProject() { return currentProject; }
@@ -226,7 +242,6 @@ void MainWindow::setNewProject()
     layout->addWidget(crsList);
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
-    layout->addWidget(decimalDate);
     layout->addWidget(acceptationButton);
 
     if (chosingCRSDialog.exec() != QDialog::Accepted)
@@ -451,14 +466,17 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getCrs(),
             loadedProject.getLayers());
 
-        ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
+        // Update UI with project information
+        //for now commentend because problem
+        // ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
 
         double epoch = currentProject->getEpoch0();
         int year = static_cast<int>(epoch);
         double fractionalYear = epoch - year;
         int dayOfYear = static_cast<int>(fractionalYear * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
-        ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
+        //for now commentend because problem
+        // ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
 
         ui->layersList->clear();
 
@@ -602,7 +620,10 @@ void MainWindow::loadProject(const QString &filepath)
                 }
             }
         }
-
+    //Updating the display of the project
+    projectDisplay->updateDisplayName();
+    projectDisplay->updateDisplayCRS();
+    projectDisplay->updateDisplayEpoch0();
         canvas->refresh();
 
         QMessageBox::information(
@@ -622,6 +643,3 @@ void MainWindow::loadProject(const QString &filepath)
             QString("Failed to load project:\n%1").arg(e.what()));
     }
 }
-
-
-
