@@ -4,9 +4,15 @@
 #include <gdal/gdal.h>
 #include <iostream>
 #include <fstream>
+#include <iomanip> 
 #include <cmath>
 #include <core/Project.hpp>
 #include <core/Layer.hpp>
+#include <core/ProjectManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <core/RasterLayer.hpp>
+
+
 Application::Application()
 {
     DBConfig cfg = DBConfig::loadFromEnv();
@@ -34,7 +40,7 @@ void Application::run()
     DataManager dm;
 
     // Test with your data file
-    std::string filePath = "/app/backend/data/ZoneSensible_MYT.gpkg";
+    std::string filePath = "/app/backend/data/pointsEau.gpkg";
     auto layers = dm.loadVector(filePath);
 
     if (layers.empty())
@@ -152,17 +158,19 @@ void Application::run()
         Project testProject("Projet Test Vendée", 2025.0, "EPSG:2154");
 
         // Ajouter des couches avec le chemin source
+
         for (size_t i = 0; i < layers.size(); ++i)
         {
             auto *vectorLayer = layers[i];
-            Layer simpleLayer(
+            auto simpleLayer = std::make_shared<Layer>(
                 vectorLayer->getName(),
                 vectorLayer->getCrs(),
                 vectorLayer->getEpoch(),
+                "geodetic",
                 vectorLayer->getDataSource());
             testProject.addLayer(simpleLayer);
             std::cout << "Couche ajoutée: " << vectorLayer->getName()
-                      << " (source: " << vectorLayer->getDataSource() << ")" << std::endl;
+                    << " (source: " << vectorLayer->getDataSource() << ")" << std::endl;
         }
 
         std::cout << "Projet créé avec " << testProject.getLayers().size() << " couches" << std::endl;
@@ -199,8 +207,8 @@ void Application::run()
             std::cout << "\nCouches et leurs sources:" << std::endl;
             for (const auto &layer : loadedProject.getLayers())
             {
-                std::cout << "  - " << layer.getName()
-                          << " -> " << layer.getDataSource() << std::endl;
+                std::cout << "  - " << layer->getName()
+                        << " -> " << layer->getDataSource() << std::endl;
             }
 
             // Afficher le contenu du fichier JSON
@@ -251,4 +259,92 @@ void Application::run()
             }
         }
     }
+
+    std::cout << "\n=======================================" << std::endl;
+    std::cout << "=== TEST PROJECT MANAGER TRANSFORM (VECTOR ONLY) ===" << std::endl;
+    std::cout << "=======================================" << std::endl;
+
+    Project pmProject("PM Test", 2025.0, "EPSG:4326");
+
+    // Store initial coordinates before transformation
+    std::vector<std::tuple<std::string, double, double, double, double>> beforeCoords;
+
+    for (auto* vlayer : layers)
+    {
+        auto sharedVec = std::shared_ptr<VectorLayer>(vlayer, [](VectorLayer*) {});
+        pmProject.addLayer(sharedVec);
+
+        std::cout << "Added VectorLayer: "
+                << sharedVec->getName()
+                << " | CRS=" << sharedVec->getCrs()
+                << " | CoordsType=" << sharedVec->getCoordsType()
+                << std::endl;
+        
+        //  CAPTURE INITIAL COORDINATES
+        auto geoms = sharedVec->getGeometries();
+        if (!geoms.empty()) {
+            auto* geom = geoms[0]->getGeometry();
+            if (auto* pt = geom->toPoint()) {
+                beforeCoords.push_back({
+                    sharedVec->getName(),
+                    pt->getX(), pt->getY(), pt->getZ(),
+                    geoms[0]->getT()
+                });
+                std::cout << "  BEFORE: ("
+                        << pt->getX() << ", "
+                        << pt->getY() << ", "
+                        << pt->getZ() << ") | T=" << geoms[0]->getT()
+                        << std::endl;
+            }
+        }
+    }
+
+    std::cout << "\n Applying transformation..." << std::endl;
+    ProjectManager pm(pmProject);
+    auto resultLayers = pm.applyProjectParameters();
+
+    std::cout << "\n TRANSFORMATION RESULTS:\n" << std::endl;
+
+    size_t idx = 0;
+    for (const auto& layer : resultLayers)
+    {
+        auto vec = std::dynamic_pointer_cast<VectorLayer>(layer);
+        if (!vec) continue;
+
+        std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" << std::endl;
+        std::cout << "Layer: " << vec->getName() << std::endl;
+        std::cout << "CRS after PM: " << vec->getCrs()
+                << " | CoordsType=" << vec->getCoordsType()
+                << std::endl;
+
+        //  DISPLAY COORDINATE TRANSFORMATION
+        auto geoms = vec->getGeometries();
+        if (!geoms.empty() && idx < beforeCoords.size()) {
+            auto* geom = geoms[0]->getGeometry();
+            if (auto* pt = geom->toPoint()) {
+                auto [name, oldX, oldY, oldZ, oldT] = beforeCoords[idx];
+                
+                std::cout << "\n COORDINATE TRANSFORMATION:" << std::endl;
+                std::cout << "  BEFORE: (" 
+                        << std::fixed << std::setprecision(6)
+                        << oldX << ", " << oldY << ", " << oldZ 
+                        << ") | T=" << oldT << std::endl;
+                std::cout << "  AFTER:  (" 
+                        << pt->getX() << ", " << pt->getY() << ", " << pt->getZ() 
+                        << ") | T=" << geoms[0]->getT() << std::endl;
+                
+            }
+        }
+
+        if (vec->getCrs() == pmProject.getCrs()) {
+            std::cout << "\n CRS applied by ProjectManager" << std::endl;
+        } else {
+            std::cerr << "\n CRS not applied correctly" << std::endl;
+        }
+        
+        idx++;
+    }
+
+
+
 }

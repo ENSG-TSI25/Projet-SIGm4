@@ -70,10 +70,28 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
     m.geometryType = layer->GetGeomType();
 
     if (auto* srs = layer->GetSpatialRef()) {
+        // Code and format extraction
         if (auto* code = srs->GetAuthorityCode(nullptr)) {
             m.srid = std::atoi(code);
             m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
+            char* unitName = nullptr;
+            srs->GetLinearUnits(&unitName);
+            if (srs->IsGeographic()) {
+                m.coords_type = "geodetic"; // Lat/Lon (Degrees)
+            } 
+            else if (srs->IsProjected()) {
+                m.coords_type = "projected"; // Lambert, UTM, etc. (Meters on map)
+            } 
+            else if (srs->IsGeocentric()) {
+                m.coords_type = "geocentric"; // Cartesian XYZ (Meters from Earth's center)
+            }
+            else {
+                std::cout << "Unsupported coordinate units";
+                m.coords_type = "unknown";
+            }
         }
+
+        
     }
     return m;
 }
