@@ -20,6 +20,9 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <string.h>
+
+#include "../include/ProjectCaracteristicsDisplay.h"
 #include <core/Project.hpp>
 
 #include <core/DataManager.hpp>
@@ -42,6 +45,8 @@ public:
     void listDimension();
     void openDialog();
     void setNewProject();
+    void openExistingProject();
+    void saveCurrentProject();
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
     float computeDate(int day, int month, int year);
@@ -67,6 +72,7 @@ private:
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
+    ProjectCarateristicsDisplay* projectDisplay;
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
