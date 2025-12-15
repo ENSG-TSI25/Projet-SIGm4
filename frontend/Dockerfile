@@ -3,9 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y software-properties-common \
     && add-apt-repository ppa:ubuntugis/ubuntugis-unstable -y \
-    && apt-get update
-
-RUN apt-get install -y \
+    && apt-get install -y --fix-missing \
     build-essential cmake git wget ca-certificates \
     qtbase5-dev qttools5-dev qttools5-dev-tools \
     libqt5svg5-dev libqt5xmlpatterns5-dev \

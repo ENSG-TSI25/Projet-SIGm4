@@ -48,6 +48,10 @@ bool Project::save(const std::string& filepath) const {
         layerObj.AddMember("name", Value(layer.getName().c_str(), allocator), allocator);
         layerObj.AddMember("crs", Value(layer.getCrs().c_str(), allocator), allocator);
         layerObj.AddMember("epoch", layer.getEpoch(), allocator);
+        
+
+        layerObj.AddMember("dataSource", Value(layer.getDataSource().c_str(), allocator), allocator);
+        
         layersArray.PushBack(layerObj, allocator);
     }
     doc.AddMember("layers", layersArray, allocator);
@@ -66,6 +70,7 @@ bool Project::save(const std::string& filepath) const {
     std::cout << "Projet sauvegardé: " << filepath << std::endl;
     return true;
 }
+
 
 Project Project::load(const std::string& filepath) {
     FILE* fp = fopen(filepath.c_str(), "r");
@@ -93,11 +98,17 @@ Project Project::load(const std::string& filepath) {
     const Value& layersArray = doc["layers"];
     for (SizeType i = 0; i < layersArray.Size(); i++) {
         const Value& layerObj = layersArray[i];
-        layers.push_back(Layer(
-            layerObj["name"].GetString(),
-            layerObj["crs"].GetString(),
-            layerObj["epoch"].GetDouble()
-        ));
+        
+        std::string layerName = layerObj["name"].GetString();
+        std::string layerCrs = layerObj["crs"].GetString();
+        double layerEpoch = layerObj["epoch"].GetDouble();
+        
+        std::string dataSource = "";
+        if (layerObj.HasMember("dataSource")) {
+            dataSource = layerObj["dataSource"].GetString();
+        }
+        
+        layers.push_back(Layer(layerName, layerCrs, layerEpoch, dataSource));
     }
     
     std::cout << "Projet chargé: " << filepath << std::endl;

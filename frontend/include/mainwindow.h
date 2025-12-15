@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QString>
 #include <QComboBox>
-#include "Carte.h"
 #include "LayerManager.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
@@ -21,6 +20,9 @@
 #include <QVBoxLayout>
 #include <QDate>
 
+#include <string.h>
+
+#include "../include/ProjectCaracteristicsDisplay.h"
 #include <core/Project.hpp>
 
 #include <core/DataManager.hpp>
@@ -31,6 +33,7 @@ namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
 class LayerManager; 
+class Carte;
 
 class MainWindow : public QMainWindow
 {
@@ -42,18 +45,31 @@ public:
     void listDimension();
     void openDialog();
     void setNewProject();
+    void openExistingProject();
+    void saveCurrentProject();
     void updateScaleLabel(int scaleValue);
-    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate);
+    void getCalendarDays(
+    QCalendarWidget *calendar,
+    QLabel *decimalDate,
+    QLineEdit *epochEdit
+);
+
     float computeDate(int day, int month, int year);
     void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
     void getSRCSelected();
+    LayerManager* getLayerManager(); 
+    Project* getCurrentProject();
+    Carte* getCarte();
+    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
     
-    Carte* getCarte() { return carte; }
     DataManager& getDataManager() { return dataManager; }
     Project* getCurrentProject() { return currentProject; }
+
+
+
 
 private:
     Ui::MainWindow *ui;
@@ -62,10 +78,16 @@ private:
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
+    ProjectCarateristicsDisplay* projectDisplay;
+      void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
 
+
+private slots:
+    void saveProject();
+    void loadProject();
 };
 #endif // MAINWINDOW_H

@@ -40,10 +40,13 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
-    void loadRasterLayer();
+    
+    void loadRasterLayerFromFile(const QString& file);
+    void loadVectorLayerFromFile(const QString& file);
+    void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
     void displayLayer(); 
     void openDialogFile();
-        
+
 
 private:
     MainWindow* mw;

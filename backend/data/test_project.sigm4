@@ -6,9 +6,10 @@
   "epoch0": 2025.0,
   "layers": [
     {
-      "name": "bdt_35_gpkg_lamb93_d085ed20250915__canton",
-      "crs": "EPSG:2154",
-      "epoch": 0.0
+      "name": "ZoneSensible_MYT",
+      "crs": "EPSG:4471",
+      "epoch": 0.0,
+      "dataSource": "/app/backend/data/ZoneSensible_MYT.gpkg"
     }
   ]
 }

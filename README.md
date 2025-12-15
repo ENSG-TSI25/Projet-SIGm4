@@ -68,6 +68,7 @@ cd Projet-SIGm4
 
 ### 2. Configuration
 ```bash
+xhost +local:root
 cd infrastructure
 ```
 

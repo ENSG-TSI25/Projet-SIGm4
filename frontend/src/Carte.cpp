@@ -11,8 +11,8 @@
 #include <qgsvectorlayer.h>
 #include <qgsrasterlayer.h>
 
-Carte::Carte(QWidget* containerFrame)
-    : osmVisible(true)
+Carte::Carte(QWidget* containerFrame, MainWindow* mw)
+    : osmVisible(true) , QObject(mw), mw(mw)
 {
     initCanvas(containerFrame);
     initLayers();
@@ -21,16 +21,8 @@ Carte::Carte(QWidget* containerFrame)
     canvas->zoomToFullExtent();
     canvas->refresh();
 }
-
 Carte::~Carte() {}
 
-QgsPointXY Carte::wgs84ToMercator(double lon, double lat)
-{
-    double x = lon * 20037508.34 / 180.0;
-    double y = std::log(std::tan((90.0 + lat) * M_PI / 360.0)) / (M_PI / 180.0);
-    y = y * 20037508.34 / 180.0;
-    return QgsPointXY(x, y);
-}
 
 void Carte::initCanvas(QWidget* containerFrame)
 {
@@ -47,8 +39,7 @@ void Carte::initCanvas(QWidget* containerFrame)
     canvas->setCanvasColor(Qt::white);
     canvas->enableAntiAliasing(true);
 
-    // *** IMPORTANT ***
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     QgsMapToolPan* panTool = new QgsMapToolPan(canvas);
     canvas->setMapTool(panTool);
@@ -59,7 +50,7 @@ void Carte::initCanvas(QWidget* containerFrame)
 
 void Carte::initLayers()
 {
-    canvas->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    canvas->setDestinationCrs(QgsCoordinateReferenceSystem(QString::fromStdString(getCarteEpsg())));
 
     osmLayer = new QgsRasterLayer(
         "type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0",
@@ -73,8 +64,10 @@ void Carte::initLayers()
         "wms"
     );
 
-    osmLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
-    satLayer->setCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
+    QgsCoordinateReferenceSystem webMercator("EPSG:3857");
+
+    osmLayer->setCrs(webMercator);
+    satLayer->setCrs(webMercator);
 
     QgsProject::instance()->addMapLayer(osmLayer);
     QgsProject::instance()->addMapLayer(satLayer);
@@ -101,14 +94,21 @@ void Carte::toggleBaseLayer()
 {
     osmVisible = !osmVisible;
 
-    if(osmVisible)
+    QgsMapCanvas* c = canvas;
+    QList<QgsMapLayer*> layers = c->layers();
+
+    layers.removeAll(osmLayer);
+    layers.removeAll(satLayer);
+
+    if (osmVisible)
     {
-        canvas->setLayers({  osmLayer });
+        layers.append(osmLayer);
     }
     else
     {
-        canvas->setLayers({ satLayer  });
+        layers.append(satLayer);
     }
 
-    canvas->refresh();
+    c->setLayers(layers);
+    c->refresh();
 }

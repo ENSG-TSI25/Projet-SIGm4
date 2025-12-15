@@ -1,14 +1,23 @@
 #include "../include/LayerManager.h"
-#include <QMainWindow>
-#include <QString>
-#include <QComboBox>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QWheelEvent>
+#include "../include/Carte.h"
+
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QListWidgetItem>
+#include <QFileInfo>
+#include <QDebug>
+
 #include <qgsmapcanvas.h>
-#include <QWidget>
+#include <qgsvectorlayer.h>
+#include <qgsrasterlayer.h>
+#include <qgsproject.h>
+#include <qgscoordinatereferencesystem.h>
+
+#include <gdal_priv.h>
 
 #include <core/DataManager.hpp>
+#include <core/Project.hpp>
+#include <core/VectorLayer.hpp>
 #include <core/Layer.hpp>
 #include <core/RasterLayer.hpp>
 #include <core/Project.hpp>
@@ -20,149 +29,310 @@ LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), 
 {
 }
 
+LayerManager::~LayerManager() {}
 
+// FILE SELECTION
 
-void LayerManager::listFiles(){
-    mw->getUi()->selectedFileLabel->setText("");
-
+void LayerManager::listFiles()
+{
     QWidget* parentWidget = qobject_cast<QWidget*>(parent());
 
     fileName = QFileDialog::getOpenFileName(
         parentWidget,
-        tr("Open window"),
-        "$PWD",
-        tr("Files (*.gpkg)")
+        tr("Open file"),
+        QDir::currentPath(),
+        tr("Geo files (*.gpkg *.shp *.tif *.tiff)")
     );
 
     if (!fileName.isEmpty()) {
         openDialogFile();
     }
 
-    QStringList filenameChar = fileName.split(u'/');
-    mw->getUi()->selectedFileLabel->setText(
-        QString("Fichier sélectionné: %1").arg(filenameChar.last())
+    mw->getUi()->selectedFileLabel->setText(fileName);
+}
+
+// ENTRY POINT
+
+void LayerManager::addFileToWidget()
+{
+    if (fileName.isEmpty())
+        return;
+
+    // Detect raster / vector using GDAL
+    GDALAllRegister();
+    GDALDataset* dataset = static_cast<GDALDataset*>(
+        GDALOpenEx(
+            fileName.toStdString().c_str(),
+            GDAL_OF_READONLY | GDAL_OF_RASTER | GDAL_OF_VECTOR,
+            nullptr, nullptr, nullptr
+        )
     );
-    mw->getUi()->selectedFileLabel->setWordWrap(true);
 
-}
-
-void LayerManager::openDialogFile() {
-    qDebug() << "TEST dialog";
-    //Open a new dialog to show all information    
-    QDialog infoLayerDialog;
-    infoLayerDialog.setWindowTitle("Informations sur le fichier sélectionné");
-    infoLayerDialog.show();
-
-    Project* project = mw -> getCurrentProject();
-    std::string CRSProject = project -> getCrs();
-    double EpochProject = project -> getEpoch0();
-
-    // QStringList filenameChar = fileName.split(u'/');
-    // QString *dialogFileText = new QString("Fichier sélectionné: %1");
-    // dialogFileText->arg(filenameChar.last());
-
-
-    // QLabel *dialogTextCRSProject = new QLabel("CRS du projet :", &infoLayerDialog);
-    // QLabel *dialogTextCRSFile = new QLabel("CRS du fichier sélectionné :", &infoLayerDialog);
-    // QLabel *dialogTextDateProject = new QLabel("Date du projet :", &infoLayerDialog);
-    // QLabel *dialogTextDateFile = new QLabel("Date du fichier sélectionné :", &infoLayerDialog);
-    // QPushButton *acceptationButton = new QPushButton("OK", &infoLayerDialog);
-
-}
-
-void LayerManager::addFileToWidget() { 
-    if (!fileName.isEmpty()) {
-        QStringList filenameChar = fileName.split(u'/');
-        QString layerName = filenameChar.last();
-        QListWidgetItem *item = new QListWidgetItem(layerName);
-        item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
-        
-        mw->getUi()->layersList->addItem(item);
-
-        fileName = "";
+    if (!dataset) {
+        qWarning() << "Impossible d'ouvrir le fichier :" << fileName;
+        return;
     }
+
+    bool isRaster = dataset->GetRasterCount() > 0;
+    GDALClose(dataset);
+
+    if (isRaster) {
+        loadRasterLayerFromFile(fileName);
+    } else {
+        loadVectorLayerFromFile(fileName);
+    }
+
+    fileName.clear();
+}
+
+// VECTOR
+
+void LayerManager::loadVectorLayerFromFile(const QString& file)
+{
+    Project* proj = mw->getCurrentProject();
+    if (!proj)
+    {
+        QMessageBox::warning(
+            nullptr,
+            "Projet manquant",
+            "Aucun projet actif. Impossible d'ajouter une couche.");
+        return;
+    }
+
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+
+    // --- Set canvas CRS if not set (Project CRS) ---
+    QgsCoordinateReferenceSystem canvasCrs =
+        canvas->mapSettings().destinationCrs();
+
+    if (!canvasCrs.isValid())
+    {
+        QString projectCrs = QString::fromStdString(proj->getCrs());
+        qDebug() << "DEBUG: Canvas CRS not set, setting to" << projectCrs;
+        canvas->setDestinationCrs(QgsCoordinateReferenceSystem(projectCrs));
+    }
+
+    qDebug() << "Loading vector layer from:" << file;
+
+    // --- Load vector layer ---
+    QgsVectorLayer* qgsLayer =
+        new QgsVectorLayer(file, QFileInfo(file).baseName(), "ogr");
+
+    if (!qgsLayer->isValid())
+    {
+        qWarning() << "Invalid vector layer:" << file;
+        delete qgsLayer;
+        return;
+    }
+
+
+    // --- Charger la ou les VectorLayer via DataManager EXISTANT ---
+    DataManager& dm = mw->getDataManager();
+
+    std::vector<VectorLayer*> Vlayers =
+        dm.loadVector(fileName.toStdString());
+
+    if (Vlayers.empty())
+    {
+        qDebug() << "Aucun layer chargé depuis :" << fileName;
+        return;
+    }
+
+    // --- Ajouter chaque layer au projet ---
+    for (VectorLayer* l : Vlayers)
+    {
+        if (!l) continue;
+
+        l->setDataSource(fileName.toStdString());
+
+        proj->addLayer(*l);
+
+        qDebug() << "Couche ajoutée au projet :"
+                << QString::fromStdString(l->getName())
+                << "dataSource :" << fileName;
+
+        QString layerName =
+        QString::fromStdString(l->getName());
+
+        qgsLayer->setName(layerName);
+
+
+    }
+
+
+    // --- Add to QGIS project ---
+    QgsProject::instance()->addMapLayer(qgsLayer);
+
+    // --- Add layer on top & zoom on it ---
+    QList<QgsMapLayer*> layers = canvas->layers();
+    layers.prepend(qgsLayer);
+    canvas->setLayers(layers);
+    canvas->setExtent(qgsLayer->extent());
+    canvas->refresh();
+
+    // --- UI ---
+    QListWidgetItem* item =
+        new QListWidgetItem(qgsLayer->name());
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+    mw->getUi()->layersList->addItem(item);
+
+
+
+    qDebug() << "===== Couches du projet =====";
+
+    const auto& projectLayers = proj->getLayers();
+
+    if (projectLayers.empty())
+    {
+        qDebug() << "Aucune couche dans le projet.";
+    }
+    else
+    {
+        for (const auto& l : projectLayers)
+        {
+            qDebug() << " -"
+                    << QString::fromStdString(l.getName());
+        }
+    }
+
 }
 
 
-//Duplicate the layer when it's clicked
-void LayerManager::duplicateLayer(Dialog* dialog) {
-    QString name = dialog-> nameLayer();
-    QListWidgetItem *item = new QListWidgetItem(name);
+// RASTER
+void LayerManager::loadRasterLayerFromFile(const QString& file)
+{
+    Project* proj = mw->getCurrentProject();
+    if (!proj)
+    {
+        QMessageBox::warning(
+            nullptr,
+            "Projet manquant",
+            "Aucun projet actif. Impossible d'ajouter une couche.");
+        return;
+    }
+
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+
+    // --- Set canvas CRS if not set (Project CRS) ---
+    QgsCoordinateReferenceSystem canvasCrs =
+        canvas->mapSettings().destinationCrs();
+
+    if (!canvasCrs.isValid())
+    {
+        QString projectCrs = QString::fromStdString(proj->getCrs());
+        qDebug() << "DEBUG: Canvas CRS not set, setting to" << projectCrs;
+        canvas->setDestinationCrs(QgsCoordinateReferenceSystem(projectCrs));
+    }
+
+    qDebug() << "Loading raster layer from:" << file;
+
+    // --- Load raster (backend) ---
+    RasterLayer* raster =
+        mw->getDataManager().loadRaster(file.toStdString());
+
+    if (!raster)
+    {
+        qDebug() << "ERROR: loadRaster returned nullptr for" << file;
+        return;
+    }
+
+    // --- Load raster in QGIS ---
+    QgsRasterLayer* qgsLayer =
+        new QgsRasterLayer(file,
+                           QString::fromStdString(raster->getName()),
+                           "gdal");
+
+    if (!qgsLayer->isValid())
+    {
+        qDebug() << "Raster layer error:" << qgsLayer->error().message();
+        delete qgsLayer;
+        return;
+    }
+
+    QgsProject::instance()->addMapLayer(qgsLayer);
+
+    // --- Add layer on top & zoom on it ---
+    QList<QgsMapLayer*> layers = canvas->layers();
+    layers.prepend(qgsLayer);
+    canvas->setLayers(layers);
+    canvas->setExtent(qgsLayer->extent());
+    canvas->refresh();
+
+
+
+    // --- Charger le RasterLayer via DataManager EXISTANT ---
+    DataManager& dm = mw->getDataManager();
+
+    RasterLayer* rlayer =
+        dm.loadRaster(fileName.toStdString());
+
+    if (!rlayer)
+    {
+        qDebug() << "Aucun raster chargé depuis :" << fileName;
+        return;
+    }
+
+    // --- Ajouter le raster au projet ---
+    rlayer->setDataSource(fileName.toStdString());
+
+    proj->addLayer(*rlayer);
+
+    QString layerName =
+        QString::fromStdString(rlayer->getName());
+
+    qgsLayer->setName(layerName);
+
+    qDebug() << "Raster ajouté au projet :"
+            << QString::fromStdString(rlayer->getName())
+            << "dataSource :" << fileName;
+
+    // --- UI ---
+    QListWidgetItem* item =
+        new QListWidgetItem(qgsLayer->name());
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+    mw->getUi()->layersList->addItem(item);
+
+
+
+
+    qDebug() << "===== Couches du projet =====";
+
+    const auto& projectLayers = proj->getLayers();
+
+    if (projectLayers.empty())
+    {
+        qDebug() << "Aucune couche dans le projet.";
+    }
+    else
+    {
+        for (const auto& l : projectLayers)
+        {
+            qDebug() << " -"
+                    << QString::fromStdString(l.getName());
+        }
+    }
+
+}
+
+// UI HELPERS
+
+void LayerManager::duplicateLayer(Dialog* dialog)
+{
+    QString name = dialog->nameLayer();
+    QListWidgetItem* item = new QListWidgetItem(name);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
 
-    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
-    mw->getUi() -> layersList -> insertItem(currentIndex, item);
+    int index = mw->getUi()->layersList->currentRow();
+    mw->getUi()->layersList->insertItem(index, item);
 }
 
-//Rename layer selected
-void LayerManager::renameLayer(Dialog* dialog) {
-    duplicateLayer(dialog);
-    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
-    mw->getUi() -> layersList -> takeItem(currentIndex);
-}
+void LayerManager::renameLayer(Dialog* dialog)
+{
+    int index = mw->getUi()->layersList->currentRow();
+    if (index < 0) return;
 
-
-LayerManager::~LayerManager() {}
-
-
-void LayerManager::loadRasterLayer() {
-    
-    RasterLayer* raster = mw->getDataManager().loadRaster(fileName.toStdString());
-    if (!raster) return;
-    
-    QString gpkgUri = QString::fromStdString(raster->getFilePath());
-    layerRaster = new QgsRasterLayer(
-        gpkgUri, QString::fromStdString(raster->getName()), "gdal");
-    
-    if (layerRaster->isValid()) {
-        qDebug() << "TEST TEST TEST";
-        QgsProject::instance()->addMapLayer(layerRaster);
-        
-        // Récupère tous les layers
-        QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
-        
-        // Ordre: raster data layers, puis basemaps
-        QList<QgsMapLayer*> newOrder;
-        for (auto* l : allLayers) {
-            if (l->name() != "OSM" && l->name() != "Satellite") {
-                newOrder.prepend(l);  // Data layers en premier
-            }
-        }
-        for (auto* l : allLayers) {
-            if (l->name() == "OSM" || l->name() == "Satellite") {
-                newOrder.append(l);  // Basemaps en dernier 
-            }
-        }
-        
-        mw->getCarte()->getCanvas()->setLayers(newOrder);
-        
-        // Zoom avec transformation CRS
-        QgsCoordinateTransform transform(layerRaster->crs(), 
-            QgsCoordinateReferenceSystem("EPSG:3857"),
-            QgsProject::instance());
-        mw->getCarte()->getCanvas()->setExtent(
-            transform.transformBoundingBox(layerRaster->extent()));
-        mw->getCarte()->getCanvas()->refresh();
-    } else {
-        delete layerRaster;
-    }
-}
-
-//Connect checkbox with the project layers
-void LayerManager::displayLayer() {
-    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
-    QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
-
-    Project* proj = mw -> getCurrentProject();
-    std::vector<Layer> layerList = proj -> getLayers();
-    Layer test = layerList[currentIndex];
-
-    if (item -> checkState() == Qt::Checked) {
-        mw -> getCurrentProject()-> addLayer(test);      
-    }
-    if (item -> checkState() == Qt::Unchecked) {
-        mw -> getCurrentProject()-> rmLayer(test);
-    }   
+    mw->getUi()->layersList->item(index)->setText(dialog->nameLayer());
 }
