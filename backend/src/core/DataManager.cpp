@@ -29,7 +29,7 @@ std::vector<VectorLayer*> DataManager::loadVector(const std::string &chemin)
     {
         // Lecture des métadonnées de la couche
         auto metadata = reader.getLayerMetadata(layerName);
-        auto layer = std::make_shared<VectorLayer>(layerName, metadata.crs, metadata.referenceEpoch);
+        auto layer = std::make_shared<VectorLayer>(layerName, metadata.crs, metadata.referenceEpoch, metadata.coords_type);
 
 
         layer->setDataSource(chemin);

@@ -39,7 +39,7 @@ void Application::run()
     DataManager dm;
 
     // Test with your data file
-    std::string filePath = "/app/backend/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg";
+    std::string filePath = "/app/backend/data/pointsEau.gpkg";
     auto layers = dm.loadVector(filePath);
 
     if (layers.empty())
@@ -263,8 +263,10 @@ void Application::run()
     std::cout << "=== TEST PROJECT MANAGER TRANSFORM (VECTOR ONLY) ===" << std::endl;
     std::cout << "=======================================" << std::endl;
 
-    // Projet cible différent du CRS source
     Project pmProject("PM Test", 2025.0, "EPSG:4326");
+
+    // Store initial coordinates before transformation
+    std::vector<std::tuple<std::string, double, double, double, double>> beforeCoords;
 
     for (auto* vlayer : layers)
     {
@@ -276,31 +278,70 @@ void Application::run()
                 << " | CRS=" << sharedVec->getCrs()
                 << " | CoordsType=" << sharedVec->getCoordsType()
                 << std::endl;
+        
+        //  CAPTURE INITIAL COORDINATES
+        auto geoms = sharedVec->getGeometries();
+        if (!geoms.empty()) {
+            auto* geom = geoms[0]->getGeometry();
+            if (auto* pt = geom->toPoint()) {
+                beforeCoords.push_back({
+                    sharedVec->getName(),
+                    pt->getX(), pt->getY(), pt->getZ(),
+                    geoms[0]->getT()
+                });
+                std::cout << "  BEFORE: ("
+                        << pt->getX() << ", "
+                        << pt->getY() << ", "
+                        << pt->getZ() << ") | T=" << geoms[0]->getT()
+                        << std::endl;
+            }
+        }
     }
 
+    std::cout << "\n Applying transformation..." << std::endl;
     ProjectManager pm(pmProject);
     auto resultLayers = pm.applyProjectParameters();
 
+    std::cout << "\n TRANSFORMATION RESULTS:\n" << std::endl;
+
+    size_t idx = 0;
     for (const auto& layer : resultLayers)
     {
         auto vec = std::dynamic_pointer_cast<VectorLayer>(layer);
-        if (!vec)
-            continue;
+        if (!vec) continue;
 
-        std::cout << "VectorLayer: " << vec->getName()
-                << " | CRS after PM: " << vec->getCrs()
+        std::cout << "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" << std::endl;
+        std::cout << "Layer: " << vec->getName() << std::endl;
+        std::cout << "CRS after PM: " << vec->getCrs()
                 << " | CoordsType=" << vec->getCoordsType()
                 << std::endl;
 
-        // Assertion correcte
-        if (vec->getCrs() == pmProject.getCrs())
-        {
-            std::cout << "✓ CRS applied by ProjectManager" << std::endl;
+        //  DISPLAY COORDINATE TRANSFORMATION
+        auto geoms = vec->getGeometries();
+        if (!geoms.empty() && idx < beforeCoords.size()) {
+            auto* geom = geoms[0]->getGeometry();
+            if (auto* pt = geom->toPoint()) {
+                auto [name, oldX, oldY, oldZ, oldT] = beforeCoords[idx];
+                
+                std::cout << "\n COORDINATE TRANSFORMATION:" << std::endl;
+                std::cout << "  BEFORE: (" 
+                        << std::fixed << std::setprecision(6)
+                        << oldX << ", " << oldY << ", " << oldZ 
+                        << ") | T=" << oldT << std::endl;
+                std::cout << "  AFTER:  (" 
+                        << pt->getX() << ", " << pt->getY() << ", " << pt->getZ() 
+                        << ") | T=" << geoms[0]->getT() << std::endl;
+                
+            }
         }
-        else
-        {
-            std::cerr << "❌ CRS not applied correctly" << std::endl;
+
+        if (vec->getCrs() == pmProject.getCrs()) {
+            std::cout << "\n CRS applied by ProjectManager" << std::endl;
+        } else {
+            std::cerr << "\n CRS not applied correctly" << std::endl;
         }
+        
+        idx++;
     }
 
 

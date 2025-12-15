@@ -6,10 +6,10 @@
   "epoch0": 2025.0,
   "layers": [
     {
-      "name": "bdt_35_gpkg_lamb93_d085ed20250915__canton",
+      "name": "bdt_35_gpkg_lamb93_d085ed20250615__detail_hydrographique",
       "crs": "EPSG:2154",
       "epoch": 0.0,
-      "dataSource": "/app/backend/data/cantonsVendee_EPSG2154_15-09-2025_clean.gpkg"
+      "dataSource": "/app/backend/data/pointsEau.gpkg"
     }
   ]
 }
