@@ -25,6 +25,7 @@
 #include "core/Project.hpp"
 #include "core/VectorLayer.hpp"
 #include "core/DataManager.hpp"
+#include <core/GeoPackageReader.hpp>
 
 LayerManager::LayerManager(MainWindow *mw) : QObject(mw), mw(mw), fileName(" ")
 {
@@ -112,14 +113,14 @@ void LayerManager::addFileToWidget()
         for (auto *l : layers)
         {
             l->setDataSource(fileName.toStdString());
-            
+
             // Create shared_ptr from the raw pointer
             auto sharedLayer = std::make_shared<VectorLayer>(*l);
             proj->addLayer(sharedLayer);
-            
+
             qDebug() << "Couche ajoutée au projet :" << QString::fromStdString(l->getName())
-                    << "avec dataSource :" << fileName;
-            
+                     << "avec dataSource :" << fileName;
+
             QString layerName = QString::fromStdString(l->getName());
             QListWidgetItem *item = new QListWidgetItem(layerName);
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -309,66 +310,83 @@ void LayerManager::displayLayerFromFile(const std::string &filepath, const std::
 
 LayerManager::~LayerManager() {}
 
-void LayerManager::loadRasterLayerFromFile(const QString& file) {
-    RasterLayer* raster = mw->getDataManager().loadRaster(file.toStdString());
-    if (!raster) {
+void LayerManager::loadRasterLayerFromFile(const QString &file)
+{
+
+    Project *proj = mw->getCurrentProject();
+    if (!proj)
+    {
+        QMessageBox::warning(nullptr, "Projet manquant",
+                             "Aucun projet actif. Impossible d'ajouter une couche.");
+        return;
+    }
+
+    RasterLayer *raster = mw->getDataManager().loadRaster(file.toStdString());
+    if (!raster)
+    {
         qDebug() << "ERROR: loadRaster returned nullptr for" << file;
         return;
     }
-    
+
     QString tableName = QString::fromStdString(raster->getName());
     QString gpkgUri = QString("GPKG:%1:%2").arg(file).arg(tableName);
-    
-    QgsRasterLayer* layer = new QgsRasterLayer(gpkgUri, tableName, "gdal");
-    
-    if (!layer->isValid()) {
+
+    QgsRasterLayer *layer = new QgsRasterLayer(gpkgUri, tableName, "gdal");
+
+    if (!layer->isValid())
+    {
         qDebug() << "Raster layer error:" << layer->error().message();
         delete layer;
         return;
     }
-    
+
     QgsProject::instance()->addMapLayer(layer);
-    
+
+    raster->setDataSource(file.toStdString());
+    auto rasterLayer = std::make_shared<RasterLayer>(*raster);
+    proj->addLayer(rasterLayer);
+    qDebug() << "Added raster to backend Project:" << QString::fromStdString(raster->getName());
+
     QListWidgetItem *item = new QListWidgetItem(tableName);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->addItem(item);
-    
-    QList<QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers().values();
-    QList<QgsMapLayer*> newOrder;
-    
-    for (auto* l : allLayers) {
-        if (l->name() != "OSM" && l->name() != "Satellite") {
+
+    QList<QgsMapLayer *> allLayers = QgsProject::instance()->mapLayers().values();
+    QList<QgsMapLayer *> newOrder;
+
+    for (auto *l : allLayers)
+    {
+        if (l->name() != "OSM" && l->name() != "Satellite")
+        {
             newOrder.prepend(l);
         }
     }
-    for (auto* l : allLayers) {
-        if (l->name() == "OSM" || l->name() == "Satellite") {
+    for (auto *l : allLayers)
+    {
+        if (l->name() == "OSM" || l->name() == "Satellite")
+        {
             newOrder.append(l);
         }
     }
-    
+
     mw->getCarte()->getCanvas()->setLayers(newOrder);
-    
+
     QgsCoordinateReferenceSystem canvasCrs = mw->getCarte()->getCanvas()->mapSettings().destinationCrs();
-    if (!canvasCrs.isValid()) {
+    if (!canvasCrs.isValid())
+    {
         mw->getCarte()->getCanvas()->setDestinationCrs(QgsCoordinateReferenceSystem("EPSG:3857"));
     }
-    
+
     QgsCoordinateTransform transform(
-        layer->crs(), 
+        layer->crs(),
         QgsCoordinateReferenceSystem("EPSG:3857"),
-        QgsProject::instance()
-    );
-    
+        QgsProject::instance());
+
     mw->getCarte()->getCanvas()->setExtent(
-        transform.transformBoundingBox(layer->extent())
-    );
+        transform.transformBoundingBox(layer->extent()));
     mw->getCarte()->getCanvas()->refresh();
 }
-
-
-
 
 void LayerManager::loadVectorLayerFromFile(const QString &file)
 {
@@ -396,6 +414,37 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
 
     // Add to project
     QgsProject::instance()->addMapLayer(layer);
+
+    DataManager dm;
+    std::vector<VectorLayer *> backendLayers = dm.loadVector(file.toStdString());
+    if (!backendLayers.empty())
+    {
+        for (auto *l : backendLayers)
+        {
+            l->setDataSource(file.toStdString());
+            auto vectorLayer = std::make_shared<VectorLayer>(*l);
+            proj->addLayer(vectorLayer);
+            // Check temporal data
+            if (!l->hasTemporalData())
+            {
+                QMessageBox::StandardButton reply = QMessageBox::question(
+                    nullptr,
+                    "No Temporal Field Detected",
+                    QString("Layer '%1' has no temporal field (t, time, date).\nWould you like to add one?")
+                        .arg(QString::fromStdString(l->getName())),
+                    QMessageBox::Yes | QMessageBox::No);
+
+                if (reply == QMessageBox::Yes)
+                {
+                    showAddTemporalFieldDialog(file, l->getName());
+                }
+            }
+            else
+            {
+                qDebug() << "Layer has temporal field:" << QString::fromStdString(l->getTimestampField());
+            }
+        }
+    }
 
     QListWidgetItem *item = new QListWidgetItem(QFileInfo(file).baseName());
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -442,4 +491,53 @@ void LayerManager::loadVectorLayerFromFile(const QString &file)
 
     mw->getCarte()->getCanvas()->setExtent(transformedExtent);
     mw->getCarte()->getCanvas()->refresh();
+}
+
+void LayerManager::showAddTemporalFieldDialog(const QString &filePath, const std::string &layerName)
+{
+    QDialog dialog;
+    dialog.setWindowTitle("Add Temporal Field");
+
+    QVBoxLayout *layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel("Field name:"));
+
+    QLineEdit *fieldInput = new QLineEdit("t");
+    layout->addWidget(fieldInput);
+
+    layout->addWidget(new QLabel("Default epoch value:"));
+    QLineEdit *epochInput = new QLineEdit("2025.0");
+    layout->addWidget(epochInput);
+
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        QString fieldName = fieldInput->text();
+        double epochValue = epochInput->text().toDouble();
+
+        GeoPackageReader reader(filePath.toStdString());
+        if (reader.open())
+        {
+            bool success = reader.addTemporalField(layerName, fieldName.toStdString(), epochValue);
+            reader.close();
+
+            if (success)
+            {
+                QMessageBox::information(nullptr, "Success",
+                                         QString("Temporal field '%1' added successfully").arg(fieldName));
+                // Reload layer
+                loadVectorLayerFromFile(filePath);
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, "Error", "Failed to add temporal field");
+            }
+        }
+    }
+    QMessageBox::information(nullptr, "Info",
+                             "Backend function to add temporal field not yet implemented");
 }

@@ -1,15 +1,15 @@
 {
   "version": "1.0",
   "format": "SIGM4",
-  "name": "Projet Test Vendée",
+  "name": "Test Project",
   "crs": "EPSG:2154",
   "epoch0": 2025.0,
   "layers": [
     {
-      "name": "bdt_35_gpkg_lamb93_d085ed20250615__detail_hydrographique",
-      "crs": "EPSG:2154",
+      "name": "ZoneSensible_MYT",
+      "crs": "EPSG:4471",
       "epoch": 0.0,
-      "dataSource": "/app/backend/data/pointsEau.gpkg"
+      "dataSource": ""
     }
   ]
 }

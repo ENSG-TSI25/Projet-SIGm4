@@ -116,25 +116,27 @@ std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const s
 }
 
 std::string GeoPackageReader::detectTimestampField(const std::string& layerName) const {
-    // Cherche un champ temporel
-    if (!isOpen) return "";
     OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
     if (!layer) return "";
-
-    OGRFeatureDefn* defn = layer->GetLayerDefn();
-    std::vector<std::string> keywords = {"time", "timestamp", "date", "epoch"};
     
-    for (int i = 0; i < defn->GetFieldCount(); ++i) {
-        std::string name = defn->GetFieldDefn(i)->GetNameRef();
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-        for (const auto& kw : keywords) {
-            if (name.find(kw) != std::string::npos) 
-                return defn->GetFieldDefn(i)->GetNameRef();
+    OGRFeatureDefn* defn = layer->GetLayerDefn();
+    
+    std::vector<std::string> timeFields = {"t", "time", "timestamp", "date", "datetime", "epoch"};
+    
+    for (int i = 0; i < defn->GetFieldCount(); i++) {
+        std::string fieldName = defn->GetFieldDefn(i)->GetNameRef();
+        std::string lowerName = fieldName;
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+        
+        for (const auto& timeField : timeFields) {
+            if (lowerName == timeField) {
+                return fieldName;
+            }
         }
     }
+    
     return "";
 }
-
 GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, const std::string& tsField) const {
     // Convertit un OGRFeature en structure interne
     Feature f;
@@ -288,4 +290,26 @@ Geometry4D GeoPackageReader::extractRasterExtent(
     
     GDALClose(rasterDS);
     return Geometry4D(poly);
+}
+
+bool GeoPackageReader::addTemporalField(const std::string& layerName, const std::string& fieldName, double defaultValue) {
+    OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
+    if (!layer) return false;
+    
+    // Create field
+    OGRFieldDefn fieldDefn(fieldName.c_str(), OFTReal);
+    if (layer->CreateField(&fieldDefn) != OGRERR_NONE) {
+        return false;
+    }
+    
+    // Set default value for all features
+    layer->ResetReading();
+    OGRFeature* feature;
+    while ((feature = layer->GetNextFeature()) != nullptr) {
+        feature->SetField(fieldName.c_str(), defaultValue);
+        layer->SetFeature(feature);
+        OGRFeature::DestroyFeature(feature);
+    }
+    
+    return true;
 }
