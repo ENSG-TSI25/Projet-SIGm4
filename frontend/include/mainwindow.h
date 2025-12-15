@@ -55,9 +55,7 @@ public:
 );
 
     float computeDate(int day, int month, int year);
-    void getDateSelected(const QDate &date);
     void updateSelectedDate(const QDate &date);
-    void getSRCSelected();
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();
@@ -73,7 +71,7 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
-    Project* currentProject;
+    Project* currentProject = nullptr;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
