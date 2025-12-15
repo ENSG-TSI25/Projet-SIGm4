@@ -97,11 +97,6 @@ MainWindow::MainWindow(QWidget *parent)
     
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
-
-    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
-    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
-            { loadProject(); });
-    // connect (crsLabel)
 }
 
 MainWindow::~MainWindow()
