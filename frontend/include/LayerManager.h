@@ -4,6 +4,11 @@
 #include "../ui/ui_mainwindow.h"
 #include "mainwindow.h"
 #include "dialogLayerManagement.h"
+#include "Carte.h"
+
+//Qt library
+#include <QListWidgetItem>
+#include <QFileInfo>
 
 //QGIS API library
 #include <qgsmaptoolpan.h>

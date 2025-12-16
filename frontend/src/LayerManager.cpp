@@ -1,25 +1,4 @@
 #include "../include/LayerManager.h"
-#include "../include/Carte.h"
-
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QListWidgetItem>
-#include <QFileInfo>
-#include <QDebug>
-
-#include <qgsmapcanvas.h>
-#include <qgsvectorlayer.h>
-#include <qgsrasterlayer.h>
-#include <qgsproject.h>
-#include <qgscoordinatereferencesystem.h>
-
-#include <gdal_priv.h>
-
-#include <core/DataManager.hpp>
-#include <core/Project.hpp>
-#include <core/VectorLayer.hpp>
-#include <core/RasterLayer.hpp>
-
 
 LayerManager::LayerManager(MainWindow* mw)
     : QObject(mw), mw(mw)
