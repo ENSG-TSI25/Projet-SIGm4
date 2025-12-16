@@ -482,10 +482,6 @@ void MainWindow::saveProject()
 // No parameters - for the "Open" button in UI
 void MainWindow::loadProject()
 {
-    //Reset the map
-    carte->clearUserLayers();
-
-    QgsProject::instance()->removeAllMapLayers();
     // Ask user which file to load via file dialog
     QString filepath = QFileDialog::getOpenFileName(
         this,
@@ -499,11 +495,14 @@ void MainWindow::loadProject()
         return;
     }
 
+    //Reset the map
+    carte->clearUserLayers();
+
     // Call the overloaded version with the filepath
     loadProject(filepath);
+    // Enable all actions on the interface 
     setProjectActionsEnabled(true);
 }
-
 
 
 void MainWindow::loadProject(const QString &filepath)
@@ -629,7 +628,7 @@ void MainWindow::loadProject(const QString &filepath)
                 auto qgsLayers = canvas->layers();
                 qgsLayers.prepend(qgsLayer);
                 canvas->setLayers(qgsLayers);
-                canvas->setExtent(qgsLayer->extent());
+                // canvas->setExtent(qgsLayer->extent()); --for now commented because it does not work properly
                 canvas->refresh();
             }
             // =========================
@@ -668,7 +667,7 @@ void MainWindow::loadProject(const QString &filepath)
                     auto qgsLayers = canvas->layers();
                     qgsLayers.prepend(qgsLayer);
                     canvas->setLayers(qgsLayers);
-                    canvas->setExtent(qgsLayer->extent());
+                    // canvas->setExtent(qgsLayer->extent()); --for now commented because it does not work properly
                     canvas->refresh();
                     break;
                 }
