@@ -1,15 +1,5 @@
 #include "../include/Carte.h"
-#include <cmath>
-#include <QVBoxLayout>
-#include <QDebug>
 
-#include <qgsfeature.h>
-#include <qgsgeometry.h>
-#include <qgscoordinatereferencesystem.h>
-#include <qgsproject.h>
-#include <qgsmaptoolpan.h>
-#include <qgsvectorlayer.h>
-#include <qgsrasterlayer.h>
 
 Carte::Carte(QWidget* containerFrame, MainWindow* mw)
     : osmVisible(true) , QObject(mw), mw(mw)

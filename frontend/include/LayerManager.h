@@ -1,28 +1,22 @@
 #pragma once
-#include <QString>
-#include <QWidget>
-#include <QPushButton>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QFileDialog>
 
-#include <qgsmapcanvas.h>
-#include <qgsmaplayer.h>
-#include <qgsvectorlayer.h>
-#include <qgsproject.h>
-#include <qgsmaptoolpan.h>
-
-#include <qgsrasterlayer.h>
-#include <qgsproject.h>
-#include <qgsmaplayer.h>
+//Frontend files
 #include "../ui/ui_mainwindow.h"
 #include "mainwindow.h"
-#include <QDialog>
 #include "dialogLayerManagement.h"
+#include "Carte.h"
 
-#include <core/DataManager.hpp>
-#include <core/RasterLayer.hpp>
+//Qt library
+#include <QListWidgetItem>
+#include <QFileInfo>
 
+//QGIS API library
+#include <qgsmaptoolpan.h>
+#include <qgsrasterlayer.h>
+#include <qgsmaplayer.h>
+#include <qgslayertree.h>
+#include <qgslayertreenode.h>
+#include <qgslayertreelayer.h>
 
 
 class MainWindow;

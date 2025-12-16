@@ -1,9 +1,12 @@
 #ifndef TRANSFORMCRS_H
 #define TRANSFORMCRS_H
 
+//Frontend files
+#include "../ui/ui_mainwindow.h"
+
+//Qt library
 #include <QObject>
 #include <QString>
-#include "../ui/ui_mainwindow.h"
 
 
 class MainWindow;
