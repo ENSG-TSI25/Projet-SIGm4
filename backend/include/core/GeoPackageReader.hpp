@@ -5,28 +5,37 @@
 #include <map>
 #include <gdal/ogr_core.h>
 
+#include <sstream>
+#include <iomanip>
+#include <gdal/gdal.h>
+
 class GDALDataset;
 class OGRFeature;
 
-class GeoPackageReader {
+class GeoPackageReader
+{
 public:
-    struct LayerMetadata {
+    struct LayerMetadata
+    {
         std::string name;
         std::string crs;
         int srid;
         size_t featureCount;
         double referenceEpoch;
         OGRwkbGeometryType geometryType;
+        std::string coords_type;
     };
 
-    struct Feature {
+    struct Feature
+    {
         int fid;
         Geometry4D geometry;
         std::map<std::string, std::string> attributes;
         double timestamp;
     };
 
-    struct RasterMetadata {
+    struct RasterMetadata
+    {
         std::string name;
         std::string crs;
         int srid;
@@ -38,26 +47,26 @@ public:
 
 private:
     std::string filePath;
-    GDALDataset* dataset;
+    GDALDataset *dataset;
     bool isOpen;
 
 public:
-    GeoPackageReader(const std::string& path);
+    GeoPackageReader(const std::string &path);
     ~GeoPackageReader();
-
     bool open();
     void close();
     std::vector<std::string> listLayers() const;
-    LayerMetadata getLayerMetadata(const std::string& layerName) const;
-    std::vector<Feature> extractFeatures(const std::string& layerName) const;
-
-    bool isRasterLayer(const std::string& layerName) const;
-    RasterMetadata extractRasterMetadata(const std::string& layerName) const;
-    Geometry4D extractRasterExtent(const std::string& layerName, double timestamp) const;
+    LayerMetadata getLayerMetadata(const std::string &layerName) const;
+    std::vector<Feature> extractFeatures(const std::string &layerName) const;
+    bool isRasterLayer(const std::string &layerName) const;
+    RasterMetadata extractRasterMetadata(const std::string &layerName) const;
+    Geometry4D extractRasterExtent(const std::string &layerName, double timestamp) const;
+    std::string detectTimestampField(const std::string &layerName) const;
+    bool addTemporalField(const std::string& layerName, const std::string& fieldName, double defaultValue);
 
 private:
-    std::string detectTimestampField(const std::string& layerName) const;
-    Feature convertOGRFeature(OGRFeature* ogrFeature, const std::string& timestampField) const;
-    Geometry4D extractGeometry4D(OGRFeature* ogrFeature, double timestamp) const;
-    double parseTimestamp(const std::string& timestampStr) const;
+    Feature convertOGRFeature(OGRFeature *ogrFeature, const std::string &timestampField) const;
+    Geometry4D extractGeometry4D(OGRFeature *ogrFeature, double timestamp) const;
+    double parseTimestamp(const std::string &timestampStr) const;
+
 };

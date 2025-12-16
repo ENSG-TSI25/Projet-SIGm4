@@ -1,56 +1,36 @@
 #pragma once
-
 #include <string>
-
 #include <vector>
-
+#include <memory>
 #include <fstream>
-
 #include "Layer.hpp"
 
-class Project
-{
-
+class Project {
 private:
     std::string name;
-
     std::string crs;
-
     double epoch0;
-
-    std::vector<Layer> layerList;
+    std::vector<std::shared_ptr<Layer>> layerList;
 
 public:
-    Project(const std::string &name_, double epoch0_, const std::string &crs_ = "EPSG:4326", const std::vector<Layer> &layerList_ = {})
-
-        : name(name_), crs(crs_), epoch0(epoch0_), layerList(layerList_)
-    {
-    }
-
-    ~Project();
-
-    void addLayer(const Layer &l);
-
-    void rmLayer(const Layer &l);
-
-    std::string getName() const { return name; }
-
-    std::string getCrs() const { return crs; }
-
-    double getEpoch0() const { return epoch0; }
-
-    std::vector<Layer> getLayers() const { return layerList; }
-
-    void setName(const std::string &n) { name = n; }
-
-    void setCrs(const std::string &c) { crs = c; }
-
-    void setEpoch0(double e) { epoch0 = e; }
-
-    bool save(const std::string& filepath) const;
+    Project(const std::string &name_, double epoch0_, const std::string &crs_ = "EPSG:4326", 
+            const std::vector<std::shared_ptr<Layer>> &layerList_ = {})
+        : name(name_), crs(crs_), epoch0(epoch0_), layerList(layerList_) {}
     
-    // Charge un projet depuis un fichier .sigm4
-    static Project load(const std::string& filepath);
-        
-        
+    ~Project();
+    
+    void addLayer(std::shared_ptr<Layer> l);
+    void rmLayer(const std::shared_ptr<Layer>& l);
+    
+    std::string getName() const { return name; }
+    std::string getCrs() const { return crs; }
+    double getEpoch0() const { return epoch0; }
+    std::vector<std::shared_ptr<Layer>> getLayers() const { return layerList; }
+    
+    void setName(const std::string &n) { name = n; }
+    void setCrs(const std::string &c) { crs = c; }
+    void setEpoch0(double e) { epoch0 = e; }
+    
+    bool save(const std::string &filepath) const;
+    static Project load(const std::string &filepath);
 };
