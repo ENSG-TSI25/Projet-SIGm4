@@ -38,7 +38,7 @@ void Application::run()
     std::cout << "\n=== TEST LOADVECTOR WITH ALL LAYERS ===" << std::endl;
 
     DataManager dm;
-    std::string filePath = "/app/backend/data/ZoneSensible_MYT.gpkg";
+    std::string filePath = "/app/backend/data/pointsEau.gpkg";
     auto layers = dm.loadVector(filePath);
 
     if (layers.empty())
@@ -81,17 +81,24 @@ void Application::run()
     }
 
     std::cout << "\n=== TEST PROJECT SAVE/LOAD ===" << std::endl;
-    Project testProject("Test Project", 2025.0, "EPSG:2154");
+    Project testProject("Test Project", 2025.0, "EPSG:4326");
 
     for (size_t i = 0; i < layers.size(); ++i)
     {
         auto *vectorLayer = layers[i];
-        auto simpleLayer = std::make_shared<Layer>(
+        // Create VectorLayer instead of generic Layer
+        auto vLayer = std::make_shared<VectorLayer>(
             vectorLayer->getName(),
             vectorLayer->getCrs(),
             vectorLayer->getEpoch(),
             vectorLayer->getDataSource());
-        testProject.addLayer(simpleLayer);
+        
+        // Copy geometries
+        for (const auto& geom : vectorLayer->getGeometries()) {
+            vLayer->addGeometry(geom);
+        }
+        
+        testProject.addLayer(vLayer);
     }
 
     std::string projectPath = "/app/backend/data/test_project.sigm4";
@@ -100,8 +107,24 @@ void Application::run()
     if (saveSuccess)
     {
         std::cout << "✓ Project saved: " << projectPath << std::endl;
-        Project loadedProject = Project::load(projectPath);
-        std::cout << "✓ Project loaded with " << loadedProject.getLayers().size() << " layers" << std::endl;
+        
+        // Use testProject directly instead of reloading
+        std::cout << "\n=== TEST PROJECT TRANSFORMATION ===" << std::endl;
+        ProjectManager projectManager(testProject);
+        
+        try {
+            std::vector<std::string> transformedFiles = projectManager.applyProjectParameters();
+            
+            std::cout << "\n✓ Transformation completed!" << std::endl;
+            std::cout << "Generated " << transformedFiles.size() << " transformed file(s):" << std::endl;
+            
+            for (const auto& filePath : transformedFiles) {
+                std::cout << "  - " << filePath << std::endl;
+            }
+            
+        } catch (const std::exception& e) {
+            std::cerr << "✗ Transformation failed: " << e.what() << std::endl;
+        }
     }
 }
 

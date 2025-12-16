@@ -32,9 +32,12 @@ services:
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
+      OUTPUT_DIR_HOST: ${HOME}/transformed_files
+      OUTPUT_DIR_CONTAINER: /tmp
     volumes:
       - ../backend/data:/app/backend/data
       - ../backend:/app/backend
+      - ${HOME}/transformed_files:/tmp
 
   frontend:
     build:
