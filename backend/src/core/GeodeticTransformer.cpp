@@ -112,7 +112,7 @@ GeodeticTransformer::Result GeodeticTransformer::geocentricToGeodetic(
     PJ_COORD out = proj_trans(P, PJ_FWD, in);
     proj_destroy(P);
 
-    // OUTPUT : PROJ renvoie Lat(x), Lon(y). On inverse.
+    // OUTPUT : PROJ returns Lat(x), Lon(y) so they are flipped.
     return { out.xyzt.y, out.xyzt.x, out.xyzt.z, out.xyzt.t };
 }
 
@@ -210,12 +210,11 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeodetic(
     const std::string& json_model_path,
     bool inverse)
 {
-    std::string proj_str = "+proj=defmodel +model=" + json_model_path;
-    if (inverse) proj_str += " +inv";
+    PJ* P = proj_create_crs_to_crs(ctx_, epsg_src.c_str(), epsg_dst.c_str(), NULL);
+    if (!P) throw std::runtime_error("GeoC -> GeoD failed");
 
-    PJ* P = proj_create(ctx_, proj_str.c_str());
-    if (!P)
-        throw std::runtime_error("Failed to load defmodel: " + json_model_path);
+    PJ_COORD in;
+    in.xyzt.x = x; in.xyzt.y = y; in.xyzt.z = z; in.xyzt.t = t_epoch;
 
     PJ_COORD in;
     in.lpzt.lam = proj_torad(lon_deg);
