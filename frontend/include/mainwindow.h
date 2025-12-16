@@ -52,6 +52,8 @@
 #include <qgsfeature.h>
 #include <qgsgeometry.h>
 #include <qgsproject.h>
+#include <qgsmaptoolidentify.h>
+#include <qgsmaptoolpan.h>
 
 //Importing Gdal for updating the display of the project
 #include <gdal_priv.h>    
@@ -93,6 +95,7 @@ public:
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
+    void openAttributeTable(QgsVectorLayer* layer);
 
 private:
     Ui::MainWindow *ui;
@@ -108,6 +111,9 @@ private:
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
+    QgsMapToolIdentify* identifyTool = nullptr;
+    QgsMapTool* defaultTool = nullptr;
+
 
 private slots:
     //Save the current project to a .sigm4 file

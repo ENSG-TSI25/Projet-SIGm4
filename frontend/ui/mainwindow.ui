@@ -232,6 +232,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="btnIdentify">
+            <property name="text">
+             <string>i</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="btnZoomPlus">
             <property name="text">
              <string>Zoom+</string>
