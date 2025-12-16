@@ -160,6 +160,8 @@ void MainWindow::setNewProject()
 {
     //Reset the canvas
     carte->clearUserLayers();
+    //Clear the layers list in the UI
+    ui->layersList->clear();
     
     QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
