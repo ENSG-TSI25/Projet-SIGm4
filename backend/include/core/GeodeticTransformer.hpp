@@ -16,6 +16,12 @@ public:
         double x, y, z, t;
     };
 
+    Result transformCRS(
+        double x, double y, double z,
+        int epsg_src,
+        int epsg_dst
+    );
+
     struct CRSMetaData {
         std::string name;
         std::string type;
@@ -135,8 +141,8 @@ public:
 
     Result applyDefModelProjected(
         double E, double N, double H, double t_epoch,
-        const std::string& epsg_code,
         const std::string& json_model_path,
+        int epsg_projected,
         bool inverse);
 
     Result applyGridDeformationGeodetic(
@@ -149,9 +155,10 @@ public:
         const std::string& grid_path,
         double ref_epoch);
 
-    Result applyGridDeformationProjected(
+    GeodeticTransformer::Result applyGridDeformationProjected(
         double E, double N, double H, double t_epoch,
         const std::string& grid_path,
+        int epsg_projected,
         double ref_epoch);
         
 private:

@@ -195,6 +195,40 @@ void testNKGGridDeformationGeocentric(GeodeticTransformer& gt) {
 /// PROJECTED TESTS
 ///////////////////////////////////////////////////////////////
 
+// void testMayotteDefModelProjected(GeodeticTransformer& gt) {
+//     std::cout << "\n==========================================" << std::endl;
+//     std::cout << " TEST 10a : Defmodel JSON Mayotte Projected" << std::endl;
+//     std::cout << "==========================================" << std::endl;
+
+//     std::string model_path = getModelPath("fr_ign_RGM23_defmodel.json");
+//     if (model_path.empty()) return;
+
+//     try {
+//         // Paramètres
+//         double in_X = -3924135.51;
+//         double in_Y = 16889560.57;
+//         double in_Z = 0.0;
+//         double in_t = 2018.0;
+
+//         auto r = gt.applyDefModelProjected(in_X, in_Y, in_Z, in_t, model_path, false);
+
+//         // Tolérances
+//         double DEG_EPS = 1e-6; 
+//         double H_EPS = 1e-3;
+
+//         // Vérifications
+//         checkNear("Longitude", r.x, -3924135.79, DEG_EPS);
+//         checkNear("Latitude",  r.y, 16889560.46, DEG_EPS);
+//         checkNear("Hauteur",   r.z, 0.08, H_EPS);
+        
+//         if (r.t == 2018.0) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
+//         else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
+
+//     } catch (const std::exception& e) {
+//         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
+//     }
+// }
+
 void testMayotteDefModelProjected(GeodeticTransformer& gt) {
     std::cout << "\n==========================================" << std::endl;
     std::cout << " TEST 10a : Defmodel JSON Mayotte Projected" << std::endl;
@@ -204,30 +238,72 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Paramètres
-        double in_X = -3924135.51;
-        double in_Y = 16889560.57;
-        double in_Z = 0.0;
+        // Point équivalent au test géodétique
+        // Lon = 45.00 / Lat = -13.02
+        // RGM23 projeté (EPSG:10674)
+        double in_E = 500000.000;
+        double in_N = 8560000.000;
+        double in_h = 0.0;
         double in_t = 2018.0;
 
-        auto r = gt.applyDefModelProjected(in_X, in_Y, in_Z, in_t, model_path, false);
+        auto r = gt.applyDefModelProjected(
+            in_E, in_N, in_h, in_t,
+            model_path,
+            10674,   // EPSG source
+            false
+        );
 
-        // Tolérances
-        double DEG_EPS = 1e-6; 
-        double H_EPS = 1e-3;
+        double XY_EPS = 1e-3;   // 1 mm
+        double H_EPS  = 1e-3;
 
-        // Vérifications
-        checkNear("Longitude", r.x, -3924135.79, DEG_EPS);
-        checkNear("Latitude",  r.y, 16889560.46, DEG_EPS);
-        checkNear("Hauteur",   r.z, 0.08, H_EPS);
-        
-        if (r.t == 2018.0) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
-        else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
+        checkNear("Easting",  r.x, 499999.845, XY_EPS);
+        checkNear("Northing", r.y, 8559999.877, XY_EPS);
+        checkNear("Hauteur",  r.z, 0.0797, H_EPS);
+
+        if (r.t == 2018.0)
+            std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
+        else
+            std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
 
     } catch (const std::exception& e) {
         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
     }
 }
+
+// void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
+//     std::cout << "\n==========================================" << std::endl;
+//     std::cout << " TEST 10b : NKG Grid deformation Projected" << std::endl;
+//     std::cout << "==========================================" << std::endl;
+
+//     std::string model_path = getModelPath("eur_nkg_nkgrf03vel_realigned.tif");
+//     if (model_path.empty()) return;
+
+//     try {
+//         // Paramètres
+//         double in_X =  2892571.15;
+//         double in_Y =  1311843.30;
+//         double in_Z =  5512633.99;
+//         double in_t =  2019.7;
+//         double t_target = 2000.0;
+
+//         auto r = gt.applyGridDeformationProjected(in_X, in_Y, in_Z, in_t, model_path, t_target);
+
+//         // Tolérances
+//         double XYZ_EPS = 1e-6; 
+
+//         // Vérifications
+//         checkNear("X", r.x, 2892571.194434, XYZ_EPS);
+//         checkNear("Y", r.y, 1311843.326880, XYZ_EPS);
+//         checkNear("Z", r.z, 5512634.036652, XYZ_EPS);
+        
+//         if (r.t == 2019.7) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
+//         else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
+
+//     } catch (const std::exception& e) {
+//         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
+//     }
+
+// }
 
 void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
     std::cout << "\n==========================================" << std::endl;
@@ -238,30 +314,37 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Paramètres
-        double in_X =  2892571.15;
-        double in_Y =  1311843.30;
-        double in_Z =  5512633.99;
-        double in_t =  2019.7;
+        // Point équivalent au test géodétique
+        // Lon = 24.3953152240 / Lat = 60.2174694086
+        // ETRF2000 projeté
+        double in_E = 385000.000;
+        double in_N = 6672000.000;
+        double in_h = 94.6218;
+        double in_t = 2019.7;
         double t_target = 2000.0;
 
-        auto r = gt.applyGridDeformationProjected(in_X, in_Y, in_Z, in_t, model_path, t_target);
+        auto r = gt.applyGridDeformationProjected(
+            in_E, in_N, in_h, in_t,
+            model_path,
+            3067,        // ETRF2000
+            t_target
+        );
 
-        // Tolérances
-        double XYZ_EPS = 1e-6; 
+        double XY_EPS = 1e-3;   // 1 mm
+        double H_EPS  = 1e-3;
 
-        // Vérifications
-        checkNear("X", r.x, 2892571.194434, XYZ_EPS);
-        checkNear("Y", r.y, 1311843.326880, XYZ_EPS);
-        checkNear("Z", r.z, 5512634.036652, XYZ_EPS);
-        
-        if (r.t == 2019.7) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
-        else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
+        checkNear("Easting",  r.x, 385000.021, XY_EPS);
+        checkNear("Northing", r.y, 6672000.041, XY_EPS);
+        checkNear("Hauteur",  r.z, 94.6879, H_EPS);
+
+        if (r.t == 2019.7)
+            std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
+        else
+            std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
 
     } catch (const std::exception& e) {
         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
     }
-
 }
 
 int main() {
