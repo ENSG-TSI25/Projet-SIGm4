@@ -1,23 +1,22 @@
 #pragma once
 
-#include <QWidget>
-#include <QPushButton>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 
-#include <qgsmapcanvas.h>
-#include <qgsvectorlayer.h>
-#include <qgsproject.h>
-#include <qgsmaptoolpan.h>
+//Standard libraries
+#include <cmath>
 
-#include <qgsrasterlayer.h>
-#include <qgsvectorlayer.h>
-#include <qgsproject.h>
-#include <qgsmaplayer.h>
-#include <qgsmapcanvas.h>
+//Frontend files
 #include "../ui/ui_mainwindow.h"
 #include "mainwindow.h"
+
+//Qt library
+#include <QHBoxLayout>
+
+//QGIS API library
+#include <qgsmaptoolpan.h>
+#include <qgsrasterlayer.h>
+#include <qgsmaplayer.h>
+#include <qgscoordinatereferencesystem.h>
+#include <qgsmaptoolpan.h>
 
 
 class MainWindow;
