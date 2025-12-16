@@ -344,13 +344,15 @@ void LayerManager::displayLayer() {
     QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
 
     QgsLayerTree* tree = QgsProject::instance()->layerTreeRoot();
-    int counter = 0;
 
-    for (int i=0; i < (canvas->layers()).length() - 1; i++) {
+    for (int i=1; i < (canvas->layers()).length(); i++) {
     //for (QgsMapLayer* layer : canvas->layers()) {
         QgsLayerTreeNode* node = tree->findLayer((canvas->layers())[i]->id());
-        
-        QListWidgetItem* item = mw->getUi() -> layersList -> item(counter);
+
+        qDebug() << (canvas->layers()).length();
+        qDebug() << mw->getUi() -> layersList -> count();
+
+        QListWidgetItem* item = mw->getUi() -> layersList -> item(i-1);
         qDebug() << "voir";
 
         bool visible = (item -> checkState() == Qt::Checked);
@@ -364,6 +366,5 @@ void LayerManager::displayLayer() {
             qDebug() << "uncheck";
             node->setItemVisibilityChecked(false);
         }
-        counter++;
     }
 }
