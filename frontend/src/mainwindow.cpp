@@ -230,7 +230,6 @@ void MainWindow::setNewProject()
         return;
     }
 
-
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
 
@@ -292,6 +291,19 @@ void MainWindow::setNewProject()
 
     QgsProject::instance()->setCrs(projectCrs);
     carte->getCanvas()->setDestinationCrs(projectCrs);
+
+    QgsRectangle defaultExtent;
+    //If it is a projected CRS, wit need to use adequate coordinates
+    if (selectedCrs == QString("EPSG::9794") || selectedCrs == QString("EPSG::10674")){
+        defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+    }
+    //else lat/lon for geographic CRS
+    else{
+        defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+    }
+    qDebug() << selectedCrs;
+    carte->getCanvas()->setExtent(defaultExtent);
+    carte->getCanvas()->refresh();
 
     qDebug() << "Nouveau projet créé :";
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
@@ -522,14 +534,30 @@ void MainWindow::loadProject(const QString &filepath)
 
         // --- QGIS canvas ---
         QgsMapCanvas *canvas = getCarte()->getCanvas();
-        QString projectCrs = QString::fromStdString(currentProject->getCrs());
-        QgsCoordinateReferenceSystem projectCRS(projectCrs);
+        QString projectCrsString = QString::fromStdString(currentProject->getCrs());
+        QgsCoordinateReferenceSystem projectCRS(projectCrsString);
         canvas->setDestinationCrs(projectCRS);
 
         DataManager &dm = getDataManager();
 
         const auto &layers = loadedProject.getLayers();
         qDebug() << "Reloading" << layers.size() << "layer(s)...";
+
+        //If there are no layer, we choose to set the extent of the canvas to France
+        if(layers.empty()){
+                QgsRectangle defaultExtent;
+                //If it is a projected CRS, wit need to use adequate coordinates
+                if (projectCrsString == QString("EPSG::9794") || projectCrsString == QString("EPSG::10674")){
+                    defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+                }
+                //else lat/lon for geographic CRS
+                else{
+                    defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+                }
+                qDebug() << projectCrsString;
+                carte->getCanvas()->setExtent(defaultExtent);
+                carte->getCanvas()->refresh();
+        }
 
         for (const Layer &layer : layers)
         {
