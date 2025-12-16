@@ -153,6 +153,8 @@ Project *MainWindow::getCurrentProject() { return currentProject; }
 
 void MainWindow::setNewProject()
 {
+    //Reset the canvas
+    carte->clearUserLayers();
     
     QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
@@ -472,6 +474,10 @@ void MainWindow::saveProject()
 // No parameters - for the "Open" button in UI
 void MainWindow::loadProject()
 {
+    //Reset the map
+    carte->clearUserLayers();
+
+    QgsProject::instance()->removeAllMapLayers();
     // Ask user which file to load via file dialog
     QString filepath = QFileDialog::getOpenFileName(
         this,
@@ -685,4 +691,6 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
+
+
 }
