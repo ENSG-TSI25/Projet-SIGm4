@@ -254,7 +254,7 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
             continue;
         else
         {
-            switch (geom->getGeometryType())
+            switch (wkbFlatten(geom->getGeometryType()))
             {
             case wkbPoint:{
                 OGRPoint *p = geom->toPoint(); // Use envelope
