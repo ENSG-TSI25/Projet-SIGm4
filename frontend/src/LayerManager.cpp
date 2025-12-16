@@ -1,30 +1,4 @@
 #include "../include/LayerManager.h"
-#include "../include/Carte.h"
-
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QListWidgetItem>
-#include <QFileInfo>
-#include <QDebug>
-
-#include <qgslayertree.h>
-#include <qgsmapcanvas.h>
-#include <qgsvectorlayer.h>
-#include <qgsrasterlayer.h>
-#include <qgsproject.h>
-#include <qgscoordinatereferencesystem.h>
-
-#include <gdal_priv.h>
-
-#include <core/DataManager.hpp>
-#include <core/Project.hpp>
-#include <core/VectorLayer.hpp>
-#include <core/Layer.hpp>
-#include <core/RasterLayer.hpp>
-#include <core/Project.hpp>
-#include <QDebug>
-#include <vector>
-
 
 LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), layerRaster()
 {

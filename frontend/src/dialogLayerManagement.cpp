@@ -1,7 +1,5 @@
 #include "../include/dialogLayerManagement.h"
 
-#include <QLineEdit>
-#include <QString>
 
 //Create a dialog class to manage the layers
 Dialog::Dialog(QWidget *parent) :

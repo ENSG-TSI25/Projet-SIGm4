@@ -1,47 +1,4 @@
 #include "../include/mainwindow.h"
-#include "../include/LayerManager.h"
-#include "../include/TransformCRS.h"
-
-#include <QFileDialog>
-#include <QComboBox>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QWheelEvent>
-#include <qgsmapcanvas.h>
-#include <QLineEdit>
-#include <QLabel>
-#include <QPushButton>
-#include <QVBoxLayout>
-#include <QDoubleValidator>
-#include <QDialog>
-#include <QCalendarWidget>
-#include <QDialogButtonBox>
-#include <QStandardItemModel>
-#include <QStandardItem>
-#include <QString>
-#include <QStringList>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <iostream>
-#include <QDate>
-#include <QDebug>
-#include "../include/Carte.h"
-
-#include <core/Project.hpp>
-#include <QMessageBox>
-
-#include <QMessageBox>
-#include <QDir>
-
-#include <core/DataManager.hpp>
-#include <core/VectorLayer.hpp>
-#include <qgsvectorlayer.h>
-#include <qgsfield.h>
-#include <qgsfeature.h>
-#include <qgsgeometry.h>
-#include <qgsproject.h>
-
-#include <gdal_priv.h>    //Updating the display of the project
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -49,14 +6,17 @@ MainWindow::MainWindow(QWidget *parent)
     , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
-    setProjectActionsEnabled(false);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
+
+    //Disable all actions while there is no active project
+    setProjectActionsEnabled(false);
+
     connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
+
     // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
-
 
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
@@ -103,11 +63,6 @@ MainWindow::MainWindow(QWidget *parent)
     
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
-
-    connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
-    connect(ui->btnOpen, &QPushButton::clicked, this, [this]()
-            { loadProject(); });
-    // connect (crsLabel)
 }
 
 MainWindow::~MainWindow()
@@ -148,9 +103,19 @@ void MainWindow::setProjectActionsEnabled(bool enabled)
     ui->carte->setEnabled(enabled);
 }
 
-void MainWindow::updateScaleLabel(int scaleValue)
+void MainWindow::updateScaleLabel(double scaleValue)
 {
-    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue / 100) * 100), 'f', 0)));
+    //If there is no project, there is no scale 
+    if (currentProject == nullptr) {
+        ui->scale->setText("Échelle : N/A");
+        return;
+    }
+
+    qDebug() << "Scale changed !";
+    
+    //Round the scale from the double that the QgsMapCanvas::scaleChanged function returns
+    int roundedScale = static_cast<int>(std::round(scaleValue / 100) * 100);
+    ui->scale->setText(QString("Échelle : 1:%1").arg(roundedScale));
 }
 
 void MainWindow::zoomIn_button()
@@ -185,17 +150,6 @@ LayerManager *MainWindow::getLayerManager()
 Carte *MainWindow::getCarte()
 {
     return carte;
-}
-
-void MainWindow::getDateSelected(const QDate &date)
-{
-    // QDate initalDate= ui->calendar->selectedDate();
-    // ui->date->setText("Date : " + date.toString("dd/MM/yyyy"));
-}
-
-void MainWindow::getSRCSelected()
-{
-    // ui->crsLabel->setText("CRS : " + ui->sourceCRSCombo->currentText());
 }
 
 Project *MainWindow::getCurrentProject() { return currentProject; }
@@ -265,7 +219,6 @@ void MainWindow::setNewProject()
 
     connect(crsList, &QComboBox::currentTextChanged,
             this, [this, crsList]() {
-                // ui->crsLabel->setText("CRS : " + crsList->currentText());
             });
 
 
@@ -281,7 +234,6 @@ void MainWindow::setNewProject()
         qDebug() << "Création de projet annulée.";
         return;
     }
-
 
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
@@ -345,6 +297,19 @@ void MainWindow::setNewProject()
     QgsProject::instance()->setCrs(projectCrs);
     carte->getCanvas()->setDestinationCrs(projectCrs);
 
+    QgsRectangle defaultExtent;
+    //If it is a projected CRS, wit need to use adequate coordinates
+    if (selectedCrs == QString("EPSG::9794") || selectedCrs == QString("EPSG::10674")){
+        defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+    }
+    //else lat/lon for geographic CRS
+    else{
+        defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+    }
+    qDebug() << selectedCrs;
+    carte->getCanvas()->setExtent(defaultExtent);
+    carte->getCanvas()->refresh();
+
     qDebug() << "Nouveau projet créé :";
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
@@ -400,29 +365,6 @@ float MainWindow::computeDate(int day, int month, int year)
     float deci_date = year + (daysCount - 1) / (daysInYear);
     return deci_date;
 }
-
-// // Function to set the targetted comboBox to show the list of CRS accepted by the project
-// void MainWindow::setCrsList(QComboBox *comboBox)
-// {
-//     comboBox->clear();
-//     QStringList items = {
-//         "ITRF2020 (9990)",
-//         "ITRF2014 (9000)",
-//         "ITRF2008 (8999)",
-//         "ITRF2005 (8998)",
-//         "ITRF2000 (8987)",
-//         "ETRF2020 (10571)",
-//         "ETRF2014 (9069)",
-//         "ETRF2005 (9068)",
-//         "ETRF2000 (9067)",
-//         "RGF93v2b (9784)",
-//         "RGM23 (10673)",
-//         "RGF93v1 (2154)",
-
-//     };
-//     comboBox->addItems(items);
-// }
-
 
 void MainWindow::setCrsList(QComboBox *comboBox){
     comboBox->clear();
@@ -554,7 +496,8 @@ void MainWindow::loadProject()
     setProjectActionsEnabled(true);
 }
 
-// With filepath parameter - for command-line/file association
+
+
 void MainWindow::loadProject(const QString &filepath)
 {
     if (filepath.isEmpty() || !QFile::exists(filepath))
@@ -567,181 +510,179 @@ void MainWindow::loadProject(const QString &filepath)
     {
         Project loadedProject = Project::load(filepath.toStdString());
 
-        if (currentProject != nullptr)
-        {
-            delete currentProject;
-        }
-
-        currentProject = new Project(
+        Project* newProject = new Project(
             loadedProject.getName(),
             loadedProject.getEpoch0(),
             loadedProject.getCrs(),
-            loadedProject.getLayers());
+            {});
 
-        // Update UI with project information
-        //for now commentend because problem
-        // ui->crsLabel->setText("CRS : " + QString::fromStdString(currentProject->getCrs()));
+        // Delete the older project if already present
+        if (currentProject != nullptr)
+        {
+            delete currentProject;
+            qDebug() << "Already existing project";
+        }
+
+        // Assigning the newProject
+        currentProject = newProject;
 
         double epoch = currentProject->getEpoch0();
         int year = static_cast<int>(epoch);
-        double fractionalYear = epoch - year;
-        int dayOfYear = static_cast<int>(fractionalYear * 365);
+        int dayOfYear = static_cast<int>((epoch - year) * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
-        //for now commentend because problem
-        // ui->date->setText("Date : " + projectDate.toString("dd/MM/yyyy"));
+
+        //Update UI display of project caracteristics
+        projectDisplay->updateDisplayName();
+        projectDisplay->updateDisplayCRS();
+        projectDisplay->updateDisplayEpoch0();
 
         ui->layersList->clear();
 
-        std::vector<Layer> layers = currentProject->getLayers();
-        qDebug() << "Reloading" << layers.size() << "layer(s)...";
-
-        Carte *carte = getCarte();
-        QgsMapCanvas *canvas = carte->getCanvas();
-        QString projectCrs = QString::fromStdString(currentProject->getCrs());
-        QgsCoordinateReferenceSystem projectCRS(projectCrs);
+        // --- QGIS canvas ---
+        QgsMapCanvas *canvas = getCarte()->getCanvas();
+        QString projectCrsString = QString::fromStdString(currentProject->getCrs());
+        QgsCoordinateReferenceSystem projectCRS(projectCrsString);
         canvas->setDestinationCrs(projectCRS);
 
-        for (const auto &layer : layers)
+        DataManager &dm = getDataManager();
+
+        const auto &layers = loadedProject.getLayers();
+        qDebug() << "Reloading" << layers.size() << "layer(s)...";
+
+        //If there are no layer, we choose to set the extent of the canvas to France
+        if(layers.empty()){
+                QgsRectangle defaultExtent;
+                //If it is a projected CRS, wit need to use adequate coordinates
+                if (projectCrsString == QString("EPSG::9794") || projectCrsString == QString("EPSG::10674")){
+                    defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+                }
+                //else lat/lon for geographic CRS
+                else{
+                    defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+                }
+                qDebug() << projectCrsString;
+                carte->getCanvas()->setExtent(defaultExtent);
+                carte->getCanvas()->refresh();
+        }
+
+        for (const Layer &layer : layers)
         {
             QString layerName = QString::fromStdString(layer.getName());
             QString dataSource = QString::fromStdString(layer.getDataSource());
 
-            qDebug() << "Loading layer:" << layerName << "Source:" << dataSource;
+            if (dataSource.isEmpty() || !QFile::exists(dataSource))
+                continue;
 
+            qDebug() << "Reload layer:" << layerName << "from" << dataSource;
+
+            // --- Détection raster / vector ---
+            GDALAllRegister();
+            GDALDataset *ds = static_cast<GDALDataset *>(
+                GDALOpenEx(dataSource.toStdString().c_str(),
+                           GDAL_OF_READONLY | GDAL_OF_VECTOR | GDAL_OF_RASTER,
+                           nullptr, nullptr, nullptr));
+
+            if (!ds)
+                continue;
+
+            bool isRaster = (ds->GetRasterCount() > 0);
+            GDALClose(ds);
+
+            // =========================
+            // ===== RASTER LAYER ======
+            // =========================
+            if (isRaster)
+            {
+                // --- Backend ---
+                RasterLayer *raster = dm.loadRaster(dataSource.toStdString());
+                if (!raster)
+                    continue;
+
+                raster->setDataSource(dataSource.toStdString());
+                currentProject->addLayer(*raster);
+
+                // --- QGIS ---
+                QgsRasterLayer *qgsLayer =
+                    new QgsRasterLayer(
+                        dataSource,
+                        layerName,
+                        "gdal");
+
+                if (!qgsLayer->isValid())
+                {
+                    delete qgsLayer;
+                    continue;
+                }
+
+                qgsLayer->setName(layerName);
+                QgsProject::instance()->addMapLayer(qgsLayer);
+
+                auto qgsLayers = canvas->layers();
+                qgsLayers.prepend(qgsLayer);
+                canvas->setLayers(qgsLayers);
+                canvas->setExtent(qgsLayer->extent());
+                canvas->refresh();
+            }
+            // =========================
+            // ===== VECTOR LAYER ======
+            // =========================
+            else
+            {
+                // --- Backend ---
+                std::vector<VectorLayer *> vLayers =
+                    dm.loadVector(dataSource.toStdString());
+
+                for (VectorLayer *vl : vLayers)
+                {
+                    if (vl->getName() != layer.getName())
+                        continue;
+
+                    vl->setDataSource(dataSource.toStdString());
+                    currentProject->addLayer(*vl);
+
+                    // --- QGIS ---
+                    QgsVectorLayer *qgsLayer =
+                        new QgsVectorLayer(
+                            dataSource,
+                            layerName,
+                            "ogr");
+
+                    if (!qgsLayer->isValid())
+                    {
+                        delete qgsLayer;
+                        continue;
+                    }
+
+                    qgsLayer->setName(layerName);
+                    QgsProject::instance()->addMapLayer(qgsLayer);
+
+                    auto qgsLayers = canvas->layers();
+                    qgsLayers.prepend(qgsLayer);
+                    canvas->setLayers(qgsLayers);
+                    canvas->setExtent(qgsLayer->extent());
+                    canvas->refresh();
+                    break;
+                }
+            }
+
+            // --- UI ---
             QListWidgetItem *item = new QListWidgetItem(layerName);
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
             item->setCheckState(Qt::Checked);
             ui->layersList->addItem(item);
-
-            if (!dataSource.isEmpty() && QFile::exists(dataSource))
-            {
-                try
-                {
-                    GDALAllRegister();
-                    GDALDataset *dataset = (GDALDataset *)GDALOpenEx(
-                        dataSource.toStdString().c_str(),
-                        GDAL_OF_READONLY | GDAL_OF_RASTER | GDAL_OF_VECTOR,
-                        nullptr, nullptr, nullptr);
-
-                    if (!dataset)
-                        continue;
-
-                    bool isRaster = (dataset->GetRasterCount() > 0);
-                    GDALClose(dataset);
-
-                    if (isRaster)
-                    {
-                        QString gpkgUri = QString("GPKG:%1:%2").arg(dataSource).arg(layerName);
-                        QgsRasterLayer *qlayer = new QgsRasterLayer(gpkgUri, layerName, "gdal");
-
-                        if (qlayer->isValid())
-                        {
-                            QgsProject::instance()->addMapLayer(qlayer, false);
-
-                            QgsCoordinateTransform transform(
-                                qlayer->crs(),
-                                projectCRS,
-                                QgsProject::instance());
-
-                            auto currentLayers = canvas->layers();
-                            currentLayers.prepend(qlayer);
-                            canvas->setLayers(currentLayers);
-
-                            QgsRectangle extent = transform.transformBoundingBox(qlayer->extent());
-                            canvas->setExtent(extent);
-                            canvas->refresh();
-
-                            qDebug() << "Raster loaded - CRS:" << qlayer->crs().authid() << "->" << projectCRS.authid();
-                        }
-                        else
-                        {
-                            delete qlayer;
-                        }
-                    }
-                    else
-                    {
-                        DataManager dm;
-                        std::vector<VectorLayer *> reloadedLayers = dm.loadVector(dataSource.toStdString());
-
-                        for (auto *vLayer : reloadedLayers)
-                        {
-                            if (vLayer->getName() == layer.getName())
-                            {
-                                QString qlayerName = QString::fromStdString(vLayer->getName());
-                                QString layerCrs = QString::fromStdString(vLayer->getCrs());
-
-                                QgsVectorLayer *qlayer = new QgsVectorLayer(
-                                    "Point?crs=" + layerCrs,
-                                    qlayerName,
-                                    "memory");
-
-                                QList<QgsField> fieldList;
-                                fieldList << QgsField("id", QVariant::Int);
-                                qlayer->dataProvider()->addAttributes(fieldList);
-                                qlayer->updateFields();
-
-                                auto ewkts = vLayer->getEWKT();
-                                int fid = 0;
-                                for (const auto &ewkt : ewkts)
-                                {
-                                    if (ewkt.empty())
-                                        continue;
-
-                                    std::string wkt = ewkt;
-                                    size_t pos = ewkt.find(';');
-                                    if (pos != std::string::npos)
-                                    {
-                                        wkt = ewkt.substr(pos + 1);
-                                    }
-
-                                    QgsGeometry qgsGeom = QgsGeometry::fromWkt(QString::fromStdString(wkt));
-                                    if (!qgsGeom.isEmpty())
-                                    {
-                                        QgsFeature feat;
-                                        feat.setGeometry(qgsGeom);
-                                        feat.setAttributes({fid++});
-                                        qlayer->dataProvider()->addFeature(feat);
-                                    }
-                                }
-
-                                qlayer->updateExtents();
-                                QgsProject::instance()->addMapLayer(qlayer, false);
-
-                                QgsCoordinateTransform transform(
-                                    qlayer->crs(),
-                                    projectCRS,
-                                    QgsProject::instance());
-
-                                auto currentLayers = canvas->layers();
-                                currentLayers.prepend(qlayer);
-                                canvas->setLayers(currentLayers);
-
-                                QgsRectangle extent = transform.transformBoundingBox(qlayer->extent());
-                                canvas->setExtent(extent);
-                                canvas->refresh();
-
-                                qDebug() << "Vector loaded - CRS:" << qlayer->crs().authid() << "->" << projectCRS.authid() << "Geoms:" << fid;
-                                break;
-                            }
-                        }
-                    }
-                }
-                catch (const std::exception &e)
-                {
-                    qDebug() << "Error reloading:" << e.what();
-                }
-            }
         }
-        canvas->refresh();
 
         QMessageBox::information(
             this,
             "Success",
-            QString("Project '%1' loaded successfully!\n\nCRS: %2\nEpoch: %3\nNumber of layers: %4")
+            QString("Project '%1' loaded successfully!\nLayers: %2")
                 .arg(QString::fromStdString(currentProject->getName()))
-                .arg(QString::fromStdString(currentProject->getCrs()))
-                .arg(currentProject->getEpoch0())
                 .arg(currentProject->getLayers().size()));
+
+        //Updating the display of the project
+        projectDisplay->updateDisplayName();
+        projectDisplay->updateDisplayCRS();
+        projectDisplay->updateDisplayEpoch0();
     }
     catch (const std::exception &e)
     {
@@ -750,10 +691,5 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
-
-    //Updating the display of the project
-    projectDisplay->updateDisplayName();
-    projectDisplay->updateDisplayCRS();
-    projectDisplay->updateDisplayEpoch0();
 }
 
