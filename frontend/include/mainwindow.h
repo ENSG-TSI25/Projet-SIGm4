@@ -80,7 +80,7 @@ public:
     void loadProject(const QString& filepath);
     
     void updateScaleLabel(double scaleValue);
-    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate, QLineEdit *epochEdit);
+    void getCalendarDays(QCalendarWidget *calendar, QLineEdit *epochEdit);
 
 
 

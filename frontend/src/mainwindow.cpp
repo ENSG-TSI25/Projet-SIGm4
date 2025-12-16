@@ -193,10 +193,10 @@ void MainWindow::setNewProject()
 
 
     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
-    QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
+    // QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
 
     // Met à jour epochTextZone quand on clique sur le calendrier
-    getCalendarDays(calendar, decimalDate, epochTextZone);
+    getCalendarDays(calendar, epochTextZone);
 
     // Met à jour le calendrier quand on tape une epoch
     connect(epochTextZone, &QLineEdit::editingFinished, this, [=]() {
@@ -328,7 +328,6 @@ void MainWindow::setNewProject()
 
 void MainWindow::getCalendarDays(
     QCalendarWidget *calendar,
-    QLabel *decimalDate,
     QLineEdit *epochEdit
 )
 {
@@ -339,10 +338,6 @@ void MainWindow::getCalendarDays(
             date.day(),
             date.month(),
             date.year()
-        );
-
-        decimalDate->setText(
-            "Date décimale : " + QString::number(dec, 'f', 6)
         );
 
         epochEdit->setText(
