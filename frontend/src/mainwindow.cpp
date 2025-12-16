@@ -505,8 +505,8 @@ void MainWindow::loadProject(const QString &filepath)
         projectDisplay->updateDisplayCRS();
         projectDisplay->updateDisplayEpoch0();
 
-        auto layers = currentProject->getLayers();
-        qDebug() << "Reloading" << layers.size() << "layer(s)...";
+        auto projectLayers = currentProject->getLayers();
+        qDebug() << "Reloading" << projectLayers.size() << "layer(s)...";
         ui->layersList->clear();
 
         // --- QGIS canvas ---
@@ -517,10 +517,10 @@ void MainWindow::loadProject(const QString &filepath)
 
         DataManager &dm = getDataManager();
 
-        const auto &layers = loadedProject.getLayers();
-        qDebug() << "Reloading" << layers.size() << "layer(s)...";
+        const auto &loadedLayers = loadedProject.getLayers();
+        qDebug() << "Reloading" << loadedLayers.size() << "layer(s)...";
 
-        for (const Layer &layer : layers)
+        for (const auto &layer : loadedLayers)
         {
             QString layerName = QString::fromStdString(layer->getName());
             QString dataSource = QString::fromStdString(layer->getDataSource());
@@ -554,7 +554,7 @@ void MainWindow::loadProject(const QString &filepath)
                     continue;
 
                 raster->setDataSource(dataSource.toStdString());
-                currentProject->addLayer(*raster);
+                currentProject->addLayer(std::make_shared<RasterLayer>(*raster));
 
                 // --- QGIS ---
                 QgsRasterLayer *qgsLayer =
@@ -589,11 +589,11 @@ void MainWindow::loadProject(const QString &filepath)
 
                 for (VectorLayer *vl : vLayers)
                 {
-                    if (vl->getName() != layer.getName())
+                    if (vl->getName() != layer->getName())
                         continue;
 
                     vl->setDataSource(dataSource.toStdString());
-                    currentProject->addLayer(*vl);
+                    currentProject->addLayer(std::make_shared<VectorLayer>(*vl));
 
                     // --- QGIS ---
                     QgsVectorLayer *qgsLayer =
