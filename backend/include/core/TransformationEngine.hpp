@@ -11,7 +11,7 @@ public:
 
     VectorLayer* transformLayerAtEpoch(VectorLayer& inputLayer, const std::string& epsg_dst);
 
-    VectorLayer* applyDefModelLayer(const VectorLayer& inputLayer, const std::string& json_model_path, bool inverse = false);
+    VectorLayer* applyDefModelLayer(VectorLayer& inputLayer, const std::string& json_model_path, bool inverse = false);
 
-    VectorLayer* applyGridDeformation(const VectorLayer& inputLayer, const std::string& grid_path, double ref_epoch);
+    VectorLayer* applyGridDeformationLayer(VectorLayer& inputLayer, const std::string& grid_path, double ref_epoch);
 };
