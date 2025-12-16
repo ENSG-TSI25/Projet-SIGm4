@@ -79,7 +79,7 @@ public:
     //Open an already existing project from a .sigm4 file
     void loadProject(const QString& filepath);
     
-    void updateScaleLabel(int scaleValue);
+    void updateScaleLabel(double scaleValue);
     void getCalendarDays(
     QCalendarWidget *calendar,
     QLabel *decimalDate,

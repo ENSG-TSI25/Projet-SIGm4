@@ -6,14 +6,17 @@ MainWindow::MainWindow(QWidget *parent)
     , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
-    setProjectActionsEnabled(false);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
+
+    //Disable all actions while there is no active project
+    setProjectActionsEnabled(false);
+
     connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
+
     // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
-
 
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
@@ -95,9 +98,19 @@ void MainWindow::setProjectActionsEnabled(bool enabled)
     ui->carte->setEnabled(enabled);
 }
 
-void MainWindow::updateScaleLabel(int scaleValue)
+void MainWindow::updateScaleLabel(double scaleValue)
 {
-    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue / 100) * 100), 'f', 0)));
+    //If there is no project, there is no scale 
+    if (currentProject == nullptr) {
+        ui->scale->setText("Échelle : N/A");
+        return;
+    }
+
+    qDebug() << "Scale changed !";
+    
+    //Round the scale from the double that the QgsMapCanvas::scaleChanged function returns
+    int roundedScale = static_cast<int>(std::round(scaleValue / 100) * 100);
+    ui->scale->setText(QString("Échelle : 1:%1").arg(roundedScale));
 }
 
 void MainWindow::zoomIn_button()
@@ -201,7 +214,6 @@ void MainWindow::setNewProject()
 
     connect(crsList, &QComboBox::currentTextChanged,
             this, [this, crsList]() {
-                // ui->crsLabel->setText("CRS : " + crsList->currentText());
             });
 
 
