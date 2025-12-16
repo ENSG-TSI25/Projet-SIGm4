@@ -135,24 +135,22 @@ public:
 
     Result applyDefModelProjected(
         double E, double N, double H, double t_epoch,
+        const std::string& epsg_code,
         const std::string& json_model_path,
         bool inverse);
 
     Result applyGridDeformationGeodetic(
-        double lon_deg, double lat_deg, double h,
-        double t_epoch,
+        double lon_deg, double lat_deg, double h, double t_epoch,
         const std::string& grid_path,
         double ref_epoch);
 
     Result applyGridDeformationGeocentric(
-        double X, double Y, double Z,
-        double t_epoch,
+        double X, double Y, double Z, double t_epoch,
         const std::string& grid_path,
         double ref_epoch);
 
     Result applyGridDeformationProjected(
-        double E, double N, double H,
-        double t_epoch,
+        double E, double N, double H, double t_epoch,
         const std::string& grid_path,
         double ref_epoch);
         

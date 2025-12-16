@@ -241,18 +241,18 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeocentric(
     const std::string& json_model_path,
     bool inverse)
 {
-    std::ostringstream ss;
-    ss << "+proj=pipeline "
+    std::ostringstream proj_str;
+    proj_str << "+proj=pipeline "
        << "+step +proj=cart +inv +ellps=GRS80 " 
        << "+step +proj=defmodel +model=" << json_model_path; 
 
     if (inverse) {
-        ss << " +inv";
+        proj_str << " +inv";
     }
 
-    ss << " +step +proj=cart +ellps=GRS80";
+    proj_str << " +step +proj=cart +ellps=GRS80";
 
-    PJ* P = proj_create(ctx_, ss.str().c_str());
+    PJ* P = proj_create(ctx_, proj_str.str().c_str());
     if (!P)
         throw std::runtime_error("Failed to load defmodel: " + json_model_path);
 
@@ -276,13 +276,22 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelGeocentric(
 // ----------------------------------------------------
 GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
     double E, double N, double H, double t_epoch,
+    const std::string& epsg_code,
     const std::string& json_model_path,
     bool inverse)
 {
-    std::string proj_str = "+proj=defmodel +model=" + json_model_path;
-    if (inverse) proj_str += " +inv";
+    std::ostringstream proj_str;
+    proj_str << "+proj=pipeline "
+       << "+step +proj=cart +inv +ellps=GRS80 " 
+       << "+step +proj=defmodel +model=" << json_model_path; 
 
-    PJ* P = proj_create(ctx_, proj_str.c_str());
+    if (inverse) {
+        proj_str << " +inv";
+    }
+
+    proj_str << " +step +proj=cart +ellps=GRS80";
+
+    PJ* P = proj_create(ctx_, proj_str.str().c_str());
     if (!P)
         throw std::runtime_error("Failed to load defmodel: " + json_model_path);
 
@@ -306,8 +315,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
 // ----------------------------------------------------
 
 GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeodetic(
-    double lon_deg, double lat_deg, double h,
-    double t_epoch,
+    double lon_deg, double lat_deg, double h, double t_epoch,
     const std::string& grid_path,
     double ref_epoch)
 {
@@ -358,8 +366,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeodetic(
 // ----------------------------------------------------
 
 GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeocentric(
-    double X, double Y, double Z,
-    double t_epoch,
+    double X, double Y, double Z, double t_epoch,
     const std::string& grid_path,
     double ref_epoch)
 {
@@ -394,8 +401,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeocentric(
 // ----------------------------------------------------
 
 GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationProjected(
-    double E, double N, double H,
-    double t_epoch,
+    double E, double N, double H, double t_epoch,
     const std::string& grid_path,
     double ref_epoch)
 {

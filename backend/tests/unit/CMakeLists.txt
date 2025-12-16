@@ -25,10 +25,10 @@ include(GoogleTest)
 
 # Unit tests - link against the backend library
 add_executable(unit_tests
-    # test_geometry4d.cpp
-    # test_datamanager.cpp
-    # test_geopackagereader.cpp
-    # test_proj.cpp
+    test_geometry4d.cpp
+    test_datamanager.cpp
+    test_geopackagereader.cpp
+    test_proj.cpp
     # test_transformationengine.cpp
     ${TEST_SOURCES}
 )

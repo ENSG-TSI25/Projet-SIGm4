@@ -205,21 +205,21 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
 
     try {
         // Paramètres
-        double in_X = 4394824.5976;
-        double in_Y = 4394824.5976;
-        double in_Z = -1427561.0242;
+        double in_X = -3924135.51;
+        double in_Y = 16889560.57;
+        double in_Z = 0.0;
         double in_t = 2018.0;
 
-        auto r = gt.applyDefModelGeodetic(in_X, in_Y, in_Z, in_t, model_path, false);
+        auto r = gt.applyDefModelProjected(in_X, in_Y, in_Z, in_t, model_path, false);
 
         // Tolérances
         double DEG_EPS = 1e-6; 
         double H_EPS = 1e-3;
 
         // Vérifications
-        checkNear("Longitude", r.x, 4394824.769114, DEG_EPS);
-        checkNear("Latitude",  r.y, 4394824.510683, DEG_EPS);
-        checkNear("Hauteur",   r.z, -1427561.118975, H_EPS);
+        checkNear("Longitude", r.x, -3924135.79, DEG_EPS);
+        checkNear("Latitude",  r.y, 16889560.46, DEG_EPS);
+        checkNear("Hauteur",   r.z, 0.08, H_EPS);
         
         if (r.t == 2018.0) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
         else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
@@ -234,7 +234,7 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
     std::cout << " TEST 10b : NKG Grid deformation Projected" << std::endl;
     std::cout << "==========================================" << std::endl;
 
-    std::string model_path = getModelPath("fr_ign_RGM23_defmodel.json");
+    std::string model_path = getModelPath("eur_nkg_nkgrf03vel_realigned.tif");
     if (model_path.empty()) return;
 
     try {
@@ -245,7 +245,7 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         double in_t =  2019.7;
         double t_target = 2000.0;
 
-        auto r = gt.applyDefModelGeocentric(in_X, in_Y, in_Z, in_t, model_path, t_target);
+        auto r = gt.applyGridDeformationProjected(in_X, in_Y, in_Z, in_t, model_path, t_target);
 
         // Tolérances
         double XYZ_EPS = 1e-6; 
@@ -255,7 +255,7 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         checkNear("Y", r.y, 1311843.326880, XYZ_EPS);
         checkNear("Z", r.z, 5512634.036652, XYZ_EPS);
         
-        if (r.t == 2018.0) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
+        if (r.t == 2019.7) std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
         else               std::cout << "Epoch           | " << r.t << RED << " [FAIL]" << RESET << std::endl;
 
     } catch (const std::exception& e) {
@@ -278,6 +278,9 @@ int main() {
 
         testMayotteDefModelGeocentric(gt);
         testNKGGridDeformationGeocentric(gt);
+
+        testMayotteDefModelProjected(gt);
+        testNKGGridDeformationProjected(gt);
 
         std::cout << "\nFin des tests manuels." << std::endl;
         Application app;
