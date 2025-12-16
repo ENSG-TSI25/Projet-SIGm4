@@ -1,4 +1,5 @@
 #include "../include/LayerManager.h"
+#include <QSet>
 
 LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), layerRaster()
 {
@@ -338,32 +339,41 @@ void LayerManager::renameLayer(Dialog* dialog)
 
 //Connect checkbox with the project layers
 void LayerManager::displayLayer() {
-    // int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
-    // QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
-
     QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+    QListWidget* listWidget = mw->getUi()->layersList;
 
-    QgsLayerTree* tree = QgsProject::instance()->layerTreeRoot();
-    int counter = 0;
+    // 1. Identify base layers (layers in canvas NOT in listWidget)
+    QList<QgsMapLayer*> baseLayers;
+    QList<QgsMapLayer*> currentCanvasLayers = canvas->layers();
 
-    for (int i=0; i < (canvas->layers()).length() - 1; i++) {
-    //for (QgsMapLayer* layer : canvas->layers()) {
-        QgsLayerTreeNode* node = tree->findLayer((canvas->layers())[i]->id());
-        
-        QListWidgetItem* item = mw->getUi() -> layersList -> item(counter);
-        qDebug() << "voir";
-
-        bool visible = (item -> checkState() == Qt::Checked);
-        if (item -> checkState() == Qt::Checked)
-        {
-            qDebug() << "check";
-            node->setItemVisibilityChecked(true);
-        }
-        if (item -> checkState() == Qt::Unchecked)
-        {
-            qDebug() << "uncheck";
-            node->setItemVisibilityChecked(false);
-        }
-        counter++;
+    // Collect names from listWidget to identify managed layers
+    QSet<QString> managedLayerNames;
+    for(int i = 0; i < listWidget->count(); ++i) {
+        managedLayerNames.insert(listWidget->item(i)->text());
     }
+
+    for(QgsMapLayer* layer : currentCanvasLayers) {
+        if(!managedLayerNames.contains(layer->name())) {
+            baseLayers.append(layer);
+        }
+    }
+
+    // 2. Build new layer list
+    QList<QgsMapLayer*> newLayers = baseLayers;
+
+    // Iterate listWidget to add checked layers
+    for(int i = 0; i < listWidget->count(); ++i) {
+        QListWidgetItem* item = listWidget->item(i);
+        if(item->checkState() == Qt::Checked) {
+            QString layerName = item->text();
+            // Find layer in Project
+            QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
+            if(!foundLayers.isEmpty()) {
+                newLayers.prepend(foundLayers.first());
+            }
+        }
+    }
+
+    canvas->setLayers(newLayers);
+    canvas->refresh();
 }
