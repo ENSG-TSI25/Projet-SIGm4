@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QDebug>
 
+#include <qgslayertree.h>
 #include <qgsmapcanvas.h>
 #include <qgsvectorlayer.h>
 #include <qgsrasterlayer.h>
@@ -363,17 +364,31 @@ void LayerManager::renameLayer(Dialog* dialog)
 
 //Connect checkbox with the project layers
 void LayerManager::displayLayer() {
-    int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
-    QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
+    // int currentIndex = mw->getUi() -> layersList -> row(mw->getUi() -> layersList -> currentItem());
+    // QListWidgetItem* item = mw->getUi() -> layersList -> item(currentIndex);
 
-    Project* project = mw -> getCurrentProject();
-    std::vector<Layer> layerList = project -> getLayers();
-    Layer test = layerList[currentIndex];
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
 
-    if (item -> checkState() == Qt::Checked) {
-        mw -> getCurrentProject()-> addLayer(test);     
+    QgsLayerTree* tree = QgsProject::instance()->layerTreeRoot();
+    int counter = 0;
+
+    for (QgsMapLayer* layer : canvas->layers()) {
+        QgsLayerTreeNode* node = tree->findLayer(layer->id());
+        qDebug() << "item";
+        QListWidgetItem* item = mw->getUi() -> layersList -> item(counter);
+        qDebug() << "voir";
+        
+        bool visible = (item -> checkState() == Qt::Checked);
+        if (item -> checkState() == Qt::Checked)
+        {
+            qDebug() << "check";
+            node->setItemVisibilityChecked(true);
+        }
+        if (item -> checkState() == Qt::Unchecked)
+        {
+            qDebug() << "uncheck";
+            node->setItemVisibilityChecked(false);
+        }
+        counter++;
     }
-    if (item -> checkState() == Qt::Unchecked) {
-        mw -> getCurrentProject()-> rmLayer(test);
-    }   
 }
