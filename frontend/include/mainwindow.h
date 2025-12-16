@@ -19,6 +19,9 @@
 #include <QComboBox>
 #include <QVBoxLayout>
 #include <QDate>
+#include <qgsmaptoolidentify.h>
+#include <qgsmaptoolpan.h>
+
 
 #include <string.h>
 
@@ -64,6 +67,7 @@ public:
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
+    void openAttributeTable(QgsVectorLayer* layer);
 
 
 
@@ -81,6 +85,9 @@ private:
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
+    QgsMapToolIdentify* identifyTool = nullptr;
+    QgsMapTool* defaultTool = nullptr;
+
 
 
 private slots:

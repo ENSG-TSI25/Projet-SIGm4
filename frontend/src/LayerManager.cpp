@@ -155,20 +155,33 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
 
     // --- Add to QGIS project ---
     QgsProject::instance()->addMapLayer(qgsLayer);
+    canvas->setCurrentLayer(qgsLayer);
 
-    // --- Add layer on top & zoom on it ---
+    // --- UI list item ---
+    QListWidgetItem* item = new QListWidgetItem(qgsLayer->name());
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Checked);
+
+    // link UI <-> layers QGIS
+    item->setData(Qt::UserRole, qgsLayer->id());
+
+    mw->getUi()->layersList->addItem(item);
+
+    // --- Add layer on top & zoom ---
     QList<QgsMapLayer*> layers = canvas->layers();
     layers.prepend(qgsLayer);
     canvas->setLayers(layers);
     canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
-    // --- UI ---
-    QListWidgetItem* item =
-        new QListWidgetItem(qgsLayer->name());
-    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-    item->setCheckState(Qt::Checked);
-    mw->getUi()->layersList->addItem(item);
+
+
+    // // --- UI ---
+    // QListWidgetItem* item =
+    //     new QListWidgetItem(qgsLayer->name());
+    // item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    // item->setCheckState(Qt::Checked);
+    // mw->getUi()->layersList->addItem(item);
 
 
 
@@ -244,6 +257,8 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
     }
 
     QgsProject::instance()->addMapLayer(qgsLayer);
+    canvas->setCurrentLayer(qgsLayer);
+
 
     // --- Add layer on top & zoom on it ---
     QList<QgsMapLayer*> layers = canvas->layers();
