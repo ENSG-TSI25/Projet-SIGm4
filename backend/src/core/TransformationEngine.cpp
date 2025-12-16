@@ -4,203 +4,45 @@
 #include <gdal/ogr_geometry.h>
 #include <gdal/ogr_spatialref.h>
 
-// // --------------------------------------------------------------
-// // 1. TIME-DEPENDENT COORDINATE TRANSFORMATION (ITRF, ETRF, etc.)
-// // --------------------------------------------------------------
-/*
-VectorLayer* TransformationEngine::transformLayerAtEpoch(VectorLayer& inputLayer, const std::string& epsg_dst) 
+// ----------------------------------------------------
+// TRANSFORM LAYER AT EPOCH BETWEEN CRS
+// ----------------------------------------------------
+
+GeodeticTransformer::Result TransformationEngine::transformPoint(OGRPoint * p, double t, const std::string &fmt_in, const std::string &fmt_out, const std::string &src_code, const std::string &dst_code)
 {
-    auto geometries = inputLayer.getGeometries();
-    
-    // 1. Fetch source and destination EPSG codes
-    std::string src_code = inputLayer.getCrs();
-    if (src_code.find("EPSG:") == std::string::npos) src_code = "EPSG:" + src_code;
-    int src_code_int = std::stoi(src_code.substr(src_code.find(":")+1));
-    
-    std::string dst_code = epsg_dst;
-    if (dst_code.find("EPSG:") == std::string::npos) dst_code = "EPSG:" + dst_code;
-    int dst_code_int = std::stoi(dst_code.substr(dst_code.find(":")+1));
+    Result r;
 
-    // 2. Determine format types
-    std::string fmt_in = GeodeticTransformer::getCRSFormat(src_code_int);
-    if (fmt_in == "unknown") {
-        OGRSpatialReference srs; srs.SetFromUserInput(src_code.c_str());
-        if (srs.IsGeocentric()) fmt_in = "geocentric";
-        else if (srs.IsGeographic()) fmt_in = "geodetic";
-        else fmt_in = "projected";
+    if (fmt_in == "geocentric")
+    {
+        if (fmt_out == "geocentric")
+            r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else if (fmt_out == "geodetic")
+            r = GeodeticTransformer::geocentricToGeodetic(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else
+            r = GeodeticTransformer::geocentricToProjected(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+    }
+    else if (fmt_in == "geodetic")
+    {
+        if (fmt_out == "geocentric")
+            r = GeodeticTransformer::geodeticToGeocentric(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else if (fmt_out == "geodetic")
+            r = GeodeticTransformer::transformGeodeticAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else
+            r = GeodeticTransformer::geodeticToProjected(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+    }
+    else // projected
+    {
+        if (fmt_out == "geocentric")
+            r = GeodeticTransformer::projectedToGeocentric(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else if (fmt_out == "geodetic")
+            r = GeodeticTransformer::projectedToGeodetic(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
+        else
+            r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
     }
 
-    std::string fmt_out = GeodeticTransformer::getCRSFormat(dst_code_int);
-    if (fmt_out == "unknown") {
-        OGRSpatialReference srs; srs.SetFromUserInput(dst_code.c_str());
-        if (srs.IsGeocentric()) fmt_out = "geocentric";
-        else if (srs.IsGeographic()) fmt_out = "geodetic";
-        else fmt_out = "projected";
-    }
-
-    std::cout << "TRANSFORMATION : " << src_code << " (" << fmt_in << ") -> " 
-              << dst_code << " (" << fmt_out << ")\n";
-
-    // 3. Execution
-    for (auto &g : geometries) {
-        OGRGeometry* geom = g->getGeometry();
-        if (!geom || wkbFlatten(geom->getGeometryType()) != wkbPoint) continue;
-        OGRPoint* p = geom->toPoint(); // Use envelope
-
-        Result r;
-
-        // --- DECISION MATRIX (3 x 3 cases) ---
-        
-        // CAS 1 : Geocentric (XYZ) input
-        if (fmt_in == "geocentric") {
-            if (fmt_out == "geocentric") {
-                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else if (fmt_out == "geodetic") {
-                r = GeodeticTransformer::geocentricToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else { // projected
-                r = GeodeticTransformer::geocentricToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            }
-        }
-        // CAS 2 : Geodetic (Lat/Lon) input
-        else if (fmt_in == "geodetic") {
-            if (fmt_out == "geocentric") {
-                r = GeodeticTransformer::geodeticToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else if (fmt_out == "geodetic") {
-                r = GeodeticTransformer::transformGeodeticAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else { // projected
-                r = GeodeticTransformer::geodeticToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            }
-        }
-        // CAS 3 : Projected (E/N) input
-        else { // projected
-            if (fmt_out == "geocentric") {
-                r = GeodeticTransformer::projectedToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else if (fmt_out == "geodetic") {
-                r = GeodeticTransformer::projectedToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            } else { // projected
-                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-            }
-        }
-
-        // Mise à jour du point
-        g->setT(r.t);
-        p->setX(r.x);
-        p->setY(r.y);
-        p->setZ(r.z);
-    }
-
-    // Mise à jour finale du Layer
-    inputLayer.setCrs(dst_code);
-
-    return &inputLayer;
+    return r;
 }
 
-// // ----------------------------------------------------
-// // 2. JSON DEF-MODEL DEFORMATION (IGN, Mayotte, etc.)
-// // ----------------------------------------------------
-
-VectorLayer* TransformationEngine::applyDefModelLayer(VectorLayer& inputLayer, const std::string& json_model_path, bool inverse)
-{
-    auto geometries = inputLayer.getGeometries();
-    
-    // 1. Fetch source EPSG code
-    std::string src_code = inputLayer.getCrs();
-    if (src_code.find("EPSG:") == std::string::npos) src_code = "EPSG:" + src_code;
-    int src_code_int = std::stoi(src_code.substr(src_code.find(":")+1));
-
-    // 2. Determine format type
-    std::string fmt_in = GeodeticTransformer::getCRSFormat(src_code_int);
-    if (fmt_in == "unknown") {
-        OGRSpatialReference srs; srs.SetFromUserInput(src_code.c_str());
-        if (srs.IsGeocentric()) fmt_in = "geocentric";
-        else if (srs.IsGeographic()) fmt_in = "geodetic";
-        else fmt_in = "projected";
-    }
-
-    // 3. Execution
-    for (auto &g : geometries) {
-        OGRGeometry* geom = g->getGeometry();
-        if (!geom || wkbFlatten(geom->getGeometryType()) != wkbPoint) continue;
-        OGRPoint* p = geom->toPoint(); // Use envelope
-
-        Result r;
-        
-        // CAS 1 : Geocentric (XYZ) input
-        if (fmt_in == "geocentric") {
-            r = GeodeticTransformer::applyDefModelGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), json_model_path, inverse);
-        }
-        // CAS 2 : Geodetic (Lat/Lon) input
-        else if (fmt_in == "geodetic") {
-            r = GeodeticTransformer::applyDefModelGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), json_model_path, inverse);
-        }
-        // CAS 3 : Projected (E/N) input
-        else { // projected
-            r = GeodeticTransformer::applyDefModelProjected(p->getX(), p->getY(), p->getZ(), g->getT(), json_model_path, src_code_int, inverse);
-        }
-
-        // Mise à jour du point
-        g->setT(r.t);
-        p->setX(r.x);
-        p->setY(r.y);
-        p->setZ(r.z);
-    }
-
-    return &inputLayer;
-}
-
-// // -------------------------------
-// // 3. GRID-BASED DEFORMATION MODEL
-// // -------------------------------
-
-VectorLayer* TransformationEngine::applyGridDeformationLayer(VectorLayer& inputLayer, const std::string& grid_path, double ref_epoch)
-{
-    auto geometries = inputLayer.getGeometries();
-    
-    // 1. Fetch source and destination EPSG codes
-    std::string src_code = inputLayer.getCrs();
-    if (src_code.find("EPSG:") == std::string::npos) src_code = "EPSG:" + src_code;
-    int src_code_int = std::stoi(src_code.substr(src_code.find(":")+1));
-
-    // 2. Determine format types
-    std::string fmt_in = GeodeticTransformer::getCRSFormat(src_code_int);
-    if (fmt_in == "unknown") {
-        OGRSpatialReference srs; srs.SetFromUserInput(src_code.c_str());
-        if (srs.IsGeocentric()) fmt_in = "geocentric";
-        else if (srs.IsGeographic()) fmt_in = "geodetic";
-        else fmt_in = "projected";
-    }
-
-    // 3. Execution
-    for (auto &g : geometries) {
-        OGRGeometry* geom = g->getGeometry();
-        if (!geom || wkbFlatten(geom->getGeometryType()) != wkbPoint) continue;
-        OGRPoint* p = geom->toPoint(); // Use envelope
-
-        Result r;
-        
-        // CAS 1 : Geocentric (XYZ) input
-        if (fmt_in == "geocentric") {
-            r = GeodeticTransformer::applyGridDeformationGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), grid_path, ref_epoch);
-        }
-        // CAS 2 : Geodetic (Lat/Lon) input
-        else if (fmt_in == "geodetic") {
-            r = GeodeticTransformer::applyGridDeformationGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), grid_path, ref_epoch);
-        }
-        // CAS 3 : Projected (E/N) input
-        else { // projected
-            r = GeodeticTransformer::applyGridDeformationProjected(p->getX(), p->getY(), p->getZ(), g->getT(), grid_path, src_code_int, ref_epoch);
-        }
-
-        // Mise à jour du point
-        g->setT(r.t);
-        p->setX(r.x);
-        p->setY(r.y);
-        p->setZ(r.z);
-    }
-
-    return &inputLayer;
-}
-*/
 VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer, const std::string &epsg_dst)
 {
     auto geometries = inputLayer.getGeometries();
@@ -257,62 +99,11 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
             switch (wkbFlatten(geom->getGeometryType()))
             {
             case wkbPoint:{
-                OGRPoint *p = geom->toPoint(); // Use envelope
+                OGRPoint *p = geom->toPoint();
 
                 Result r;
+                r = transformPoint(p, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                // --- MATRICE DE DECISION (3 x 3 cas) ---
-
-                // CAS 1 : Geocentric (XYZ) en entrée
-                if (fmt_in == "geocentric")
-                {
-                    if (fmt_out == "geocentric")
-                    {
-                        r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else if (fmt_out == "geodetic")
-                    {
-                        r = GeodeticTransformer::geocentricToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else
-                    { // projected
-                        r = GeodeticTransformer::geocentricToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                }
-                // CAS 2 : Geodetic (Lat/Lon) en entrée
-                else if (fmt_in == "geodetic")
-                {
-                    if (fmt_out == "geocentric")
-                    {
-                        r = GeodeticTransformer::geodeticToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else if (fmt_out == "geodetic")
-                    {
-                        r = GeodeticTransformer::transformGeodeticAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else
-                    { // projected
-                        r = GeodeticTransformer::geodeticToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                }
-                // CAS 3 : Projected (E/N) en entrée
-                else
-                { // projected
-                    if (fmt_out == "geocentric")
-                    {
-                        r = GeodeticTransformer::projectedToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else if (fmt_out == "geodetic")
-                    {
-                        r = GeodeticTransformer::projectedToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                    else
-                    { // projected
-                        r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                    }
-                }
-
-                // Mise à jour du point
                 g->setT(r.t);
                 p->setX(r.x);
                 p->setY(r.y);
@@ -326,61 +117,10 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
                 int num_l = l->getNumPoints();
                 for (int i = 0; i < num_l; i++)
                 {
-                    double x = l->getX(i);
-                    double y = l->getY(i);
-                    double z = l->getZ(i);
-                    
                     Result r;
+                    OGRPoint pt; l->getPoint(i, &pt);
+                    r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                    if (fmt_in == "geocentric")
-                    {
-                        if (fmt_out == "geocentric")
-                        {
-                            r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else if (fmt_out == "geodetic")
-                        {
-                            r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else
-                        { // projected
-                            r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                    }
-                    // CAS 2 : Geodetic (Lat/Lon) en entrée
-                    else if (fmt_in == "geodetic")
-                    {
-                        if (fmt_out == "geocentric")
-                        {
-                            r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else if (fmt_out == "geodetic")
-                        {
-                            r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else
-                        { // projected
-                            r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                    }
-                    // CAS 3 : Projected (E/N) en entrée
-                    else
-                    { // projected
-                        if (fmt_out == "geocentric")
-                        {
-                            r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else if (fmt_out == "geodetic")
-                        {
-                            r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else
-                        { // projected
-                            r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                    }
-
-                    // Mise à jour du point
                     g->setT(r.t);
                     l->setPoint(i, r.x, r.y, r.z);
                 }
@@ -389,91 +129,29 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
                 case wkbPolygon:{
                     OGRPolygon *poly = geom->toPolygon();
 
-                    // Parcourir l'anneau extérieur
+                    // Exterior ring
                     OGRLinearRing *ext = poly->getExteriorRing();
 
                     for (int i = 0; i < ext->getNumPoints(); i++)
                     {
-                        double x = ext->getX(i);
-                        double y = ext->getY(i);
-                        double z = ext->getZ(i);
-
                         Result r;
+                        OGRPoint pt; ext->getPoint(i, &pt);
+                        r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                        // --- MATRICE DE DECISION (3 x 3 cas) ---
-                        if (fmt_in == "geocentric")
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else if (fmt_in == "geodetic")
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                        }
-                        else
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                        }
                         g->setT(r.t);
                         ext->setPoint(i, r.x, r.y, r.z);
                     }
 
-                    // Parcourir les anneaux intérieurs (trous)
+                    // Interior rings
                     for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++)
                     {
                         OGRLinearRing *inter = poly->getInteriorRing(r_id);
                         for (int i = 0; i < inter->getNumPoints(); i++)
                         {
-                            double x = inter->getX(i);
-                            double y = inter->getY(i);
-                            double z = inter->getZ(i);
-
                             Result r;
+                            OGRPoint pt; inter->getPoint(i, &pt);
+                            r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                            // --- Même matrice de décision ---
-                            if (fmt_in == "geocentric")
-                            {
-                                if (fmt_out == "geocentric")
-                                    r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                else if (fmt_out == "geodetic")
-                                    r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                else
-                                    r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                            }
-                            else if (fmt_in == "geodetic")
-                            {
-                                if (fmt_out == "geocentric")
-                                    r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                else if (fmt_out == "geodetic")
-                                    r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                else
-                                    r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                            }
-                            else
-                            {
-                                if (fmt_out == "geocentric")
-                                    r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                else if (fmt_out == "geodetic")
-                                    r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                else
-                                    r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                            }
-
-                            // Mise à jour du point
                             g->setT(r.t);
                             inter->setPoint(i, r.x, r.y, r.z);
                         }
@@ -491,36 +169,8 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
                         OGRPoint *p = (OGRPoint *)mpt->getGeometryRef(i);
                         Result r;
 
-                        // --- MATRICE DE DECISION (3 x 3 cas) ---
-                        if (fmt_in == "geocentric")
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::geocentricToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::geocentricToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                        }
-                        else if (fmt_in == "geodetic")
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::geodeticToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::transformGeodeticAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::geodeticToProjected(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                        }
-                        else // projected
-                        {
-                            if (fmt_out == "geocentric")
-                                r = GeodeticTransformer::projectedToGeocentric(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else if (fmt_out == "geodetic")
-                                r = GeodeticTransformer::projectedToGeodetic(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                            else
-                                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), g->getT(), src_code, dst_code);
-                        }
+                        r = transformPoint(p, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                        // Mise à jour du point
                         g->setT(r.t);
                         p->setX(r.x);
                         p->setY(r.y);
@@ -540,46 +190,15 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
 
                             for (int j = 0; j < n_pts; j++)
                             {
-                                double x = l->getX(j);
-                                double y = l->getY(j);
-                                double z = l->getZ(j);
-
                                 Result r;
-                                // --- MATRICE DE DECISION (3 x 3 cas) ---
-                                if (fmt_in == "geocentric")
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                }
-                                else if (fmt_in == "geodetic")
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                }
-                                else // projected
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                }
+                                OGRPoint pt; l->getPoint(j, &pt);
+                                r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                                // Mise à jour du point
                                 g->setT(r.t);
-                                l->setPoint(j, r.x, r.y, r.z);  // Correction: j au lieu de i
+                                l->setPoint(j, r.x, r.y, r.z); 
                             }
                         }
-                        break;  // Break à la fin du case
+                        break;  
                     }
                     
                     case wkbMultiPolygon:{
@@ -591,143 +210,394 @@ VectorLayer *TransformationEngine::transformLayerAtEpoch(VectorLayer &inputLayer
                             OGRPolygon *poly = (OGRPolygon *)mpl->getGeometryRef(i);
                             OGRLinearRing *ext = poly->getExteriorRing();
 
+                            // Exterior ring
                             for (int j = 0; j < ext->getNumPoints(); j++)
                             {
-                                double x = ext->getX(j);
-                                double y = ext->getY(j);
-                                double z = ext->getZ(j);
-
                                 Result r;
+                                OGRPoint pt; ext->getPoint(j, &pt);
+                                r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                                // --- MATRICE DE DECISION (3 x 3 cas) ---
-                                if (fmt_in == "geocentric")
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                }
-                                else if (fmt_in == "geodetic")
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                }
-                                else
-                                {
-                                    if (fmt_out == "geocentric")
-                                        r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                    else if (fmt_out == "geodetic")
-                                        r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                    else
-                                        r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                }
                                 g->setT(r.t);
                                 ext->setPoint(j, r.x, r.y, r.z);
                             }
                             
-                            // Parcourir les anneaux intérieurs (trous)
+                            // Interior rings
                             for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++)
                             {
                                 OGRLinearRing *inter = poly->getInteriorRing(r_id);
                                 for (int k = 0; k < inter->getNumPoints(); k++)
                                 {
-                                    double x = inter->getX(k);
-                                    double y = inter->getY(k);
-                                    double z = inter->getZ(k);
-
                                     Result r;
+                                    OGRPoint pt; inter->getPoint(k, &pt);
+                                    r = transformPoint(&pt, g->getT(), fmt_in, fmt_out, src_code, dst_code);
 
-                                    // --- Même matrice de décision ---
-                                    if (fmt_in == "geocentric")
-                                    {
-                                        if (fmt_out == "geocentric")
-                                            r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                        else if (fmt_out == "geodetic")
-                                            r = GeodeticTransformer::geocentricToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                        else
-                                            r = GeodeticTransformer::geocentricToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                    }
-                                    else if (fmt_in == "geodetic")
-                                    {
-                                        if (fmt_out == "geocentric")
-                                            r = GeodeticTransformer::geodeticToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                        else if (fmt_out == "geodetic")
-                                            r = GeodeticTransformer::transformGeodeticAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                        else
-                                            r = GeodeticTransformer::geodeticToProjected(x, y, z, g->getT(), src_code, dst_code);
-                                    }
-                                    else
-                                    {
-                                        if (fmt_out == "geocentric")
-                                            r = GeodeticTransformer::projectedToGeocentric(x, y, z, g->getT(), src_code, dst_code);
-                                        else if (fmt_out == "geodetic")
-                                            r = GeodeticTransformer::projectedToGeodetic(x, y, z, g->getT(), src_code, dst_code);
-                                        else
-                                            r = GeodeticTransformer::transformLinearAtEpoch(x, y, z, g->getT(), src_code, dst_code);
-                                    }
-
-                                    // Mise à jour du point
                                     g->setT(r.t);
                                     inter->setPoint(k, r.x, r.y, r.z);
                                 }
                             }
                         }
-                        break;  // Break manquant
+                        break; 
                     }
                     
                     default:
                         break;
-            }  // Fin du switch
+            } 
         }
-    }  // Fin de la boucle for (auto &g : geometries)
+    }  
 
     // Mise à jour finale du Layer
     inputLayer.setCrs(dst_code);
     return &inputLayer;
-}  // Fin de la fonction
+}  
 
 
-GeodeticTransformer::Result TransformationEngine::transformPoint(OGRPoint * p, double &t, const std::string &fmt_in, const std::string &fmt_out, const std::string &src_code, const std::string &dst_code)
-    {
-        Result r;
+// ----------------------------------------------------
+// 2. JSON DEF-MODEL DEFORMATION (IGN, Mayotte, etc.)
+// ----------------------------------------------------
 
-        if (fmt_in == "geocentric")
-        {
-            if (fmt_out == "geocentric")
-                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else if (fmt_out == "geodetic")
-                r = GeodeticTransformer::geocentricToGeodetic(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else
-                r = GeodeticTransformer::geocentricToProjected(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-        }
-        else if (fmt_in == "geodetic")
-        {
-            if (fmt_out == "geocentric")
-                r = GeodeticTransformer::geodeticToGeocentric(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else if (fmt_out == "geodetic")
-                r = GeodeticTransformer::transformGeodeticAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else
-                r = GeodeticTransformer::geodeticToProjected(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-        }
-        else // projected
-        {
-            if (fmt_out == "geocentric")
-                r = GeodeticTransformer::projectedToGeocentric(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else if (fmt_out == "geodetic")
-                r = GeodeticTransformer::projectedToGeodetic(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-            else
-                r = GeodeticTransformer::transformLinearAtEpoch(p->getX(), p->getY(), p->getZ(), t, src_code, dst_code);
-        }
 
-        return r;
+GeodeticTransformer::Result TransformationEngine::transformPointDefModel(
+    OGRPoint *p, double t, 
+    const std::string &fmt_in, 
+    const std::string &model_path, int src_epsg, bool inverse)
+{
+    using GT = GeodeticTransformer;
+    if (fmt_in == "geocentric") {
+        return GT::applyDefModelGeocentric(p->getX(), p->getY(), p->getZ(), t, model_path, inverse);
+    } else if (fmt_in == "geodetic") {
+        return GT::applyDefModelGeodetic(p->getX(), p->getY(), p->getZ(), t, model_path, inverse);
+    } else { // projected
+        return GT::applyDefModelProjected(p->getX(), p->getY(), p->getZ(), t, model_path, src_epsg, inverse);
+    }
+}
+
+
+VectorLayer* TransformationEngine::applyDefModelLayer(VectorLayer& inputLayer, const std::string& json_model_path, bool inverse)
+{
+    auto geometries = inputLayer.getGeometries();
+    
+    // 1. Fetch source EPSG code
+    std::string src_code = inputLayer.getCrs();
+    if (src_code.find("EPSG:") == std::string::npos) src_code = "EPSG:" + src_code;
+    int src_code_int = std::stoi(src_code.substr(src_code.find(":")+1));
+
+    // 2. Determine format type
+    std::string fmt_in = GeodeticTransformer::getCRSFormat(src_code_int);
+    if (fmt_in == "unknown") {
+        OGRSpatialReference srs; srs.SetFromUserInput(src_code.c_str());
+        if (srs.IsGeocentric()) fmt_in = "geocentric";
+        else if (srs.IsGeographic()) fmt_in = "geodetic";
+        else fmt_in = "projected";
     }
 
-// // ----------------------------------------------------
-// // 2. JSON DEF-MODEL DEFORMATION (IGN, Mayotte, etc.)
-// // ----------------------------------------------------
+    // 3. Execution
+    for (auto &g : geometries) {
+        OGRGeometry* geom = g->getGeometry();
+        if (!geom) continue;
+
+        switch (wkbFlatten(geom->getGeometryType()))
+        {
+            case wkbPoint: {
+                OGRPoint* p = geom->toPoint();
+                Result r;
+                r = transformPointDefModel(p, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                g->setT(r.t);
+                p->setX(r.x); p->setY(r.y); p->setZ(r.z);
+                break;
+            }
+
+            case wkbLineString: {
+                OGRLineString* l = geom->toLineString();
+                int num_l = l->getNumPoints();
+                for (int i = 0; i < num_l; i++) {
+                    Result r;
+                    OGRPoint pt; l->getPoint(i, &pt);
+                    r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                    l->setPoint(i, r.x, r.y, r.z);
+                    if (i == 0) g->setT(r.t);
+                }
+                break;
+            }
+
+            case wkbPolygon: {
+                OGRPolygon* poly = geom->toPolygon();
+                
+                // Exterior ring
+                OGRLinearRing* ext = poly->getExteriorRing();
+                if (ext) {
+                    for (int i = 0; i < ext->getNumPoints(); i++) {
+                        Result r;
+                        OGRPoint pt; ext->getPoint(i, &pt);
+                        r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                        ext->setPoint(i, r.x, r.y, r.z);
+                        if (i == 0) g->setT(r.t);
+                    }
+                }
+
+                // Interior rings
+                for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++) {
+                    OGRLinearRing* inter = poly->getInteriorRing(r_id);
+                    if (inter) {
+                        for (int i = 0; i < inter->getNumPoints(); i++) {
+                            Result r;
+                            OGRPoint pt; inter->getPoint(i, &pt);
+                            r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                            inter->setPoint(i, r.x, r.y, r.z);
+                        }
+                    }
+                }
+                break;
+            }
+
+            case wkbMultiPoint: {
+                OGRMultiPoint* mpt = geom->toMultiPoint();
+                int num_mpt = mpt->getNumGeometries();
+                for (int i = 0; i < num_mpt; i++) {
+                    OGRPoint* p = (OGRPoint*)mpt->getGeometryRef(i);
+                    Result r;
+                    r = transformPointDefModel(p, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                    p->setX(r.x); p->setY(r.y); p->setZ(r.z);
+                    if (i == 0) g->setT(r.t);
+                }
+                break;
+            }
+
+            case wkbMultiLineString: {
+                OGRMultiLineString* ml = geom->toMultiLineString();
+                int num_ml = ml->getNumGeometries();
+                for (int i = 0; i < num_ml; i++) {
+                    OGRLineString* l = (OGRLineString*)ml->getGeometryRef(i);
+                    int n_pts = l->getNumPoints();
+                    for (int j = 0; j < n_pts; j++) {
+                        Result r;
+                        OGRPoint pt; l->getPoint(j, &pt);
+                        r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                        l->setPoint(j, r.x, r.y, r.z);
+                        if (i == 0 && j == 0) g->setT(r.t);
+                    }
+                }
+                break;
+            }
+
+            case wkbMultiPolygon: {
+                OGRMultiPolygon* mpl = geom->toMultiPolygon();
+                int num_mpl = mpl->getNumGeometries();
+                for (int i = 0; i < num_mpl; i++) {
+                    OGRPolygon* poly = (OGRPolygon*)mpl->getGeometryRef(i);
+
+                    // Exterior ring
+                    OGRLinearRing* ext = poly->getExteriorRing();
+                    if (ext) {
+                        for (int j = 0; j < ext->getNumPoints(); j++) {
+                            Result r;
+                            OGRPoint pt; ext->getPoint(j, &pt);
+                            r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                            ext->setPoint(j, r.x, r.y, r.z);
+                            if (i == 0 && j == 0) g->setT(r.t);
+                        }
+                    }
+                    // Interior rings
+                    for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++) {
+                        OGRLinearRing* inter = poly->getInteriorRing(r_id);
+                        if (inter) {
+                            for (int k = 0; k < inter->getNumPoints(); k++) {
+                                Result r;
+                                OGRPoint pt; inter->getPoint(k, &pt);
+                                r = transformPointDefModel(&pt, g->getT(), fmt_in, json_model_path, src_code_int, inverse);
+
+                                inter->setPoint(k, r.x, r.y, r.z);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return &inputLayer;
+}
+
+// // -------------------------------
+// // 3. GRID-BASED DEFORMATION MODEL
+// // -------------------------------
+
+GeodeticTransformer::Result TransformationEngine::transformPointGrid(
+    OGRPoint *p, double t, 
+    const std::string &fmt_in, 
+    const std::string &grid_path, int src_epsg, double ref_epoch)
+{
+    using GT = GeodeticTransformer;
+    if (fmt_in == "geocentric") {
+        return GT::applyGridDeformationGeocentric(p->getX(), p->getY(), p->getZ(), t, grid_path, ref_epoch);
+    } else if (fmt_in == "geodetic") {
+        return GT::applyGridDeformationGeodetic(p->getX(), p->getY(), p->getZ(), t, grid_path, ref_epoch);
+    } else { // projected
+        return GT::applyGridDeformationProjected(p->getX(), p->getY(), p->getZ(), t, grid_path, src_epsg, ref_epoch);
+    }
+}
+VectorLayer* TransformationEngine::applyGridDeformationLayer(VectorLayer& inputLayer, const std::string& grid_path, double ref_epoch)
+{
+    auto geometries = inputLayer.getGeometries();
+    
+    // 1. Fetch source EPSG code
+    std::string src_code = inputLayer.getCrs();
+    if (src_code.find("EPSG:") == std::string::npos) src_code = "EPSG:" + src_code;
+    int src_code_int = std::stoi(src_code.substr(src_code.find(":")+1));
+
+    // 2. Determine format types
+    std::string fmt_in = GeodeticTransformer::getCRSFormat(src_code_int);
+    if (fmt_in == "unknown") {
+        OGRSpatialReference srs; srs.SetFromUserInput(src_code.c_str());
+        if (srs.IsGeocentric()) fmt_in = "geocentric";
+        else if (srs.IsGeographic()) fmt_in = "geodetic";
+        else fmt_in = "projected";
+    }
+
+    // 3. Execution
+    for (auto &g : geometries) {
+        OGRGeometry* geom = g->getGeometry();
+        if (!geom) continue;
+
+        switch (wkbFlatten(geom->getGeometryType()))
+        {
+            case wkbPoint: {
+                OGRPoint* p = geom->toPoint();
+                Result r;
+                r = transformPointGrid(p, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                g->setT(r.t);
+                p->setX(r.x); p->setY(r.y); p->setZ(r.z);
+                break;
+            }
+
+            case wkbLineString: {
+                OGRLineString* l = geom->toLineString();
+                int num_l = l->getNumPoints();
+                for (int i = 0; i < num_l; i++) {
+                    Result r;
+                    OGRPoint pt; l->getPoint(i, &pt);
+                    r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                    l->setPoint(i, r.x, r.y, r.z);
+                    if (i == 0) g->setT(r.t);
+                }
+                break;
+            }
+
+            case wkbPolygon: {
+                OGRPolygon* poly = geom->toPolygon();
+                
+                // Exterior ring
+                OGRLinearRing* ext = poly->getExteriorRing();
+                if (ext) {
+                    for (int i = 0; i < ext->getNumPoints(); i++) {
+                        Result r;
+                        OGRPoint pt; ext->getPoint(i, &pt);
+                        r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                        ext->setPoint(i, r.x, r.y, r.z);
+                        if (i == 0) g->setT(r.t);
+                    }
+                }
+
+                // Interior rings
+                for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++) {
+                    OGRLinearRing* inter = poly->getInteriorRing(r_id);
+                    if (inter) {
+                        for (int i = 0; i < inter->getNumPoints(); i++) {
+                            Result r;
+                            OGRPoint pt; inter->getPoint(i, &pt);
+                            r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                            inter->setPoint(i, r.x, r.y, r.z);
+                        }
+                    }
+                }
+                break;
+            }
+
+            case wkbMultiPoint: {
+                OGRMultiPoint* mpt = geom->toMultiPoint();
+                int num_mpt = mpt->getNumGeometries();
+                for (int i = 0; i < num_mpt; i++) {
+                    OGRPoint* p = (OGRPoint*)mpt->getGeometryRef(i);
+                    Result r;
+                    r = transformPointGrid(p, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                    p->setX(r.x); p->setY(r.y); p->setZ(r.z);
+                    if (i == 0) g->setT(r.t);
+                }
+                break;
+            }
+
+            case wkbMultiLineString: {
+                OGRMultiLineString* ml = geom->toMultiLineString();
+                int num_ml = ml->getNumGeometries();
+                for (int i = 0; i < num_ml; i++) {
+                    OGRLineString* l = (OGRLineString*)ml->getGeometryRef(i);
+                    int n_pts = l->getNumPoints();
+                    for (int j = 0; j < n_pts; j++) {
+                        Result r;
+                        OGRPoint pt; l->getPoint(j, &pt);
+                        r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                        l->setPoint(j, r.x, r.y, r.z);
+                        if (i == 0 && j == 0) g->setT(r.t);
+                    }
+                }
+                break;
+            }
+
+            case wkbMultiPolygon: {
+                OGRMultiPolygon* mpl = geom->toMultiPolygon();
+                int num_mpl = mpl->getNumGeometries();
+                for (int i = 0; i < num_mpl; i++) {
+                    OGRPolygon* poly = (OGRPolygon*)mpl->getGeometryRef(i);
+                    
+                    // Exterior ring
+                    OGRLinearRing* ext = poly->getExteriorRing();
+                    if (ext) {
+                        for (int j = 0; j < ext->getNumPoints(); j++) {
+                            Result r;
+                            OGRPoint pt; ext->getPoint(j, &pt);
+                            r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                            ext->setPoint(j, r.x, r.y, r.z);
+                            if (i == 0 && j == 0) g->setT(r.t);
+                        }
+                    }
+                    // Interior rings
+                    for (int r_id = 0; r_id < poly->getNumInteriorRings(); r_id++) {
+                        OGRLinearRing* inter = poly->getInteriorRing(r_id);
+                        if (inter) {
+                            for (int k = 0; k < inter->getNumPoints(); k++) {
+                                Result r;
+                                OGRPoint pt; inter->getPoint(k, &pt);
+                                r = transformPointGrid(&pt, g->getT(), fmt_in, grid_path, src_code_int, ref_epoch);
+
+                                inter->setPoint(k, r.x, r.y, r.z);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+
+            default:
+                break;
+        }
+    }
+
+    return &inputLayer;
+}
