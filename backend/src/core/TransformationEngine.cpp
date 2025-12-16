@@ -135,7 +135,7 @@ VectorLayer* TransformationEngine::applyDefModelLayer(VectorLayer& inputLayer, c
         }
         // CAS 3 : Projected (E/N) input
         else { // projected
-            r = GeodeticTransformer::applyDefModelProjected(p->getX(), p->getY(), p->getZ(), g->getT(), json_model_path, inverse);
+            r = GeodeticTransformer::applyDefModelProjected(p->getX(), p->getY(), p->getZ(), g->getT(), json_model_path, src_code_int, inverse);
         }
 
         // Mise à jour du point
@@ -188,7 +188,7 @@ VectorLayer* TransformationEngine::applyGridDeformationLayer(VectorLayer& inputL
         }
         // CAS 3 : Projected (E/N) input
         else { // projected
-            r = GeodeticTransformer::applyGridDeformationProjected(p->getX(), p->getY(), p->getZ(), g->getT(), grid_path, ref_epoch);
+            r = GeodeticTransformer::applyGridDeformationProjected(p->getX(), p->getY(), p->getZ(), g->getT(), grid_path, src_code_int, ref_epoch);
         }
 
         // Mise à jour du point

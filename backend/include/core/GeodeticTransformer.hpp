@@ -16,12 +16,6 @@ public:
         double x, y, z, t;
     };
 
-    Result transformCRS(
-        double x, double y, double z,
-        int epsg_src,
-        int epsg_dst
-    );
-
     struct CRSMetaData {
         std::string name;
         std::string type;

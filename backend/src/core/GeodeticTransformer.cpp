@@ -52,32 +52,6 @@ std::string GeodeticTransformer::getCRSFormat(int epsg_code) {
     return "unknown";
 }
 
-GeodeticTransformer::Result GeodeticTransformer::transformCRS(
-    double x, double y, double z,
-    int epsg_src,
-    int epsg_dst)
-{
-    std::ostringstream src, dst;
-    src << "EPSG:" << epsg_src;
-    dst << "EPSG:" << epsg_dst;
-
-    PJ* P = proj_create_crs_to_crs(ctx_, src.str().c_str(), dst.str().c_str(), nullptr);
-    if (!P)
-        throw std::runtime_error("Failed CRS transform EPSG:" +
-                                 std::to_string(epsg_src) + " → EPSG:" +
-                                 std::to_string(epsg_dst));
-
-    PJ* P_norm = proj_normalize_for_visualization(ctx_, P);
-    proj_destroy(P);
-    P = P_norm;
-
-    PJ_COORD in = proj_coord(x, y, z, 0.0);
-    PJ_COORD out = proj_trans(P, PJ_FWD, in);
-    proj_destroy(P);
-
-    return { out.xyzt.x, out.xyzt.y, out.xyzt.z, out.xyzt.t };
-}
-
 // ============================================================================
 // 1. TRANSFORMATION GÉNÉRIQUE : MÈTRES -> MÈTRES
 // (Geocentric <-> Geocentric, Projected <-> Projected, Geocentric <-> Projected)
@@ -307,56 +281,22 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
     int epsg_projected,
     bool inverse)
 {
-    // 1) Charger CRS projeté
-    PJ* crs_proj = proj_create_from_database(ctx_, "EPSG", std::to_string(epsg_projected).c_str(),
-                                             PJ_CATEGORY_CRS, false, nullptr);
-    if (!crs_proj)
-        throw std::runtime_error("Failed to load projected CRS EPSG:" +
-                                 std::to_string(epsg_projected));
+    std::string epsg_str = "EPSG:" + std::to_string(epsg_projected);
 
-    // 2) CRS géodétique associé
-    PJ* crs_geo = proj_crs_get_geodetic_crs(ctx_, crs_proj);
-    if (!crs_geo) {
-        proj_destroy(crs_proj);
-        throw std::runtime_error("Failed to get geodetic CRS from EPSG:" +
-                                 std::to_string(epsg_projected));
-    }
+    // 1) Projected -> Geodetic
+    Result geo = projectedToGeodetic(E, N, H, t_epoch,
+                                     epsg_str,
+                                     "EPSG:4979");  // WGS84 3D ou RGM23 geodetic CRS
 
-    // 3) Projected → Geodetic
-    PJ* P_to_geo = proj_create_crs_to_crs_from_pj(ctx_, crs_proj, crs_geo, nullptr, nullptr);
-    if (!P_to_geo) {
-        proj_destroy(crs_proj);
-        proj_destroy(crs_geo);
-        throw std::runtime_error("Failed projected → geodetic transform");
-    }
-    PJ* P_norm = proj_normalize_for_visualization(ctx_, P_to_geo);
-    proj_destroy(P_to_geo);
-    P_to_geo = P_norm;
+    // 2) Appliquer le modèle déf
+    Result def = applyDefModelGeodetic(geo.x, geo.y, geo.z, t_epoch, json_model_path, inverse);
 
-    PJ_COORD in_proj = proj_coord(E, N, H, t_epoch);
-    PJ_COORD geo = proj_trans(P_to_geo, PJ_FWD, in_proj);
-    proj_destroy(P_to_geo);
-    proj_destroy(crs_proj);
+    // 3) Geodetic -> Projected
+    Result proj = geodeticToProjected(def.x, def.y, def.z, def.t,
+                                      "EPSG:4979",
+                                      epsg_str);
 
-    // 4) DefModel en géodétique
-    auto def = applyDefModelGeodetic(geo.xyzt.x, geo.xyzt.y, geo.xyzt.z, t_epoch, json_model_path, inverse);
-
-    // 5) Geodetic → Projected
-    PJ* P_to_proj = proj_create_crs_to_crs_from_pj(ctx_, crs_geo, crs_proj, nullptr, nullptr);
-    if (!P_to_proj) {
-        proj_destroy(crs_geo);
-        throw std::runtime_error("Failed geodetic → projected transform");
-    }
-    PJ* P_proj_norm = proj_normalize_for_visualization(ctx_, P_to_proj);
-    proj_destroy(P_to_proj);
-    P_to_proj = P_proj_norm;
-
-    PJ_COORD in_def = proj_coord(def.x, def.y, def.z, def.t);
-    PJ_COORD out_proj = proj_trans(P_to_proj, PJ_FWD, in_def);
-    proj_destroy(P_to_proj);
-    proj_destroy(crs_geo);
-
-    return { out_proj.xyzt.x, out_proj.xyzt.y, out_proj.xyzt.z, def.t };
+    return proj;
 }
 
 // ----------------------------------------------------
@@ -413,7 +353,6 @@ GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeodetic(
 // ----------------------------------------------------
 // 13. applyGridDeformation - GEOCENTRIC (X, Y, Z)
 // ----------------------------------------------------
-
 GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeocentric(
     double X, double Y, double Z, double t_epoch,
     const std::string& grid_path,
@@ -448,55 +387,36 @@ GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationGeocentric(
 // ----------------------------------------------------
 // 14. applyGridDeformation - PROJECTED (E, N, H)
 // ----------------------------------------------------
-
 GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationProjected(
     double E, double N, double H, double t_epoch,
     const std::string& grid_path,
     int epsg_projected,
     double ref_epoch)
 {
-    // 1) Projected → Geodetic
-    auto geo = transformCRS(E, N, H, epsg_projected, epsg_projected); // peut utiliser CRS natif si nécessaire
+    std::string epsg_str = "EPSG:" + std::to_string(epsg_projected);
 
-    // 2) Geodetic → Cartesian
-    PJ* P_cart = proj_create(ctx_, "+proj=cart +ellps=GRS80");
-    if (!P_cart)
-        throw std::runtime_error("Failed to create PROJ cart converter");
+    // 1) Projected -> Geodetic
+    Result geo = projectedToGeodetic(E, N, H, t_epoch,
+                                     epsg_str,
+                                     "EPSG:4979");
 
-    PJ_COORD in_geo;
-    in_geo.lpzt.lam = proj_torad(geo.x);
-    in_geo.lpzt.phi = proj_torad(geo.y);
-    in_geo.lpzt.z   = geo.z;
-    in_geo.lpzt.t   = t_epoch;
+    // 2) Geodetic -> Geocentric
+    Result cart = geodeticToGeocentric(geo.x, geo.y, geo.z, t_epoch,
+                                       "EPSG:4979",
+                                       "EPSG:4978"); // geocentric RGM23/ETRF
 
-    PJ_COORD cart = proj_trans(P_cart, PJ_FWD, in_geo);
-    proj_destroy(P_cart);
+    // 3) Appliquer la grille de déformation
+    Result cart_def = applyGridDeformationGeocentric(cart.x, cart.y, cart.z, t_epoch, grid_path, ref_epoch);
 
-    // 3) Déformation géocentrique
-    auto cart_def = applyGridDeformationGeocentric(cart.xyzt.x, cart.xyzt.y, cart.xyzt.z,
-                                                   t_epoch, grid_path, ref_epoch);
+    // 4) Geocentric -> Geodetic
+    Result geo2 = geocentricToGeodetic(cart_def.x, cart_def.y, cart_def.z, cart_def.t,
+                                       "EPSG:4978",
+                                       "EPSG:4979");
 
-    // 4) Cartesian → Geodetic
-    PJ* P_cart_inv = proj_create(ctx_, "+proj=cart +ellps=GRS80");
-    if (!P_cart_inv)
-        throw std::runtime_error("Failed to create PROJ cart inverse converter");
+    // 5) Geodetic -> Projected
+    Result proj = geodeticToProjected(geo2.x, geo2.y, geo2.z, geo2.t,
+                                      "EPSG:4979",
+                                      epsg_str);
 
-    PJ_COORD in_cart;
-    in_cart.xyzt.x = cart_def.x;
-    in_cart.xyzt.y = cart_def.y;
-    in_cart.xyzt.z = cart_def.z;
-    in_cart.xyzt.t = cart_def.t;
-
-    PJ_COORD geo2 = proj_trans(P_cart_inv, PJ_INV, in_cart);
-    proj_destroy(P_cart_inv);
-
-    // 5) Geodetic → Projected
-    auto proj = transformCRS(proj_todeg(geo2.lpzt.lam),
-                             proj_todeg(geo2.lpzt.phi),
-                             geo2.lpzt.z,
-                             epsg_projected,
-                             epsg_projected);
-
-    return { proj.x, proj.y, proj.z, cart_def.t };
+    return proj;
 }
-
