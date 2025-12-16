@@ -484,7 +484,7 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getName(),
             loadedProject.getEpoch0(),
             loadedProject.getCrs(),
-            {}); // on recharge les couches proprement
+            {});
 
         // Delete the older project if already present
         if (currentProject != nullptr)
@@ -501,6 +501,7 @@ void MainWindow::loadProject(const QString &filepath)
         int dayOfYear = static_cast<int>((epoch - year) * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
 
+        //Update UI display of project caracteristics
         projectDisplay->updateDisplayName();
         projectDisplay->updateDisplayCRS();
         projectDisplay->updateDisplayEpoch0();

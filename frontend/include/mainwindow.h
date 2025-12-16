@@ -73,9 +73,12 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
+
+    //Create a new project
     void setNewProject();
-    void openExistingProject();
-    void saveCurrentProject();
+    //Open an already existing project from a .sigm4 file
+    void loadProject(const QString& filepath);
+    
     void updateScaleLabel(int scaleValue);
     void getCalendarDays(
     QCalendarWidget *calendar,
@@ -88,7 +91,6 @@ public:
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();
-    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
     
@@ -97,19 +99,22 @@ public:
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    //Initialize to nullptr before the creation of a project
     Project* currentProject = nullptr;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     ProjectCarateristicsDisplay* projectDisplay;
-      void setProjectActionsEnabled(bool enabled);
+    void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
 
 private slots:
+    //Save the current project to a .sigm4 file
     void saveProject();
+    //No parameters -slot for the "Open" button in UI
     void loadProject();
 };
 
