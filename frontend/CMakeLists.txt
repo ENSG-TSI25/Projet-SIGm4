@@ -24,21 +24,20 @@ set(BACKEND_SOURCE_DIR ${CMAKE_SOURCE_DIR}/../backend)
 add_subdirectory(${BACKEND_SOURCE_DIR} ${CMAKE_BINARY_DIR}/backend)
 
 # Sources
-set(PROJECT_SOURCES
+file(GLOB_RECURSE PROJECT_SOURCES
+    "src/*.cpp"
+    "src/*.ui"
+    "include/*.h"
+    "resources/*.qrc"
+)
+
+set(MAIN_FUNCTION
     main.cpp
-    src/mainwindow.cpp
-    src/mainwindow.h
-    src/mainwindow.ui
-    src/Carte.cpp
-    src/Carte.h
-    src/dialog.cpp
-    src/dialog.h
-    src/dialog.ui
-    resources.qrc
 )
 
 # Exécutable (nom correct)
 add_executable(frontend
+    ${MAIN_FUNCTION}
     ${PROJECT_SOURCES}
 )
 

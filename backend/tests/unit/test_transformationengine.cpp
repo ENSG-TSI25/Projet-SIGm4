@@ -102,7 +102,8 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
     std::string path = createGpkgForEPSG(3857, "WebMercator", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);    
+    VectorLayer* layer = layers[0];
     ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:3857");
 
@@ -126,7 +127,8 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
     std::string path = createGpkgForEPSG(9000, "ITRF2014", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
 
     // Cible : RGF93 / Lambert-93 (EPSG:9794) - Metres
@@ -149,7 +151,8 @@ TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
     std::string path = createGpkgForEPSG(7912, "ITRF2014_3D", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
 
     // Cible : ETRF2000 3D (7931)
     TransformationEngine engine;
@@ -171,7 +174,8 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     
     // Cible : RGF93 LatLon (EPSG:4171)
     TransformationEngine engine;
@@ -191,7 +195,9 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
 TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
     // Source : RGF93 LatLon (EPSG:4171)
     std::string path = createGpkgForEPSG(4171, "RGF93_LatLon", 2025.0);
-    DataManager dm; VectorLayer* layer = dm.loadVector(path);
+    DataManager dm; 
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     
     // Cible : WGS84 Geocentric (4978) - XYZ
     TransformationEngine engine;
@@ -214,7 +220,8 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+VectorLayer* layer = layers.empty() ? nullptr : layers[0];
 
     // Cible : WebMercator (3857)
     TransformationEngine engine;
@@ -236,7 +243,8 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:4978");
 
@@ -262,7 +270,8 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+VectorLayer* layer = layers.empty() ? nullptr : layers[0];
 
     // Target : RGF93 / Lambert-93 (EPSG:9794)
     TransformationEngine engine;
@@ -283,7 +292,8 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
     // Source : Lambert-93 (9794) - Metres
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_EQ(layer->getCrs(), "EPSG:9794");
 
     // Target : WGS84 Geocentric (EPSG:4978) - XYZ

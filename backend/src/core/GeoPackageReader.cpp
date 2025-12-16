@@ -16,9 +16,24 @@ GeoPackageReader::GeoPackageReader(const std::string& path)
 GeoPackageReader::~GeoPackageReader() { close(); }
 
 bool GeoPackageReader::open() {
-    // Ouverture du GeoPackage
     if (isOpen) return true;
-    dataset = (GDALDataset*)GDALOpenEx(filePath.c_str(), GDAL_OF_VECTOR | GDAL_OF_READONLY, nullptr, nullptr, nullptr);
+    
+    // Try opening as vector first
+    dataset = (GDALDataset*)GDALOpenEx(
+        filePath.c_str(), 
+        GDAL_OF_VECTOR | GDAL_OF_READONLY, 
+        nullptr, nullptr, nullptr
+    );
+    
+    // If fails, try as update mode to access both vector and raster
+    if (!dataset) {
+        dataset = (GDALDataset*)GDALOpenEx(
+            filePath.c_str(), 
+            GDAL_OF_READONLY,  // Remove GDAL_OF_VECTOR restriction
+            nullptr, nullptr, nullptr
+        );
+    }
+    
     return (isOpen = dataset != nullptr);
 }
 
@@ -101,25 +116,27 @@ std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const s
 }
 
 std::string GeoPackageReader::detectTimestampField(const std::string& layerName) const {
-    // Cherche un champ temporel
-    if (!isOpen) return "";
     OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
     if (!layer) return "";
-
-    OGRFeatureDefn* defn = layer->GetLayerDefn();
-    std::vector<std::string> keywords = {"time", "timestamp", "date", "epoch"};
     
-    for (int i = 0; i < defn->GetFieldCount(); ++i) {
-        std::string name = defn->GetFieldDefn(i)->GetNameRef();
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-        for (const auto& kw : keywords) {
-            if (name.find(kw) != std::string::npos) 
-                return defn->GetFieldDefn(i)->GetNameRef();
+    OGRFeatureDefn* defn = layer->GetLayerDefn();
+    
+    std::vector<std::string> timeFields = {"t", "time", "timestamp", "date", "datetime", "epoch"};
+    
+    for (int i = 0; i < defn->GetFieldCount(); i++) {
+        std::string fieldName = defn->GetFieldDefn(i)->GetNameRef();
+        std::string lowerName = fieldName;
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+        
+        for (const auto& timeField : timeFields) {
+            if (lowerName == timeField) {
+                return fieldName;
+            }
         }
     }
+    
     return "";
 }
-
 GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, const std::string& tsField) const {
     // Convertit un OGRFeature en structure interne
     Feature f;
@@ -182,4 +199,117 @@ double GeoPackageReader::parseTimestamp(const std::string& str) const {
     }
     
     return ss.fail() ? 0.0 : static_cast<double>(mktime(&tm));
+}
+
+
+
+bool GeoPackageReader::isRasterLayer(const std::string& layerName) const {
+    if (!isOpen) return false;
+    
+    // Try opening as raster with GPKG prefix
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    bool isRaster = false;
+    if (rasterDS) {
+        isRaster = (rasterDS->GetRasterCount() > 0);
+        GDALClose(rasterDS);
+    }
+    
+    return isRaster;
+}
+// Exrait les métadonnées raster d'une couche
+
+GeoPackageReader::RasterMetadata 
+GeoPackageReader::extractRasterMetadata(const std::string& layerName) const {
+    RasterMetadata m{"", "", 0, 0, 0, 0.0, {0,0,0,0,0,0}, ""};
+    if (!isOpen) return m;
+    
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    if (!rasterDS) return m;
+    
+    m.name = layerName;
+    m.width = rasterDS->GetRasterXSize();
+    m.height = rasterDS->GetRasterYSize();
+    m.layerPath = tablePath;
+    
+    rasterDS->GetGeoTransform(m.geoTransform);
+    
+    if (auto* srs = rasterDS->GetSpatialRef()) {
+        if (auto* code = srs->GetAuthorityCode(nullptr)) {
+            m.srid = std::atoi(code);
+            m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
+        }
+    }
+    
+    const char* epochStr = rasterDS->GetMetadataItem("COORDINATE_EPOCH");
+    if (epochStr) {
+        m.referenceEpoch = std::stod(epochStr);
+    }
+    
+    GDALClose(rasterDS);
+    return m;
+}
+
+Geometry4D GeoPackageReader::extractRasterExtent(
+    const std::string& layerName, double timestamp) const {
+    
+    std::string tablePath = "GPKG:" + filePath + ":" + layerName;
+    GDALDataset* rasterDS = (GDALDataset*)GDALOpen(tablePath.c_str(), GA_ReadOnly);
+    
+    if (!rasterDS) return Geometry4D();
+    
+    double gt[6];
+    rasterDS->GetGeoTransform(gt);
+    
+    int width = rasterDS->GetRasterXSize();
+    int height = rasterDS->GetRasterYSize();
+    
+    double minX = gt[0];
+    double maxY = gt[3];
+    double maxX = gt[0] + width * gt[1];
+    double minY = gt[3] + height * gt[5];
+    
+    OGRPolygon* poly = new OGRPolygon();
+    OGRLinearRing* ring = new OGRLinearRing();
+    
+    ring->addPoint(minX, minY, 0);
+    ring->addPoint(maxX, minY, 0);
+    ring->addPoint(maxX, maxY, 0);
+    ring->addPoint(minX, maxY, 0);
+    ring->addPoint(minX, minY, 0);
+    
+    poly->addRing(ring);
+    poly->setMeasured(TRUE);
+    
+    for (int i = 0; i < ring->getNumPoints(); i++) {
+        ring->setM(i, timestamp);
+    }
+    
+    GDALClose(rasterDS);
+    return Geometry4D(poly);
+}
+
+bool GeoPackageReader::addTemporalField(const std::string& layerName, const std::string& fieldName, double defaultValue) {
+    OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
+    if (!layer) return false;
+    
+    // Create field
+    OGRFieldDefn fieldDefn(fieldName.c_str(), OFTReal);
+    if (layer->CreateField(&fieldDefn) != OGRERR_NONE) {
+        return false;
+    }
+    
+    // Set default value for all features
+    layer->ResetReading();
+    OGRFeature* feature;
+    while ((feature = layer->GetNextFeature()) != nullptr) {
+        feature->SetField(fieldName.c_str(), defaultValue);
+        layer->SetFeature(feature);
+        OGRFeature::DestroyFeature(feature);
+    }
+    
+    return true;
 }

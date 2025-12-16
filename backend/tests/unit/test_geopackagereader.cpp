@@ -100,3 +100,48 @@ TEST_F(GeoPackageReaderTest, ExtractFeatures) {
     reader.close();
     std::remove(path.c_str());
 }
+
+
+
+
+// Test isRasterLayer
+TEST_F(GeoPackageReaderTest, IsRasterLayer) {
+    std::string path = "/tmp/test_raster.gpkg";
+    std::remove(path.c_str());
+    
+    GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
+    GDALDataset* ds = driver->Create(path.c_str(), 10, 10, 1, GDT_Byte, nullptr);
+    
+    double gt[6] = {100.0, 1.0, 0.0, 200.0, 0.0, -1.0};
+    ds->SetGeoTransform(gt);
+    GDALClose(ds);
+    
+    GeoPackageReader reader(path);
+    reader.open();
+    EXPECT_TRUE(reader.isRasterLayer("test_raster"));
+    reader.close();
+    std::remove(path.c_str());
+}
+
+// Test extractRasterMetadata
+TEST_F(GeoPackageReaderTest, ExtractRasterMetadata) {
+    std::string path = "/tmp/test_raster.gpkg";
+    std::remove(path.c_str());
+    
+    GDALDriver* driver = GetGDALDriverManager()->GetDriverByName("GPKG");
+    GDALDataset* ds = driver->Create(path.c_str(), 10, 10, 1, GDT_Byte, nullptr);
+    double gt[6] = {100.0, 1.0, 0.0, 200.0, 0.0, -1.0};
+    ds->SetGeoTransform(gt);
+    GDALClose(ds);
+    
+    GeoPackageReader reader(path);
+    reader.open();
+    auto metadata = reader.extractRasterMetadata("test_raster");
+    
+    EXPECT_EQ(metadata.width, 10);
+    EXPECT_EQ(metadata.height, 10);
+    EXPECT_DOUBLE_EQ(metadata.geoTransform[0], 100.0);
+    
+    reader.close();
+    std::remove(path.c_str());
+}

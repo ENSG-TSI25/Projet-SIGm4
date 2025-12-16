@@ -16,39 +16,37 @@
 #include <qgsproject.h>
 #include <qgsmaplayer.h>
 #include <qgsmapcanvas.h>
+#include "../ui/ui_mainwindow.h"
+#include "mainwindow.h"
 
 
-
+class MainWindow;
 
 class Carte : public QObject
 {
     Q_OBJECT
 
 public:
-    Carte(QWidget* containerFrame);  // Prend le QFrame comme parent
+    Carte(QWidget* containerFrame, MainWindow* mw);  // Prend le QFrame comme parent
     ~Carte();
 
     QgsMapCanvas* getCanvas() { return canvas; }
+    std::string getCarteEpsg() { return carteEpsg; }
 
 private:
+    MainWindow* mw;
     // Canvas
     QgsMapCanvas* canvas;
 
     // Layers
     QgsRasterLayer* osmLayer;
     QgsRasterLayer* satLayer;
-    QgsVectorLayer* polyLayer;
-    QgsVectorLayer* pointLayer;
-    QgsVectorLayer* lineLayer;
-
     bool osmVisible;
 
     // UI (facultatif si tu veux mettre les boutons ailleurs)
-    QPushButton* zoomIn;
-    QPushButton* zoomOut;
+
     QPushButton* toggleBasemap;
-    QLabel* scaleLabel;
-    QLabel* projLabel;
+    std::string carteEpsg;
 
     QVBoxLayout* layout;
 
@@ -59,5 +57,4 @@ private:
     void updateLabels();
 
     void toggleBaseLayer();
-    QgsPointXY wgs84ToMercator(double lon, double lat);
 };
