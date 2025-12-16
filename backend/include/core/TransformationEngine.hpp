@@ -14,4 +14,6 @@ public:
     VectorLayer* applyDefModelLayer(const VectorLayer& inputLayer, const std::string& json_model_path, bool inverse = false);
 
     VectorLayer* applyGridDeformation(const VectorLayer& inputLayer, const std::string& grid_path, double ref_epoch);
+
+    Result transformPoint(OGRPoint *p, double &t, const std::string &fmt_in, const std::string &fmt_out, const std::string &src_code, const std::string &dst_code);
 };
