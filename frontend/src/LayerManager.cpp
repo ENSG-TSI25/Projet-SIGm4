@@ -1,28 +1,7 @@
 #include "../include/LayerManager.h"
-#include "../include/Carte.h"
+#include <QSet>
 
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QListWidgetItem>
-#include <QFileInfo>
-#include <QDebug>
-
-#include <qgsmapcanvas.h>
-#include <qgsvectorlayer.h>
-#include <qgsrasterlayer.h>
-#include <qgsproject.h>
-#include <qgscoordinatereferencesystem.h>
-
-#include <gdal_priv.h>
-
-#include <core/DataManager.hpp>
-#include <core/Project.hpp>
-#include <core/VectorLayer.hpp>
-#include <core/RasterLayer.hpp>
-
-
-LayerManager::LayerManager(MainWindow* mw)
-    : QObject(mw), mw(mw)
+LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), layerRaster()
 {
 }
 
@@ -41,7 +20,35 @@ void LayerManager::listFiles()
         tr("Geo files (*.gpkg *.shp *.tif *.tiff)")
     );
 
+    if (!fileName.isEmpty()) {
+        openDialogFile();
+    }
+
     mw->getUi()->selectedFileLabel->setText(fileName);
+}
+
+void LayerManager::openDialogFile() {
+    qDebug() << "TEST dialog";
+    //Open a new dialog to show all information    
+    QDialog infoLayerDialog;
+    infoLayerDialog.setWindowTitle("Informations sur le fichier sélectionné");
+    infoLayerDialog.show();
+
+    Project* project = mw -> getCurrentProject();
+    std::string CRSProject = project -> getCrs();
+    double EpochProject = project -> getEpoch0();
+
+    // QStringList filenameChar = fileName.split(u'/');
+    // QString *dialogFileText = new QString("Fichier sélectionné: %1");
+    // dialogFileText->arg(filenameChar.last());
+
+
+    // QLabel *dialogTextCRSProject = new QLabel("CRS du projet :", &infoLayerDialog);
+    // QLabel *dialogTextCRSFile = new QLabel("CRS du fichier sélectionné :", &infoLayerDialog);
+    // QLabel *dialogTextDateProject = new QLabel("Date du projet :", &infoLayerDialog);
+    // QLabel *dialogTextDateFile = new QLabel("Date du fichier sélectionné :", &infoLayerDialog);
+    // QPushButton *acceptationButton = new QPushButton("OK", &infoLayerDialog);
+
 }
 
 // ENTRY POINT
@@ -171,7 +178,7 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
     QList<QgsMapLayer*> layers = canvas->layers();
     layers.prepend(qgsLayer);
     canvas->setLayers(layers);
-    canvas->setExtent(qgsLayer->extent());
+    // canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
 
@@ -264,7 +271,7 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
     QList<QgsMapLayer*> layers = canvas->layers();
     layers.prepend(qgsLayer);
     canvas->setLayers(layers);
-    canvas->setExtent(qgsLayer->extent());
+    // canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
 
@@ -343,4 +350,45 @@ void LayerManager::renameLayer(Dialog* dialog)
     if (index < 0) return;
 
     mw->getUi()->layersList->item(index)->setText(dialog->nameLayer());
+}
+
+
+void LayerManager::displayLayer() {
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+    QListWidget* listWidget = mw->getUi()->layersList;
+
+    
+    QList<QgsMapLayer*> baseLayers;
+    QList<QgsMapLayer*> currentCanvasLayers = canvas->layers();
+
+ 
+    QSet<QString> managedLayerNames;
+    for(int i = 0; i < listWidget->count(); ++i) {
+        managedLayerNames.insert(listWidget->item(i)->text());
+    }
+
+    for(QgsMapLayer* layer : currentCanvasLayers) {
+        if(!managedLayerNames.contains(layer->name())) {
+            baseLayers.append(layer);
+        }
+    }
+
+ 
+    QList<QgsMapLayer*> newLayers = baseLayers;
+
+  
+    for(int i = 0; i < listWidget->count(); ++i) {
+        QListWidgetItem* item = listWidget->item(i);
+        if(item->checkState() == Qt::Checked) {
+            QString layerName = item->text();
+            
+            QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
+            if(!foundLayers.isEmpty()) {
+                newLayers.prepend(foundLayers.first());
+            }
+        }
+    }
+
+    canvas->setLayers(newLayers);
+    canvas->refresh();
 }

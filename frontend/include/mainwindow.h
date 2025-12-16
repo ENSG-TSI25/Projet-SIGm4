@@ -1,34 +1,62 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QString>
-#include <QComboBox>
+//Standard libraries
+#include <string.h>
+#include <iostream>
+
+//Backend library
+#include <core/DataManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <core/RasterLayer.hpp>
+#include <core/Project.hpp>
+
+//Frontend files
 #include "LayerManager.h"
+#include "ProjectCaracteristicsDisplay.h"
 #include "TransformCRS.h"
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
+#include "Carte.h"
+
+//Qt library
+#include <QWidget>
+#include <QMainWindow>
+#include <QString>
+#include <QStringList>
+#include <QComboBox>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QWheelEvent>
-#include <qgsmapcanvas.h>
-#include <QLabel>
 #include <QCalendarWidget>
 #include <QPushButton>
 #include <QLineEdit>
-#include <QComboBox>
 #include <QVBoxLayout>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QFileDialog>
+#include <QLabel>
+#include <QDoubleValidator>
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QListWidget>
 #include <QDate>
+#include <QDebug>
+#include <QMessageBox>
+#include <QDir>
+
+//Qgis cpp API library
+#include <qgsmapcanvas.h>
+#include <qgsvectorlayer.h>
+#include <qgsfield.h>
+#include <qgsfeature.h>
+#include <qgsgeometry.h>
+#include <qgsproject.h>
 #include <qgsmaptoolidentify.h>
 #include <qgsmaptoolpan.h>
 
-
-#include <string.h>
-
-#include "../include/ProjectCaracteristicsDisplay.h"
-#include <core/Project.hpp>
-
-#include <core/DataManager.hpp>
+//Importing Gdal for updating the display of the project
+#include <gdal_priv.h>    
 
 
 QT_BEGIN_NAMESPACE
@@ -47,40 +75,38 @@ public:
     ~MainWindow();
     void listDimension();
     void openDialog();
+
+    //Create a new project
     void setNewProject();
-    void openExistingProject();
-    void saveCurrentProject();
-    void updateScaleLabel(int scaleValue);
-    void getCalendarDays(
-    QCalendarWidget *calendar,
-    QLabel *decimalDate,
-    QLineEdit *epochEdit
-);
+    //Open an already existing project from a .sigm4 file
+    void loadProject(const QString& filepath);
+    
+    void updateScaleLabel(double scaleValue);
+    void getCalendarDays(QCalendarWidget *calendar, QLineEdit *epochEdit);
+
+
 
     float computeDate(int day, int month, int year);
     void updateSelectedDate(const QDate &date);
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();
-    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
     void openAttributeTable(QgsVectorLayer* layer);
 
-
-
-
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    //Initialize to nullptr before the creation of a project
     Project* currentProject = nullptr;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     ProjectCarateristicsDisplay* projectDisplay;
-      void setProjectActionsEnabled(bool enabled);
+    void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
@@ -89,9 +115,10 @@ private:
     QgsMapTool* defaultTool = nullptr;
 
 
-
 private slots:
+    //Save the current project to a .sigm4 file
     void saveProject();
+    //No parameters -slot for the "Open" button in UI
     void loadProject();
 };
 #endif // MAINWINDOW_H

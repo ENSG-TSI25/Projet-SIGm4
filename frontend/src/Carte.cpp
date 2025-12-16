@@ -1,15 +1,5 @@
 #include "../include/Carte.h"
-#include <cmath>
-#include <QVBoxLayout>
-#include <QDebug>
 
-#include <qgsfeature.h>
-#include <qgsgeometry.h>
-#include <qgscoordinatereferencesystem.h>
-#include <qgsproject.h>
-#include <qgsmaptoolpan.h>
-#include <qgsvectorlayer.h>
-#include <qgsrasterlayer.h>
 
 Carte::Carte(QWidget* containerFrame, MainWindow* mw)
     : osmVisible(true) , QObject(mw), mw(mw)
@@ -112,3 +102,36 @@ void Carte::toggleBaseLayer()
     c->setLayers(layers);
     c->refresh();
 }
+
+
+void Carte::clearUserLayers()
+    {
+        // Get all layers from the project
+        QMap<QString, QgsMapLayer*> allLayers = QgsProject::instance()->mapLayers();
+        QStringList layersToRemove;
+        
+        // Collect all layers except OSM and Satellite
+        for (auto it = allLayers.begin(); it != allLayers.end(); ++it)
+        {
+            QgsMapLayer* layer = it.value();
+            if (layer != osmLayer && layer != satLayer)
+            {
+                layersToRemove << it.key();
+            }
+        }
+        
+        // Remove all non-base layers from the project
+        QgsProject::instance()->removeMapLayers(layersToRemove);
+        
+        // Update canvas to show only the current base layer
+        if (osmVisible)
+        {
+            canvas->setLayers({osmLayer});
+        }
+        else
+        {
+            canvas->setLayers({satLayer});
+        }
+        
+        canvas->refresh();
+    }
