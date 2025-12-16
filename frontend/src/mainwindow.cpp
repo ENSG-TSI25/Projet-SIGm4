@@ -555,6 +555,7 @@ void MainWindow::loadProject(const QString &filepath)
         const auto &layers = loadedProject.getLayers();
         qDebug() << "Reloading" << layers.size() << "layer(s)...";
 
+        // ----JUST FOR INITIAL TESTS, WE NEED TO FIND A BETTER WAY TO DO THIS
         //If there are no layer, we choose to set the extent of the canvas to France
         if(layers.empty()){
                 QgsRectangle defaultExtent;
