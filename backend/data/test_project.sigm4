@@ -2,12 +2,12 @@
   "version": "1.0",
   "format": "SIGM4",
   "name": "Test Project",
-  "crs": "EPSG:2154",
+  "crs": "EPSG:4326",
   "epoch0": 2025.0,
   "layers": [
     {
-      "name": "ZoneSensible_MYT",
-      "crs": "EPSG:4471",
+      "name": "bdt_35_gpkg_lamb93_d085ed20250615__detail_hydrographique",
+      "crs": "EPSG:2154",
       "epoch": 0.0,
       "dataSource": ""
     }
