@@ -100,18 +100,18 @@ protected:
 TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
     // Source : WebMercator (3857) - Metres
     std::string path = createGpkgForEPSG(3857, "WebMercator", 2025.0);
-    
+
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:3857");
 
     // Target : ETRF2000 Geo (EPSG:9067) - Degrees
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9067");
-    
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     // Verification
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
     EXPECT_NEAR(p->getY(), 48.80887, 1e-4);
@@ -126,7 +126,8 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
     std::string path = createGpkgForEPSG(9000, "ITRF2014", 2025.0);
     
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
 
     // Cible : RGF93 / Lambert-93 (EPSG:9794) - Metres
@@ -147,17 +148,18 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
 TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
     // Source : ITRF2014 3D (7912)
     std::string path = createGpkgForEPSG(7912, "ITRF2014_3D", 2025.0);
-    
-    DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
 
-    // Cible : ETRF2000 3D (7931)
+    DataManager dm;
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
+
+    // Target : ETRF2000 3D (7931)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:7931");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
     // Verification
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
     EXPECT_NEAR(p->getY(), 48.80887, 1e-4);
 }
@@ -169,17 +171,17 @@ TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
     // Source : WGS84 Geocentric (4978) - XYZ
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
-    
+
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
-    
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
+
     // Cible : RGF93 LatLon (EPSG:4171)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4171");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 2.66, 0.1);
     EXPECT_NEAR(p->getY(), 48.80, 0.1);
 }
@@ -191,20 +193,21 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geodetic) {
 TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
     // Source : RGF93 LatLon (EPSG:4171)
     std::string path = createGpkgForEPSG(4171, "RGF93_LatLon", 2025.0);
-    DataManager dm; VectorLayer* layer = dm.loadVector(path);
-    
+
+    DataManager dm;
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
+
     // Cible : WGS84 Geocentric (4978) - XYZ
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification XYZ
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 4203981.7, 10.0);
     EXPECT_NEAR(p->getY(), 195362.1, 10.0);
     EXPECT_NEAR(p->getZ(), 4776663.0, 10.0);
 }
-
 // ---------------------------------------------------------------------------
 // TEST 1f : Projected -> Projected (Lambert-93 -> WebMercator)
 // [Format: Metres -> Metres]
@@ -212,17 +215,17 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
 TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
     // Source : Lambert-93 (9794)
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
-    
-    DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
 
-    // Cible : WebMercator (3857)
+    DataManager dm;
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
+
+    // Target : WebMercator (3857)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:3857");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 272329.82, 10.0);
     EXPECT_NEAR(p->getY(), 6242280.42, 10.0);
 }
@@ -234,23 +237,21 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Projected) {
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
     // Source : WGS84 Geocentric (4978) - XYZ
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
-    
+
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:4978");
 
-    // Target : ETRF2000 Geocentric (EPSG:4936)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4936");
-
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification 
-    EXPECT_NEAR(p->getX(), 4201713.4, 10.0); 
+    
+    // Target : ETRF2000 Geocentric (EPSG:4936)
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    EXPECT_NEAR(p->getX(), 4201713.4, 10.0);
     EXPECT_NEAR(p->getY(), 195245.7, 10.0);
     EXPECT_NEAR(p->getZ(), 4779483.5, 10.0);
-    
 }
 
 // ---------------------------------------------------------------------------
@@ -260,17 +261,17 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Geocentric) {
 TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
     // Source : WGS84 Geocentric (4978) - XYZ
     std::string path = createGpkgForEPSG(4978, "WGS84_XYZ", 2025.0);
-    
+
     DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
 
     // Target : RGF93 / Lambert-93 (EPSG:9794)
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9794");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 675083.16, 10.0);
     EXPECT_NEAR(p->getY(), 6860152.98, 10.0);
     EXPECT_NEAR(p->getZ(), 727.69, 10.0);
@@ -282,17 +283,18 @@ TEST_F(TransformationEngineTest, Transform_Geocentric_To_Projected) {
 TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
     // Source : Lambert-93 (9794) - Metres
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
-    DataManager dm;
-    VectorLayer* layer = dm.loadVector(path);
-    ASSERT_EQ(layer->getCrs(), "EPSG:9794");
 
+    DataManager dm;
+    auto layers = dm.loadVector(path);
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
+    ASSERT_EQ(layer->getCrs(), "EPSG:9794");
+    
     // Target : WGS84 Geocentric (EPSG:4978) - XYZ
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification 
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 4204722.53, 10.0);
     EXPECT_NEAR(p->getY(), 179639.87, 10.0);
     EXPECT_NEAR(p->getZ(), 4776495.43, 10.0);

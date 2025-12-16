@@ -29,7 +29,9 @@ add_executable(unit_tests
     test_datamanager.cpp
     test_geopackagereader.cpp
     test_proj.cpp
-    # test_transformationengine.cpp
+    test_transformationengine.cpp
+    test_project_class.cpp
+    test_projectmanager.cpp
     ${TEST_SOURCES}
 )
 

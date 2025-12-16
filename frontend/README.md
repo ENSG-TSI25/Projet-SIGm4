@@ -16,6 +16,15 @@ Voici le git pour le développement de l'application SIGm4
 cd frontend
 
 docker build -t qgis_cpp_app .
+xhost +local:root
+
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    qgis_cpp_app
+
+```
+
 
 xhost +local:root
 
