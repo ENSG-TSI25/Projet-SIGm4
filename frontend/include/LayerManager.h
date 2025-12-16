@@ -7,6 +7,7 @@
 #include <QFileDialog>
 
 #include <qgsmapcanvas.h>
+#include <qgsmaplayer.h>
 #include <qgsvectorlayer.h>
 #include <qgsproject.h>
 #include <qgsmaptoolpan.h>
@@ -43,10 +44,13 @@ public:
     void loadRasterLayerFromFile(const QString& file);
     void loadVectorLayerFromFile(const QString& file);
     void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
+    void displayLayer(); 
+    void openDialogFile();
 
 
 private:
     MainWindow* mw;
     QString fileName;
+    QgsRasterLayer* layerRaster;
 
 };

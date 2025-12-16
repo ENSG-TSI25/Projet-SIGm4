@@ -21,6 +21,7 @@
 #include <QString>
 #include <QStringList>
 #include <QListWidget>
+#include <QListWidgetItem>
 #include <iostream>
 #include <QDate>
 #include <QDebug>
@@ -70,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
+    //connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayerFromFile);
     connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
@@ -82,10 +84,14 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
     connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
 
+    //checkbox
+    qDebug() << "++++++";
+    connect (ui->layersList, &QListWidget::itemChanged, layerManager, &LayerManager::displayLayer);
+
     //Dialog management
     dialog = new Dialog();
-    connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
-    Ui::Dialog *dig = dialog->getUI();
+    connect (ui->layersList, &QListWidget::itemDoubleClicked, this, &MainWindow::openDialog);
+    Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]()
             { layerManager->duplicateLayer(dialog); });
@@ -442,6 +448,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "ETRF2000 (9067)",
             "RGF93v2b (9784)",
             "RGM23 (10673)",
+            
     };
     for(const QString &item : items3D){
         model->appendRow(new QStandardItem(item));
@@ -749,3 +756,4 @@ void MainWindow::loadProject(const QString &filepath)
     projectDisplay->updateDisplayCRS();
     projectDisplay->updateDisplayEpoch0();
 }
+
