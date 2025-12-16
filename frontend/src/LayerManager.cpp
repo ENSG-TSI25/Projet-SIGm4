@@ -372,12 +372,13 @@ void LayerManager::displayLayer() {
     QgsLayerTree* tree = QgsProject::instance()->layerTreeRoot();
     int counter = 0;
 
-    for (QgsMapLayer* layer : canvas->layers()) {
-        QgsLayerTreeNode* node = tree->findLayer(layer->id());
-        qDebug() << "item";
+    for (int i=0; i < (canvas->layers()).length() - 1; i++) {
+    //for (QgsMapLayer* layer : canvas->layers()) {
+        QgsLayerTreeNode* node = tree->findLayer((canvas->layers())[i]->id());
+        
         QListWidgetItem* item = mw->getUi() -> layersList -> item(counter);
         qDebug() << "voir";
-        
+
         bool visible = (item -> checkState() == Qt::Checked);
         if (item -> checkState() == Qt::Checked)
         {
