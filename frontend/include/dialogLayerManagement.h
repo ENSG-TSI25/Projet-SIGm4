@@ -1,8 +1,14 @@
 #ifndef DIALOG_H
 #define DIALOG_H
 
-#include <QDialog>
+//Frontend files
 #include "../ui/ui_dialogLayerManagement.h" 
+
+//Qt library
+#include <QDialog>
+#include <QLineEdit>
+#include <QString>
+
 
 namespace Ui {
 class Dialog;
