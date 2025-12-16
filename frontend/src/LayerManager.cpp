@@ -166,7 +166,7 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
     QList<QgsMapLayer*> layers = canvas->layers();
     layers.prepend(qgsLayer);
     canvas->setLayers(layers);
-    canvas->setExtent(qgsLayer->extent());
+    // canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
     // --- UI ---
@@ -255,7 +255,7 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
     QList<QgsMapLayer*> layers = canvas->layers();
     layers.prepend(qgsLayer);
     canvas->setLayers(layers);
-    canvas->setExtent(qgsLayer->extent());
+    // canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
 

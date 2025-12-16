@@ -14,6 +14,9 @@
 #include <qgsmaptoolpan.h>
 #include <qgsrasterlayer.h>
 #include <qgsmaplayer.h>
+#include <qgslayertree.h>
+#include <qgslayertreenode.h>
+#include <qgslayertreelayer.h>
 
 
 class MainWindow;
