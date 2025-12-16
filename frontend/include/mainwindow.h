@@ -80,11 +80,9 @@ public:
     void loadProject(const QString& filepath);
     
     void updateScaleLabel(double scaleValue);
-    void getCalendarDays(
-    QCalendarWidget *calendar,
-    QLabel *decimalDate,
-    QLineEdit *epochEdit
-    );
+    void getCalendarDays(QCalendarWidget *calendar, QLabel *decimalDate, QLineEdit *epochEdit);
+
+
 
     float computeDate(int day, int month, int year);
     void updateSelectedDate(const QDate &date);
