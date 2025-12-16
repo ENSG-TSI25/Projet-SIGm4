@@ -14,6 +14,9 @@
 #include <qgsmaptoolpan.h>
 #include <qgsrasterlayer.h>
 #include <qgsmaplayer.h>
+#include <qgslayertree.h>
+#include <qgslayertreenode.h>
+#include <qgslayertreelayer.h>
 
 
 class MainWindow;
@@ -35,10 +38,13 @@ public:
     void loadRasterLayerFromFile(const QString& file);
     void loadVectorLayerFromFile(const QString& file);
     void displayLayerFromFile(const std::string& filepath, const std::string& layerName);
+    void displayLayer(); 
+    void openDialogFile();
 
 
 private:
     MainWindow* mw;
     QString fileName;
+    QgsRasterLayer* layerRaster;
 
 };

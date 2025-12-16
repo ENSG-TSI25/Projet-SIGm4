@@ -117,5 +117,4 @@ private slots:
     //No parameters -slot for the "Open" button in UI
     void loadProject();
 };
-
 #endif // MAINWINDOW_H
