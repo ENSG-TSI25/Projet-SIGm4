@@ -337,16 +337,16 @@ void LayerManager::renameLayer(Dialog* dialog)
     mw->getUi()->layersList->item(index)->setText(dialog->nameLayer());
 }
 
-//Connect checkbox with the project layers
+
 void LayerManager::displayLayer() {
     QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
     QListWidget* listWidget = mw->getUi()->layersList;
 
-    // 1. Identify base layers (layers in canvas NOT in listWidget)
+    
     QList<QgsMapLayer*> baseLayers;
     QList<QgsMapLayer*> currentCanvasLayers = canvas->layers();
 
-    // Collect names from listWidget to identify managed layers
+ 
     QSet<QString> managedLayerNames;
     for(int i = 0; i < listWidget->count(); ++i) {
         managedLayerNames.insert(listWidget->item(i)->text());
@@ -358,15 +358,15 @@ void LayerManager::displayLayer() {
         }
     }
 
-    // 2. Build new layer list
+ 
     QList<QgsMapLayer*> newLayers = baseLayers;
 
-    // Iterate listWidget to add checked layers
+  
     for(int i = 0; i < listWidget->count(); ++i) {
         QListWidgetItem* item = listWidget->item(i);
         if(item->checkState() == Qt::Checked) {
             QString layerName = item->text();
-            // Find layer in Project
+            
             QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
             if(!foundLayers.isEmpty()) {
                 newLayers.prepend(foundLayers.first());
