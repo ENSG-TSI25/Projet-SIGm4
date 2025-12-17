@@ -134,6 +134,7 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
         }
     }
 
+    // --- UI list item ---
     QListWidgetItem* item = new QListWidgetItem(qgsLayer->name());
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
@@ -143,10 +144,6 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
     QgsProject::instance()->addMapLayer(qgsLayer);
     canvas->setCurrentLayer(qgsLayer);
 
-    // --- UI list item ---
-    QListWidgetItem* item = new QListWidgetItem(qgsLayer->name());
-    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-    item->setCheckState(Qt::Checked);
 
     // link UI <-> layers QGIS
     item->setData(Qt::UserRole, qgsLayer->id());
@@ -163,6 +160,9 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
 
 void LayerManager::loadRasterLayerFromFile(const QString& file)
 {
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+
+
     Project* proj = mw->getCurrentProject();
     if (!proj) {
         QMessageBox::warning(nullptr, "Projet manquant", "Aucun projet actif.");
@@ -193,19 +193,12 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
     // canvas->setExtent(qgsLayer->extent());
     canvas->refresh();
 
-
-
     QListWidgetItem* item = new QListWidgetItem(qgsLayer->name());
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->addItem(item);
 
-    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
-    QList<QgsMapLayer*> layers = canvas->layers();
-    layers.prepend(qgsLayer);
-    canvas->setLayers(layers);
-    canvas->setExtent(qgsLayer->extent());
-    canvas->refresh();
+
 }
 
 void LayerManager::showAddTemporalFieldDialog(const QString& filePath, const std::string& layerName)

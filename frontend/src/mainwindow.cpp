@@ -733,7 +733,7 @@ void MainWindow::loadProject(const QString &filepath)
 
         // ----JUST FOR INITIAL TESTS, WE NEED TO FIND A BETTER WAY TO DO THIS
         //If there are no layer, we choose to set the extent of the canvas to France
-        if(layers.empty()){
+        if(loadedLayers.empty()){
                 QgsRectangle defaultExtent;
                 //If it is a projected CRS, wit need to use adequate coordinates
                 if (projectCrsString == QString("EPSG::9794") || projectCrsString == QString("EPSG::10674")){
@@ -936,7 +936,5 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
-
-
 }
 
