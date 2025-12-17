@@ -22,6 +22,7 @@ QString Dialog::nameLayer() {
     return name;
 }
 
+
 //Return dialog's UI to place in the main window
 Ui::Dialog* Dialog::getUI() {
     return dig;

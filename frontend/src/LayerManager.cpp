@@ -320,14 +320,33 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
 
 void LayerManager::duplicateLayer(Dialog* dialog)
 {
-    QString name = dialog->nameLayer();
-    QListWidgetItem* item = new QListWidgetItem(name);
+    int currentIndex = mw->getUi()->layersList->currentRow();
+    if (currentIndex < 0) return;
+
+    
+    QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
+    QgsMapLayer* sourceLayer = canvas->layers().at(currentIndex);
+    if (!sourceLayer) return;
+
+  
+    QgsMapLayer* newLayer = sourceLayer->clone();
+    QString newLayerName = dialog->nameLayer();
+    newLayer->setName(newLayerName);
+
+    QgsProject::instance()->addMapLayer(newLayer, false);
+
+    QList<QgsMapLayer*> layers = canvas->layers();
+    layers.insert(currentIndex, newLayer);
+    canvas->setLayers(layers);
+
+    QListWidgetItem* item = new QListWidgetItem(newLayerName);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
+    mw->getUi()->layersList->insertItem(currentIndex, item);
 
-    int index = mw->getUi()->layersList->currentRow();
-    mw->getUi()->layersList->insertItem(index, item);
+    canvas->refresh();
 }
+
 
 void LayerManager::renameLayer(Dialog* dialog)
 {
