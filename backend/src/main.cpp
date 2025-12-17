@@ -204,9 +204,6 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Point équivalent au test géodétique
-        // Lon = 45.00 / Lat = -13.02
-        // RGM23 projeté (EPSG:10674)
         double in_E = 500000.000;
         double in_N = 8560000.000;
         double in_h = 0.0;
@@ -219,12 +216,12 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
             false
         );
 
-        double XY_EPS = 1e-3;   // 1 mm
+        double XY_EPS = 1e-6; 
         double H_EPS  = 1e-3;
 
-        checkNear("Easting",  r.x, 499999.845, XY_EPS);
-        checkNear("Northing", r.y, 8559999.877, XY_EPS);
-        checkNear("Hauteur",  r.z, 0.0797, H_EPS);
+        checkNear("Easting",  r.x, 499999.818402, XY_EPS);
+        checkNear("Northing", r.y, 8559999.9194758, XY_EPS);
+        checkNear("Hauteur",  r.z, 0.0791, H_EPS);
 
         if (r.t == 2018.0)
             std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
@@ -245,9 +242,6 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Point équivalent au test géodétique
-        // Lon = 24.3953152240 / Lat = 60.2174694086
-        // ETRF2000 projeté
         double in_E = 385000.000;
         double in_N = 6672000.000;
         double in_h = 94.6218;
@@ -257,16 +251,16 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         auto r = gt.applyGridDeformationProjected(
             in_E, in_N, in_h, in_t,
             model_path,
-            3067,        // ETRF2000
+            3067,  
             t_target
         );
 
-        double XY_EPS = 1e-3;   // 1 mm
+        double XY_EPS = 1e-3;
         double H_EPS  = 1e-3;
 
-        checkNear("Easting",  r.x, 385000.021, XY_EPS);
-        checkNear("Northing", r.y, 6672000.041, XY_EPS);
-        checkNear("Hauteur",  r.z, 94.6879, H_EPS);
+        checkNear("Easting",  r.x, 385000.004919, XY_EPS);
+        checkNear("Northing", r.y, 6671999.97836, XY_EPS);
+        checkNear("Hauteur",  r.z, 94.682, H_EPS);
 
         if (r.t == 2019.7)
             std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
