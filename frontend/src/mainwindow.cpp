@@ -70,8 +70,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
 
-
-    listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte, this);
     // === Outil Identify (popup infos, attributs, coordonnées) ===
 
@@ -280,9 +278,7 @@ void MainWindow::setProjectActionsEnabled(bool enabled)
     
     // ComboBoxes
     ui->sourceCRSCombo->setEnabled(enabled);
-    ui->targetCRSCombo->setEnabled(enabled);
-    ui->dimensionCombo->setEnabled(enabled);
-    
+    ui->targetCRSCombo->setEnabled(enabled);    
     // LineEdit
     ui->epochEdit->setEnabled(enabled);
     
@@ -316,14 +312,6 @@ void MainWindow::zoomIn_button()
 void MainWindow::zoomOut_button()
 {
     carte->getCanvas()->zoomOut();
-}
-
-void MainWindow::listDimension()
-{
-
-    ui->dimensionCombo->clear();
-    ui->dimensionCombo->addItem("2D");
-    ui->dimensionCombo->addItem("4D");
 }
 
 // Open dialog when the layer is clicked
