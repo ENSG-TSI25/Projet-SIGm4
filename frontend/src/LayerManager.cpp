@@ -151,9 +151,11 @@ void LayerManager::loadVectorLayerFromFile(const QString& file)
                 << QString::fromStdString(l->getName())
                 << "dataSource :" << fileName;
 
-        QString layerName =
-        QString::fromStdString(l->getName());
+        // QString layerName =
+        // QString::fromStdString(l->getName());
 
+        QStringList filenameChar = fileName.split(u'/');
+        QString layerName = filenameChar.last();
         qgsLayer->setName(layerName);
 
 
