@@ -111,7 +111,7 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geodetic) {
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9067");
     
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
@@ -135,7 +135,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Projected) {
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9794");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification
     EXPECT_NEAR(p->getX(), 675078.85, 10.0);
@@ -158,7 +158,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic3D_To_Geodetic3D) {
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:7931");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification
     EXPECT_NEAR(p->getX(), 2.66066, 1e-4);
@@ -181,7 +181,7 @@ VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4171");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification
     EXPECT_NEAR(p->getX(), 2.66, 0.1);
@@ -203,7 +203,7 @@ TEST_F(TransformationEngineTest, Transform_Geodetic_To_Geocentric) {
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification XYZ
     EXPECT_NEAR(p->getX(), 4203981.7, 10.0);
@@ -227,7 +227,7 @@ VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:3857");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification
     EXPECT_NEAR(p->getX(), 272329.82, 10.0);
@@ -252,7 +252,7 @@ VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4936");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification 
     EXPECT_NEAR(p->getX(), 4201713.4, 10.0); 
@@ -277,9 +277,7 @@ VectorLayer* layer = layers.empty() ? nullptr : layers[0];
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:9794");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
-
-    // Verification
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
     EXPECT_NEAR(p->getX(), 675083.16, 10.0);
     EXPECT_NEAR(p->getY(), 6860152.98, 10.0);
     EXPECT_NEAR(p->getZ(), 727.69, 10.0);
@@ -293,14 +291,15 @@ TEST_F(TransformationEngineTest, Transform_Projected_To_Geocentric) {
     std::string path = createGpkgForEPSG(9794, "Lambert93", 2025.0);
     DataManager dm;
     auto layers = dm.loadVector(path);
-VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    VectorLayer* layer = layers.empty() ? nullptr : layers[0];
+    ASSERT_NE(layer, nullptr);
     ASSERT_EQ(layer->getCrs(), "EPSG:9794");
 
     // Target : WGS84 Geocentric (EPSG:4978) - XYZ
     TransformationEngine engine;
     VectorLayer* res = engine.transformLayerAtEpoch(*layer, "EPSG:4978");
 
-    OGRPoint* p = res->getGeometries()[0]->getGeometry()->toPoint();
+    auto* p = res->getGeometries()[0]->getGeometry()->toPoint();
 
     // Verification 
     EXPECT_NEAR(p->getX(), 4204722.53, 10.0);

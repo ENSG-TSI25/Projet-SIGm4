@@ -112,7 +112,7 @@ GeodeticTransformer::Result GeodeticTransformer::geocentricToGeodetic(
     PJ_COORD out = proj_trans(P, PJ_FWD, in);
     proj_destroy(P);
 
-    // OUTPUT : PROJ renvoie Lat(x), Lon(y). On inverse.
+    // OUTPUT : PROJ returns Lat(x), Lon(y) so they are flipped.
     return { out.xyzt.y, out.xyzt.x, out.xyzt.z, out.xyzt.t };
 }
 
@@ -286,7 +286,7 @@ GeodeticTransformer::Result GeodeticTransformer::applyDefModelProjected(
     // 1) Projected -> Geodetic
     Result geo = projectedToGeodetic(E, N, H, t_epoch,
                                      epsg_str,
-                                     "EPSG:4979");  // WGS84 3D ou RGM23 geodetic CRS
+                                     "EPSG:4979"); 
 
     // 2) Appliquer le modèle déf
     Result def = applyDefModelGeodetic(geo.x, geo.y, geo.z, t_epoch, json_model_path, inverse);
@@ -395,28 +395,14 @@ GeodeticTransformer::Result GeodeticTransformer::applyGridDeformationProjected(
 {
     std::string epsg_str = "EPSG:" + std::to_string(epsg_projected);
 
-    // 1) Projected -> Geodetic
-    Result geo = projectedToGeodetic(E, N, H, t_epoch,
-                                     epsg_str,
-                                     "EPSG:4979");
-
-    // 2) Geodetic -> Geocentric
-    Result cart = geodeticToGeocentric(geo.x, geo.y, geo.z, t_epoch,
-                                       "EPSG:4979",
-                                       "EPSG:4978"); // geocentric RGM23/ETRF
+    // 1) Projected -> Geocentric
+    Result cart = projectedToGeocentric(E, N, H, t_epoch, epsg_str, "EPSG:4978");
 
     // 3) Appliquer la grille de déformation
     Result cart_def = applyGridDeformationGeocentric(cart.x, cart.y, cart.z, t_epoch, grid_path, ref_epoch);
 
-    // 4) Geocentric -> Geodetic
-    Result geo2 = geocentricToGeodetic(cart_def.x, cart_def.y, cart_def.z, cart_def.t,
-                                       "EPSG:4978",
-                                       "EPSG:4979");
-
-    // 5) Geodetic -> Projected
-    Result proj = geodeticToProjected(geo2.x, geo2.y, geo2.z, geo2.t,
-                                      "EPSG:4979",
-                                      epsg_str);
+    // 4) Geocentric -> Projected
+    Result proj = geocentricToProjected(cart_def.x, cart_def.y, cart_def.z, cart_def.t, "EPSG:4978", epsg_str);
 
     return proj;
 }

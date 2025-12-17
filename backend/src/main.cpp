@@ -2,6 +2,7 @@
 #include <iostream>
 
 // TEMP TESTING
+/*
 #include <iomanip>
 #include <string>
 #include <fstream>
@@ -12,12 +13,12 @@
 // === CONFIGURATION ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
 
-// Codes couleurs pour la console
+// Color codes for console testing output
 const std::string GREEN = "\033[32m";
 const std::string RED   = "\033[31m";
 const std::string RESET = "\033[0m";
 
-// Fonction utilitaire pour vérifier l'existence du fichier
+// Fetch full path of model file
 std::string getModelPath(const std::string& filename) {
     std::string fullPath = DATA_PATH + filename;
     std::ifstream f(fullPath);
@@ -28,7 +29,7 @@ std::string getModelPath(const std::string& filename) {
     return fullPath;
 }
 
-// Fonction utilitaire de comparaison (remplace EXPECT_NEAR)
+// Comparison fonction
 bool checkNear(const std::string& label, double actual, double expected, double epsilon) {
     double diff = std::abs(actual - expected);
     std::cout << std::left << std::setw(15) << label 
@@ -204,9 +205,6 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Point équivalent au test géodétique
-        // Lon = 45.00 / Lat = -13.02
-        // RGM23 projeté (EPSG:10674)
         double in_E = 500000.000;
         double in_N = 8560000.000;
         double in_h = 0.0;
@@ -219,12 +217,12 @@ void testMayotteDefModelProjected(GeodeticTransformer& gt) {
             false
         );
 
-        double XY_EPS = 1e-3;   // 1 mm
+        double XY_EPS = 1e-6; 
         double H_EPS  = 1e-3;
 
-        checkNear("Easting",  r.x, 499999.845, XY_EPS);
-        checkNear("Northing", r.y, 8559999.877, XY_EPS);
-        checkNear("Hauteur",  r.z, 0.0797, H_EPS);
+        checkNear("Easting",  r.x, 499999.818402, XY_EPS);
+        checkNear("Northing", r.y, 8559999.9194758, XY_EPS);
+        checkNear("Hauteur",  r.z, 0.0791, H_EPS);
 
         if (r.t == 2018.0)
             std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
@@ -245,9 +243,6 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
     if (model_path.empty()) return;
 
     try {
-        // Point équivalent au test géodétique
-        // Lon = 24.3953152240 / Lat = 60.2174694086
-        // ETRF2000 projeté
         double in_E = 385000.000;
         double in_N = 6672000.000;
         double in_h = 94.6218;
@@ -257,16 +252,16 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         auto r = gt.applyGridDeformationProjected(
             in_E, in_N, in_h, in_t,
             model_path,
-            3067,        // ETRF2000
+            3067,  
             t_target
         );
 
-        double XY_EPS = 1e-3;   // 1 mm
+        double XY_EPS = 1e-3;
         double H_EPS  = 1e-3;
 
-        checkNear("Easting",  r.x, 385000.021, XY_EPS);
-        checkNear("Northing", r.y, 6672000.041, XY_EPS);
-        checkNear("Hauteur",  r.z, 94.6879, H_EPS);
+        checkNear("Easting",  r.x, 385000.004919, XY_EPS);
+        checkNear("Northing", r.y, 6671999.97836, XY_EPS);
+        checkNear("Hauteur",  r.z, 94.682, H_EPS);
 
         if (r.t == 2019.7)
             std::cout << "Epoch           | " << r.t << GREEN << " [OK]" << RESET << std::endl;
@@ -277,10 +272,12 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
     }
 }
+*/
 
 int main() {
     try {
-        // TEMP TESTING MANUALS
+        /*
+        std::cout << "\nTemporary Unit Tests(because github CI does not have the latest proj version)" << std::endl;
         std::cout << std::fixed << std::setprecision(9);
     
         // Instanciation du transformateur
@@ -296,7 +293,9 @@ int main() {
         testMayotteDefModelProjected(gt);
         testNKGGridDeformationProjected(gt);
 
-        std::cout << "\nFin des tests manuels." << std::endl;
+        std::cout << "\nEnd of temporary unit tests." << std::endl;
+        */
+
         Application app;
         app.initialize();
         app.run();
