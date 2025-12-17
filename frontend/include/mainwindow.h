@@ -52,6 +52,8 @@
 #include <qgsfeature.h>
 #include <qgsgeometry.h>
 #include <qgsproject.h>
+#include <qgsmaptoolidentify.h>
+#include <qgsmaptoolpan.h>
 
 //Importing Gdal for updating the display of the project
 #include <gdal_priv.h>    
@@ -80,11 +82,9 @@ public:
     void loadProject(const QString& filepath);
     
     void updateScaleLabel(double scaleValue);
-    void getCalendarDays(
-    QCalendarWidget *calendar,
-    QLabel *decimalDate,
-    QLineEdit *epochEdit
-    );
+    void getCalendarDays(QCalendarWidget *calendar, QLineEdit *epochEdit);
+
+
 
     float computeDate(int day, int month, int year);
     void updateSelectedDate(const QDate &date);
@@ -95,6 +95,7 @@ public:
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
+    void openAttributeTable(QgsVectorLayer* layer);
 
 private:
     Ui::MainWindow *ui;
@@ -110,6 +111,9 @@ private:
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
+    QgsMapToolIdentify* identifyTool = nullptr;
+    QgsMapTool* defaultTool = nullptr;
+
 
 private slots:
     //Save the current project to a .sigm4 file
