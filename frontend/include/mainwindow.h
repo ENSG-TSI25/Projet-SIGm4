@@ -18,6 +18,7 @@
 #include "../ui/ui_mainwindow.h"
 #include "dialogLayerManagement.h"
 #include "Carte.h"
+#include "DeformationModelWidget.h"
 
 //Qt library
 #include <QWidget>
