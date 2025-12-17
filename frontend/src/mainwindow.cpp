@@ -1,4 +1,53 @@
 #include "../include/mainwindow.h"
+#include "../include/LayerManager.h"
+#include "../include/TransformCRS.h"
+#include "../include/MapToolIdentifyFeature.h"
+
+#include <QFileDialog>
+#include <QComboBox>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QWheelEvent>
+#include <qgsmapcanvas.h>
+#include <QLineEdit>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QDoubleValidator>
+#include <QDialog>
+#include <QCalendarWidget>
+#include <QDialogButtonBox>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QString>
+#include <QStringList>
+#include <QListWidget>
+#include <iostream>
+#include <QDate>
+#include <QDebug>
+#include "../include/Carte.h"
+
+#include <core/Project.hpp>
+#include <QMessageBox>
+
+#include <QMessageBox>
+#include <QDir>
+#include <qgsvectorlayercache.h>
+#include <qgsattributetablemodel.h>
+#include <qgsattributetablefiltermodel.h>
+#include <qgsattributetableview.h>
+#include <qgsmaplayer.h>
+
+
+#include <core/DataManager.hpp>
+#include <core/VectorLayer.hpp>
+#include <qgsvectorlayer.h>
+#include <qgsfield.h>
+#include <qgsfeature.h>
+#include <qgsgeometry.h>
+#include <qgsproject.h>
+
+#include <gdal_priv.h>    //Updating the display of the project
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -6,14 +55,17 @@ MainWindow::MainWindow(QWidget *parent)
     , projectDisplay(new ProjectCarateristicsDisplay(this))
 {
     ui->setupUi(this);
-    setProjectActionsEnabled(false);
     layerManager = new LayerManager(this);
     transform = new TransformCRS(this);
+
+    //Disable all actions while there is no active project
+    setProjectActionsEnabled(false);
+
     connect(ui->importBtn, &QPushButton::clicked, layerManager, &LayerManager::listFiles);
+
     // For displaying the CRSs list on the source and target Comboboxes
     setCrsList(ui->sourceCRSCombo);
     setCrsList(ui->targetCRSCombo);
-
 
     connect (ui->sourceCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSsource);
     connect (ui->targetCRSCombo, &QComboBox::currentTextChanged, transform, &TransformCRS::selectCRSdest);
@@ -21,13 +73,66 @@ MainWindow::MainWindow(QWidget *parent)
 
     listDimension(); //dimension pour afficher le contenu de la combobox
     carte = new Carte(ui->carte, this);
-    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);    
+    // === Outil Identify (popup infos, attributs, coordonnées) ===
+
+    ui->btnIdentify->setCheckable(true);
+    ui->btnIdentify->setChecked(false);
+
+    ui->btnIdentify->setStyleSheet(
+    "QPushButton:checked { background-color: #3daee9; color: white; }"
+);
+
+
+
+    //     identifyTool =
+    // new QgsMapToolIdentify(carte->getCanvas());
+    identifyTool =
+    new MapToolIdentifyFeature(
+        carte->getCanvas(),
+        this
+    );
+
+    defaultTool =
+    new QgsMapToolPan(carte->getCanvas());
+    carte->getCanvas()->setMapTool(defaultTool);
+    connect(ui->btnIdentify, &QPushButton::toggled,
+            this, [this](bool checked)
+    {
+        if (checked)
+        {
+            carte->getCanvas()->setMapTool(identifyTool);
+        }
+        else
+        {
+            carte->getCanvas()->setMapTool(defaultTool);
+        }
+    });
+
+
+
+
+    connect(carte->getCanvas(),&QgsMapCanvas::scaleChanged, this,&MainWindow::updateScaleLabel);  
+    connect(
+        carte->getCanvas(),
+        &QgsMapCanvas::xyCoordinates,
+        this,
+        [this](const QgsPointXY& p)
+        {
+            ui->scale->setText(
+                QString("X: %1  Y: %2")
+                    .arg(p.x(), 0, 'f', 3)
+                    .arg(p.y(), 0, 'f', 3)
+            );
+        }
+    );
+
     connect (ui->btnZoomPlus, &QPushButton::clicked, this, &MainWindow::zoomIn_button);
     connect (ui->btnZoomMinus, &QPushButton::clicked, this, &MainWindow::zoomOut_button);
       
     connect (ui->epochEdit, &QLineEdit::textEdited, transform, &TransformCRS::getDate);
     connect (ui->transformBtn, &QPushButton::clicked, transform, &TransformCRS::transform);
 
+    //connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::loadRasterLayerFromFile);
     connect (ui->addToMapBtn, &QPushButton::clicked, layerManager, &LayerManager::addFileToWidget);
 
     //When the "Nouveau" button is clicked, open a new window for choosing the CRS and the eopch
@@ -40,10 +145,14 @@ MainWindow::MainWindow(QWidget *parent)
     //When the "Enregistrer" button is clicked, open the file manager to choose the saving location
     connect(ui->btnSave, &QPushButton::clicked, this, &MainWindow::saveProject);
 
+    //checkbox
+    qDebug() << "++++++";
+    connect (ui->layersList, &QListWidget::itemChanged, layerManager, &LayerManager::displayLayer);
+
     //Dialog management
     dialog = new Dialog();
-    connect(ui->layersList, &QListWidget::itemActivated, this, &MainWindow::openDialog);
-    Ui::Dialog *dig = dialog->getUI();
+    connect (ui->layersList, &QListWidget::itemDoubleClicked, this, &MainWindow::openDialog);
+    Ui::Dialog *dig = dialog -> getUI();
     connect(dig->buttonDuplicate, &QPushButton::clicked,
             this, [this]()
             { layerManager->duplicateLayer(dialog); });
@@ -55,6 +164,52 @@ MainWindow::MainWindow(QWidget *parent)
     
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
+
+
+    ui->layersList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->layersList, &QListWidget::customContextMenuRequested,
+        this, [this](const QPoint& pos)
+{
+    QListWidgetItem* item =
+    ui->layersList->currentItem();
+
+    if (!item)
+        return;
+
+    QString layerId =
+        item->data(Qt::UserRole).toString();
+
+    QgsMapLayer* layer =
+        QgsProject::instance()->mapLayer(layerId);
+
+    if (!layer)
+    {
+        QMessageBox::warning(
+            this,
+            "Erreur",
+            "Couche introuvable dans le projet."
+        );
+        return;
+    }
+
+    QgsVectorLayer* vlayer =
+        qobject_cast<QgsVectorLayer*>(layer);
+
+    if (!vlayer)
+    {
+        QMessageBox::warning(
+            this,
+            "Erreur",
+            "La couche sélectionnée n'est pas vectorielle."
+        );
+        return;
+    }
+
+    openAttributeTable(vlayer);
+
+});
+
+
 }
 
 MainWindow::~MainWindow()
@@ -67,6 +222,49 @@ Ui::MainWindow *MainWindow::getUi()
 {
     return ui;
 }
+
+void MainWindow::openAttributeTable(QgsVectorLayer* layer)
+{
+    if (!layer) return;
+
+    QDialog* dlg = new QDialog(this);
+    dlg->setWindowTitle("Table attributaire");
+    dlg->resize(900, 500);
+
+    QVBoxLayout* layout = new QVBoxLayout(dlg);
+
+    // Cache (OBLIGATOIRE)
+    QgsVectorLayerCache* cache =
+        new QgsVectorLayerCache(layer, 1000, dlg);
+
+    // Modèle attributaire
+    QgsAttributeTableModel* model =
+        new QgsAttributeTableModel(cache, dlg);
+    model->loadLayer();
+
+    //Modèle filtrant (OBLIGATOIRE pour la vue)
+QgsMapCanvas* canvas = getCarte()->getCanvas();
+
+QgsAttributeTableFilterModel* filterModel =
+    new QgsAttributeTableFilterModel(
+        canvas,
+        model,
+        dlg
+    );
+
+    filterModel->setSourceModel(model);
+    filterModel->setFilterMode(QgsAttributeTableFilterModel::ShowAll);
+
+    // Vue
+    QgsAttributeTableView* view =
+        new QgsAttributeTableView(dlg);
+    view->setModel(filterModel);
+
+    layout->addWidget(view);
+    dlg->setLayout(layout);
+    dlg->show();
+}
+
 
 void MainWindow::setProjectActionsEnabled(bool enabled)
 {
@@ -95,9 +293,19 @@ void MainWindow::setProjectActionsEnabled(bool enabled)
     ui->carte->setEnabled(enabled);
 }
 
-void MainWindow::updateScaleLabel(int scaleValue)
+void MainWindow::updateScaleLabel(double scaleValue)
 {
-    ui->scale->setText(QString("Échelle : 1:%1").arg(QString::number((std::round(scaleValue / 100) * 100), 'f', 0)));
+    //If there is no project, there is no scale 
+    if (currentProject == nullptr) {
+        ui->scale->setText("Échelle : N/A");
+        return;
+    }
+
+    qDebug() << "Scale changed !";
+    
+    //Round the scale from the double that the QgsMapCanvas::scaleChanged function returns
+    int roundedScale = static_cast<int>(std::round(scaleValue / 100) * 100);
+    ui->scale->setText(QString("Échelle : 1:%1").arg(roundedScale));
 }
 
 void MainWindow::zoomIn_button()
@@ -140,6 +348,10 @@ Project *MainWindow::getCurrentProject() { return currentProject; }
 
 void MainWindow::setNewProject()
 {
+    //Reset the canvas
+    carte->clearUserLayers();
+    //Clear the layers list in the UI
+    ui->layersList->clear();
     
     QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
@@ -171,10 +383,10 @@ void MainWindow::setNewProject()
 
 
     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
-    QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
+    // QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
 
     // Met à jour epochTextZone quand on clique sur le calendrier
-    getCalendarDays(calendar, decimalDate, epochTextZone);
+    getCalendarDays(calendar, epochTextZone);
 
     // Met à jour le calendrier quand on tape une epoch
     connect(epochTextZone, &QLineEdit::editingFinished, this, [=]() {
@@ -201,7 +413,6 @@ void MainWindow::setNewProject()
 
     connect(crsList, &QComboBox::currentTextChanged,
             this, [this, crsList]() {
-                // ui->crsLabel->setText("CRS : " + crsList->currentText());
             });
 
 
@@ -217,7 +428,6 @@ void MainWindow::setNewProject()
         qDebug() << "Création de projet annulée.";
         return;
     }
-
 
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
@@ -281,6 +491,19 @@ void MainWindow::setNewProject()
     QgsProject::instance()->setCrs(projectCrs);
     carte->getCanvas()->setDestinationCrs(projectCrs);
 
+    QgsRectangle defaultExtent;
+    //If it is a projected CRS, wit need to use adequate coordinates
+    if (selectedCrs == QString("EPSG::9794") || selectedCrs == QString("EPSG::10674")){
+        defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+    }
+    //else lat/lon for geographic CRS
+    else{
+        defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+    }
+    qDebug() << selectedCrs;
+    carte->getCanvas()->setExtent(defaultExtent);
+    carte->getCanvas()->refresh();
+
     qDebug() << "Nouveau projet créé :";
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
@@ -295,7 +518,6 @@ void MainWindow::setNewProject()
 
 void MainWindow::getCalendarDays(
     QCalendarWidget *calendar,
-    QLabel *decimalDate,
     QLineEdit *epochEdit
 )
 {
@@ -306,10 +528,6 @@ void MainWindow::getCalendarDays(
             date.day(),
             date.month(),
             date.year()
-        );
-
-        decimalDate->setText(
-            "Date décimale : " + QString::number(dec, 'f', 6)
         );
 
         epochEdit->setText(
@@ -361,6 +579,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
             "ETRF2000 (9067)",
             "RGF93v2b (9784)",
             "RGM23 (10673)",
+            
     };
     for(const QString &item : items3D){
         model->appendRow(new QStandardItem(item));
@@ -461,11 +680,14 @@ void MainWindow::loadProject()
         return;
     }
 
+    //Reset the map
+    carte->clearUserLayers();
+
     // Call the overloaded version with the filepath
     loadProject(filepath);
+    // Enable all actions on the interface 
     setProjectActionsEnabled(true);
 }
-
 
 
 void MainWindow::loadProject(const QString &filepath)
@@ -484,7 +706,7 @@ void MainWindow::loadProject(const QString &filepath)
             loadedProject.getName(),
             loadedProject.getEpoch0(),
             loadedProject.getCrs(),
-            {}); // on recharge les couches proprement
+            {});
 
         // Delete the older project if already present
         if (currentProject != nullptr)
@@ -501,6 +723,7 @@ void MainWindow::loadProject(const QString &filepath)
         int dayOfYear = static_cast<int>((epoch - year) * 365);
         QDate projectDate = QDate(year, 1, 1).addDays(dayOfYear);
 
+        //Update UI display of project caracteristics
         projectDisplay->updateDisplayName();
         projectDisplay->updateDisplayCRS();
         projectDisplay->updateDisplayEpoch0();
@@ -511,8 +734,8 @@ void MainWindow::loadProject(const QString &filepath)
 
         // --- QGIS canvas ---
         QgsMapCanvas *canvas = getCarte()->getCanvas();
-        QString projectCrs = QString::fromStdString(currentProject->getCrs());
-        QgsCoordinateReferenceSystem projectCRS(projectCrs);
+        QString projectCrsString = QString::fromStdString(currentProject->getCrs());
+        QgsCoordinateReferenceSystem projectCRS(projectCrsString);
         canvas->setDestinationCrs(projectCRS);
 
         DataManager &dm = getDataManager();
@@ -520,7 +743,24 @@ void MainWindow::loadProject(const QString &filepath)
         const auto &loadedLayers = loadedProject.getLayers();
         qDebug() << "Reloading" << loadedLayers.size() << "layer(s)...";
 
-        for (const auto &layer : loadedLayers)
+        // ----JUST FOR INITIAL TESTS, WE NEED TO FIND A BETTER WAY TO DO THIS
+        //If there are no layer, we choose to set the extent of the canvas to France
+        if(layers.empty()){
+                QgsRectangle defaultExtent;
+                //If it is a projected CRS, wit need to use adequate coordinates
+                if (projectCrsString == QString("EPSG::9794") || projectCrsString == QString("EPSG::10674")){
+                    defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+                }
+                //else lat/lon for geographic CRS
+                else{
+                    defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+                }
+                qDebug() << projectCrsString;
+                carte->getCanvas()->setExtent(defaultExtent);
+                carte->getCanvas()->refresh();
+        }
+
+        for (const Layer &layer : layers)
         {
             QString layerName = QString::fromStdString(layer->getName());
             QString dataSource = QString::fromStdString(layer->getDataSource());
@@ -575,7 +815,7 @@ void MainWindow::loadProject(const QString &filepath)
                 auto qgsLayers = canvas->layers();
                 qgsLayers.prepend(qgsLayer);
                 canvas->setLayers(qgsLayers);
-                canvas->setExtent(qgsLayer->extent());
+                // canvas->setExtent(qgsLayer->extent()); --for now commented because it does not work properly
                 canvas->refresh();
             }
             // =========================
@@ -676,7 +916,7 @@ void MainWindow::loadProject(const QString &filepath)
                     auto qgsLayers = canvas->layers();
                     qgsLayers.prepend(qgsLayer);
                     canvas->setLayers(qgsLayers);
-                    canvas->setExtent(qgsLayer->extent());
+                    // canvas->setExtent(qgsLayer->extent()); --for now commented because it does not work properly
                     canvas->refresh();
                     break;
                 }
@@ -708,4 +948,7 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
+
+
 }
+

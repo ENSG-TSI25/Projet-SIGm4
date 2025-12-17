@@ -26,11 +26,14 @@ class Carte : public QObject
     Q_OBJECT
 
 public:
-    Carte(QWidget* containerFrame, MainWindow* mw);  // Prend le QFrame comme parent
+    Carte(QWidget* containerFrame, MainWindow* mw);  // Take the QFrame as parent
     ~Carte();
 
     QgsMapCanvas* getCanvas() { return canvas; }
     std::string getCarteEpsg() { return carteEpsg; }
+
+    // Clear all layers of the QGIS canva, except the ones not defined by the user (OSM/Satellite basemap)
+    void clearUserLayers();
 
 private:
     MainWindow* mw;
