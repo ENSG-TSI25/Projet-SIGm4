@@ -716,6 +716,8 @@ void MainWindow::loadProject(const QString &filepath)
         projectDisplay->updateDisplayCRS();
         projectDisplay->updateDisplayEpoch0();
 
+        auto projectLayers = currentProject->getLayers();
+        qDebug() << "Reloading" << projectLayers.size() << "layer(s)...";
         ui->layersList->clear();
 
         // --- QGIS canvas ---
@@ -726,12 +728,12 @@ void MainWindow::loadProject(const QString &filepath)
 
         DataManager &dm = getDataManager();
 
-        const auto &layers = loadedProject.getLayers();
-        qDebug() << "Reloading" << layers.size() << "layer(s)...";
+        const auto &loadedLayers = loadedProject.getLayers();
+        qDebug() << "Reloading" << loadedLayers.size() << "layer(s)...";
 
         // ----JUST FOR INITIAL TESTS, WE NEED TO FIND A BETTER WAY TO DO THIS
         //If there are no layer, we choose to set the extent of the canvas to France
-        if(layers.empty()){
+        if(loadedLayers.empty()){
                 QgsRectangle defaultExtent;
                 //If it is a projected CRS, wit need to use adequate coordinates
                 if (projectCrsString == QString("EPSG::9794") || projectCrsString == QString("EPSG::10674")){
@@ -746,10 +748,10 @@ void MainWindow::loadProject(const QString &filepath)
                 carte->getCanvas()->refresh();
         }
 
-        for (const Layer &layer : layers)
+        for (const auto &layer : loadedLayers)
         {
-            QString layerName = QString::fromStdString(layer.getName());
-            QString dataSource = QString::fromStdString(layer.getDataSource());
+            QString layerName = QString::fromStdString(layer->getName());
+            QString dataSource = QString::fromStdString(layer->getDataSource());
 
             if (dataSource.isEmpty() || !QFile::exists(dataSource))
                 continue;
@@ -780,7 +782,7 @@ void MainWindow::loadProject(const QString &filepath)
                     continue;
 
                 raster->setDataSource(dataSource.toStdString());
-                currentProject->addLayer(*raster);
+                currentProject->addLayer(std::make_shared<RasterLayer>(*raster));
 
                 // --- QGIS ---
                 QgsRasterLayer *qgsLayer =
@@ -815,11 +817,11 @@ void MainWindow::loadProject(const QString &filepath)
 
                 for (VectorLayer *vl : vLayers)
                 {
-                    if (vl->getName() != layer.getName())
+                    if (vl->getName() != layer->getName())
                         continue;
 
                     vl->setDataSource(dataSource.toStdString());
-                    currentProject->addLayer(*vl);
+                    currentProject->addLayer(std::make_shared<VectorLayer>(*vl));
 
                     // --- QGIS ---
                     QgsVectorLayer *qgsLayer =
@@ -830,8 +832,70 @@ void MainWindow::loadProject(const QString &filepath)
 
                     if (!qgsLayer->isValid())
                     {
-                        delete qgsLayer;
-                        continue;
+                        DataManager dm;
+                        std::vector<VectorLayer *> reloadedLayers = dm.loadVector(dataSource.toStdString());
+
+                        for (auto *vLayer : reloadedLayers)
+                        {
+                            if (vLayer->getName() == layer->getName())
+                            {
+                                QString qlayerName = QString::fromStdString(vLayer->getName());
+                                QString layerCrs = QString::fromStdString(vLayer->getCrs());
+
+                                QgsVectorLayer *qlayer = new QgsVectorLayer(
+                                    "Point?crs=" + layerCrs,
+                                    qlayerName,
+                                    "memory");
+
+                                QList<QgsField> fieldList;
+                                fieldList << QgsField("id", QVariant::Int);
+                                qlayer->dataProvider()->addAttributes(fieldList);
+                                qlayer->updateFields();
+
+                                auto ewkts = vLayer->getEWKT();
+                                int fid = 0;
+                                for (const auto &ewkt : ewkts)
+                                {
+                                    if (ewkt.empty())
+                                        continue;
+
+                                    std::string wkt = ewkt;
+                                    size_t pos = ewkt.find(';');
+                                    if (pos != std::string::npos)
+                                    {
+                                        wkt = ewkt.substr(pos + 1);
+                                    }
+
+                                    QgsGeometry qgsGeom = QgsGeometry::fromWkt(QString::fromStdString(wkt));
+                                    if (!qgsGeom.isEmpty())
+                                    {
+                                        QgsFeature feat;
+                                        feat.setGeometry(qgsGeom);
+                                        feat.setAttributes({fid++});
+                                        qlayer->dataProvider()->addFeature(feat);
+                                    }
+                                }
+
+                                qlayer->updateExtents();
+                                QgsProject::instance()->addMapLayer(qlayer, false);
+
+                                QgsCoordinateTransform transform(
+                                    qlayer->crs(),
+                                    projectCRS,
+                                    QgsProject::instance());
+
+                                auto currentLayers = canvas->layers();
+                                currentLayers.prepend(qlayer);
+                                canvas->setLayers(currentLayers);
+
+                                QgsRectangle extent = transform.transformBoundingBox(qlayer->extent());
+                                canvas->setExtent(extent);
+                                canvas->refresh();
+
+                                qDebug() << "Vector loaded - CRS:" << qlayer->crs().authid() << "->" << projectCRS.authid() << "Geoms:" << fid;
+                                break;
+                            }
+                        }
                     }
 
                     qgsLayer->setName(layerName);
@@ -872,7 +936,5 @@ void MainWindow::loadProject(const QString &filepath)
             "Error",
             QString("Failed to load project:\n%1").arg(e.what()));
     }
-
-
 }
 

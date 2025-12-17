@@ -70,10 +70,28 @@ GeoPackageReader::LayerMetadata GeoPackageReader::getLayerMetadata(const std::st
     m.geometryType = layer->GetGeomType();
 
     if (auto* srs = layer->GetSpatialRef()) {
+        // Code and format extraction
         if (auto* code = srs->GetAuthorityCode(nullptr)) {
             m.srid = std::atoi(code);
             m.crs = std::string(srs->GetAuthorityName(nullptr)) + ":" + code;
+            char* unitName = nullptr;
+            srs->GetLinearUnits(&unitName);
+            if (srs->IsGeographic()) {
+                m.coords_type = "geodetic"; // Lat/Lon (Degrees)
+            } 
+            else if (srs->IsProjected()) {
+                m.coords_type = "projected"; // Lambert, UTM, etc. (Meters on map)
+            } 
+            else if (srs->IsGeocentric()) {
+                m.coords_type = "geocentric"; // Cartesian XYZ (Meters from Earth's center)
+            }
+            else {
+                std::cout << "Unsupported coordinate units";
+                m.coords_type = "unknown";
+            }
         }
+
+        
     }
     return m;
 }
@@ -98,25 +116,27 @@ std::vector<GeoPackageReader::Feature> GeoPackageReader::extractFeatures(const s
 }
 
 std::string GeoPackageReader::detectTimestampField(const std::string& layerName) const {
-    // Cherche un champ temporel
-    if (!isOpen) return "";
     OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
     if (!layer) return "";
-
-    OGRFeatureDefn* defn = layer->GetLayerDefn();
-    std::vector<std::string> keywords = {"time", "timestamp", "date", "epoch"};
     
-    for (int i = 0; i < defn->GetFieldCount(); ++i) {
-        std::string name = defn->GetFieldDefn(i)->GetNameRef();
-        std::transform(name.begin(), name.end(), name.begin(), ::tolower);
-        for (const auto& kw : keywords) {
-            if (name.find(kw) != std::string::npos) 
-                return defn->GetFieldDefn(i)->GetNameRef();
+    OGRFeatureDefn* defn = layer->GetLayerDefn();
+    
+    std::vector<std::string> timeFields = {"t", "time", "timestamp", "date", "datetime", "epoch"};
+    
+    for (int i = 0; i < defn->GetFieldCount(); i++) {
+        std::string fieldName = defn->GetFieldDefn(i)->GetNameRef();
+        std::string lowerName = fieldName;
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+        
+        for (const auto& timeField : timeFields) {
+            if (lowerName == timeField) {
+                return fieldName;
+            }
         }
     }
+    
     return "";
 }
-
 GeoPackageReader::Feature GeoPackageReader::convertOGRFeature(OGRFeature* ogrf, const std::string& tsField) const {
     // Convertit un OGRFeature en structure interne
     Feature f;
@@ -270,4 +290,26 @@ Geometry4D GeoPackageReader::extractRasterExtent(
     
     GDALClose(rasterDS);
     return Geometry4D(poly);
+}
+
+bool GeoPackageReader::addTemporalField(const std::string& layerName, const std::string& fieldName, double defaultValue) {
+    OGRLayer* layer = dataset->GetLayerByName(layerName.c_str());
+    if (!layer) return false;
+    
+    // Create field
+    OGRFieldDefn fieldDefn(fieldName.c_str(), OFTReal);
+    if (layer->CreateField(&fieldDefn) != OGRERR_NONE) {
+        return false;
+    }
+    
+    // Set default value for all features
+    layer->ResetReading();
+    OGRFeature* feature;
+    while ((feature = layer->GetNextFeature()) != nullptr) {
+        feature->SetField(fieldName.c_str(), defaultValue);
+        layer->SetFeature(feature);
+        OGRFeature::DestroyFeature(feature);
+    }
+    
+    return true;
 }
