@@ -1,5 +1,7 @@
 #include "../include/LayerManager.h"
 #include <QSet>
+#include <qgssymbol.h>
+#include <qgssinglesymbolrenderer.h>
 
 LayerManager::LayerManager(MainWindow* mw) : QObject(mw), mw(mw), fileName(""), layerRaster()
 {
@@ -333,8 +335,7 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
 
 }
 
-#include <qgssymbol.h>
-#include <qgssinglesymbolrenderer.h>
+
 
 // UI HELPERS
 
