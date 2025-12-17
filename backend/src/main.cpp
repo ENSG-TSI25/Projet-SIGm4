@@ -2,6 +2,7 @@
 #include <iostream>
 
 // TEMP TESTING
+/*
 #include <iomanip>
 #include <string>
 #include <fstream>
@@ -12,12 +13,12 @@
 // === CONFIGURATION ===
 static const std::string DATA_PATH = "/app/backend/data/required/";
 
-// Codes couleurs pour la console
+// Color codes for console testing output
 const std::string GREEN = "\033[32m";
 const std::string RED   = "\033[31m";
 const std::string RESET = "\033[0m";
 
-// Fonction utilitaire pour vérifier l'existence du fichier
+// Fetch full path of model file
 std::string getModelPath(const std::string& filename) {
     std::string fullPath = DATA_PATH + filename;
     std::ifstream f(fullPath);
@@ -28,7 +29,7 @@ std::string getModelPath(const std::string& filename) {
     return fullPath;
 }
 
-// Fonction utilitaire de comparaison (remplace EXPECT_NEAR)
+// Comparison fonction
 bool checkNear(const std::string& label, double actual, double expected, double epsilon) {
     double diff = std::abs(actual - expected);
     std::cout << std::left << std::setw(15) << label 
@@ -271,10 +272,12 @@ void testNKGGridDeformationProjected(GeodeticTransformer& gt) {
         std::cerr << RED << "Exception levée : " << e.what() << RESET << std::endl;
     }
 }
+*/
 
 int main() {
     try {
-        // TEMP TESTING MANUALS
+        /*
+        std::cout << "\nTemporary Unit Tests(because github CI does not have the latest proj version)" << std::endl;
         std::cout << std::fixed << std::setprecision(9);
     
         // Instanciation du transformateur
@@ -290,7 +293,9 @@ int main() {
         testMayotteDefModelProjected(gt);
         testNKGGridDeformationProjected(gt);
 
-        std::cout << "\nFin des tests manuels." << std::endl;
+        std::cout << "\nEnd of temporary unit tests." << std::endl;
+        */
+
         Application app;
         app.initialize();
         app.run();
