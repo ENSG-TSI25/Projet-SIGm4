@@ -670,9 +670,9 @@ void MainWindow::setNewProject()
     // ========================================
     // TODO : Stocker le modèle de déformation dans le projet
     // Si votre classe Project a un champ pour ça, ajoutez :
-    // if (hasDeformationModel) {
-    //     newProject->setDeformationModel(selectedModel.toStdString());
-    // }
+    if (hasDeformationModel) {
+        newProject->setDeformationModel(selectedModel.toStdString());
+    }
     // ========================================
 
     currentProject = newProject;

@@ -41,6 +41,13 @@ bool Project::save(const std::string& filepath) const {
     doc.AddMember("name", Value(name.c_str(), allocator), allocator);
     doc.AddMember("crs", Value(crs.c_str(), allocator), allocator);
     doc.AddMember("epoch0", epoch0, allocator);
+
+
+    // Add deformation model if exists
+    if (!deformationModel.empty()) {
+    doc.AddMember("deformationModel", Value(deformationModel.c_str(), allocator), allocator);
+    }
+    
     
     // Add layers array
     Value layersArray(kArrayType);
@@ -94,6 +101,12 @@ Project Project::load(const std::string& filepath) {
     std::string crs = doc["crs"].GetString();
     double epoch0 = doc["epoch0"].GetDouble();
     
+    // Extract deformation model if exists
+    std::string deformationModel = "";
+    if (doc.HasMember("deformationModel")) {
+        deformationModel = doc["deformationModel"].GetString();
+    }
+
     std::vector<Layer> layers;
     const Value& layersArray = doc["layers"];
     for (SizeType i = 0; i < layersArray.Size(); i++) {
@@ -121,5 +134,11 @@ Project Project::load(const std::string& filepath) {
     for (auto& layer : layers) {
         sharedLayers.push_back(std::make_shared<Layer>(layer));
     }
+
+    Project project(name, epoch0, crs, sharedLayers);
+    if (!deformationModel.empty()) {
+        project.setDeformationModel(deformationModel);
+    }
+
     return Project(name, epoch0, crs, sharedLayers);
 }
