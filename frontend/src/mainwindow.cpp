@@ -161,7 +161,18 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]() {
                 layerManager->renameLayer(dialog);
             });
+
+    connect(dig->buttonDelete, &QPushButton::clicked,
+            this, [this]() {
+                layerManager->deleteLayer();
+                dialog->hide();
+            });
     
+    connect(dig->mColorButton, &QgsColorButton::colorChanged,
+            this, [this](const QColor &color) {
+                layerManager->changeLayerColor(color);
+            });
+
     //To show the careteristics of the current project
     ui->projectCaracteristicsDisplay->addWidget(projectDisplay);
 
@@ -329,6 +340,10 @@ void MainWindow::listDimension()
 // Open dialog when the layer is clicked
 void MainWindow::openDialog()
 {
+    QColor color = layerManager->getLayerColor();
+    if (color.isValid()) {
+        dialog->getUI()->mColorButton->setColor(color);
+    }
     dialog->show();
 }
 

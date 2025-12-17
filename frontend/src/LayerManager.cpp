@@ -333,35 +333,117 @@ void LayerManager::loadRasterLayerFromFile(const QString& file)
 
 }
 
+#include <qgssymbol.h>
+#include <qgssinglesymbolrenderer.h>
+
 // UI HELPERS
+
+bool LayerManager::isLayerNameUnique(const QString& name)
+{
+    QListWidget* listWidget = mw->getUi()->layersList;
+    for(int i = 0; i < listWidget->count(); ++i) {
+        if (listWidget->item(i)->text() == name) {
+            return false;
+        }
+    }
+    return true;
+}
+
+QColor LayerManager::getLayerColor()
+{
+    int index = mw->getUi()->layersList->currentRow();
+    if (index < 0) return QColor();
+
+    QListWidgetItem* item = mw->getUi()->layersList->item(index);
+    QString layerName = item->text();
+
+    QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
+    if (foundLayers.isEmpty()) return QColor();
+
+    QgsMapLayer* layer = foundLayers.first();
+    QgsVectorLayer* vLayer = qobject_cast<QgsVectorLayer*>(layer);
+    if (vLayer) {
+        if (vLayer->renderer()) {
+            QgsRenderContext context;
+            QgsSymbolList symbols = vLayer->renderer()->symbols(context);
+            if (!symbols.isEmpty()) {
+                return symbols.first()->color();
+            }
+        }
+    }
+    
+    return QColor();
+}
+
+void LayerManager::changeLayerColor(const QColor& color)
+{
+    int index = mw->getUi()->layersList->currentRow();
+    if (index < 0) return;
+
+    QListWidgetItem* item = mw->getUi()->layersList->item(index);
+    QString layerName = item->text();
+
+    QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
+    if (foundLayers.isEmpty()) return;
+
+    QgsMapLayer* layer = foundLayers.first();
+    QgsVectorLayer* vLayer = qobject_cast<QgsVectorLayer*>(layer);
+    if (vLayer) {
+        if (vLayer->renderer()) {
+             QgsRenderContext context;
+             QgsSymbolList symbols = vLayer->renderer()->symbols(context);
+             if (!symbols.isEmpty()) {
+                 QgsSymbol* symbol = symbols.first();
+                 if (symbol) {
+                     symbol->setColor(color);
+                     vLayer->triggerRepaint();
+                     mw->getCarte()->getCanvas()->refresh();
+                 }
+             }
+        }
+    }
+}
 
 void LayerManager::duplicateLayer(Dialog* dialog)
 {
     int currentIndex = mw->getUi()->layersList->currentRow();
     if (currentIndex < 0) return;
 
+    QString newLayerName = dialog->nameLayer();
+    
+    if (newLayerName.isEmpty()) {
+        QMessageBox::warning(mw, "Erreur", "Le nom de la couche ne peut pas être vide.");
+        return;
+    }
+
+    if (!isLayerNameUnique(newLayerName)) {
+        QMessageBox::warning(mw, "Erreur", "Une couche avec ce nom existe déjà.");
+        return;
+    }
     
     QgsMapCanvas* canvas = mw->getCarte()->getCanvas();
-    QgsMapLayer* sourceLayer = canvas->layers().at(currentIndex);
-    if (!sourceLayer) return;
+    
+    QListWidgetItem* currentItem = mw->getUi()->layersList->item(currentIndex);
+    QString sourceLayerName = currentItem->text();
+    
+    QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(sourceLayerName);
+    if (foundLayers.isEmpty()) return;
+    QgsMapLayer* sourceLayer = foundLayers.first();
 
   
     QgsMapLayer* newLayer = sourceLayer->clone();
-    QString newLayerName = dialog->nameLayer();
     newLayer->setName(newLayerName);
 
     QgsProject::instance()->addMapLayer(newLayer, false);
 
-    QList<QgsMapLayer*> layers = canvas->layers();
-    layers.insert(currentIndex, newLayer);
-    canvas->setLayers(layers);
 
     QListWidgetItem* item = new QListWidgetItem(newLayerName);
     item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
     item->setCheckState(Qt::Checked);
     mw->getUi()->layersList->insertItem(currentIndex, item);
 
-    canvas->refresh();
+   
+    displayLayer();
 }
 
 
@@ -370,8 +452,54 @@ void LayerManager::renameLayer(Dialog* dialog)
     int index = mw->getUi()->layersList->currentRow();
     if (index < 0) return;
 
-    mw->getUi()->layersList->item(index)->setText(dialog->nameLayer());
+    QString newName = dialog->nameLayer();
+    
+    if (newName.isEmpty()) {
+        QMessageBox::warning(mw, "Erreur", "Le nom de la couche ne peut pas être vide.");
+        return;
+    }
+
+    if (!isLayerNameUnique(newName)) {
+        QMessageBox::warning(mw, "Erreur", "Une couche avec ce nom existe déjà.");
+        return;
+    }
+
+    QListWidgetItem* item = mw->getUi()->layersList->item(index);
+    QString oldName = item->text();
+    
+   
+    item->setText(newName);
+    
+    
+    QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(oldName);
+    if (!foundLayers.isEmpty()) {
+        foundLayers.first()->setName(newName);
+    }
+    
+    
+    displayLayer();
 }
+
+void LayerManager::deleteLayer()
+{
+    int index = mw->getUi()->layersList->currentRow();
+    if (index < 0) return;
+
+    QListWidgetItem* item = mw->getUi()->layersList->item(index);
+    QString layerName = item->text();
+
+    
+    delete mw->getUi()->layersList->takeItem(index);
+
+    QList<QgsMapLayer*> foundLayers = QgsProject::instance()->mapLayersByName(layerName);
+    if (!foundLayers.isEmpty()) {
+        QgsProject::instance()->removeMapLayer(foundLayers.first());
+    }
+
+    
+    displayLayer();
+}
+
 
 
 void LayerManager::displayLayer() {
