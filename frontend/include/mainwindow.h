@@ -52,6 +52,8 @@
 #include <qgsfeature.h>
 #include <qgsgeometry.h>
 #include <qgsproject.h>
+#include <qgsmaptoolidentify.h>
+#include <qgsmaptoolpan.h>
 
 //Importing Gdal for updating the display of the project
 #include <gdal_priv.h>    
@@ -71,46 +73,51 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void listDimension();
     void openDialog();
+
+    //Create a new project
     void setNewProject();
-    void openExistingProject();
-    void saveCurrentProject();
-    void updateScaleLabel(int scaleValue);
-    void getCalendarDays(
-    QCalendarWidget *calendar,
-    QLabel *decimalDate,
-    QLineEdit *epochEdit
-    );
+    //Open an already existing project from a .sigm4 file
+    void loadProject(const QString& filepath);
+    
+    void updateScaleLabel(double scaleValue);
+    void getCalendarDays(QCalendarWidget *calendar, QLineEdit *epochEdit);
+
+
 
     float computeDate(int day, int month, int year);
     void updateSelectedDate(const QDate &date);
     LayerManager* getLayerManager(); 
     Project* getCurrentProject();
     Carte* getCarte();
-    void loadProject(const QString& filepath);
 
     Ui::MainWindow* getUi();
     
     DataManager& getDataManager() { return dataManager; }
+    void openAttributeTable(QgsVectorLayer* layer);
 
 private:
     Ui::MainWindow *ui;
     Carte* carte;
+    //Initialize to nullptr before the creation of a project
     Project* currentProject = nullptr;
     LayerManager* layerManager;
     Dialog* dialog;
     TransformCRS* transform;
     ProjectCarateristicsDisplay* projectDisplay;
-      void setProjectActionsEnabled(bool enabled);
+    void setProjectActionsEnabled(bool enabled);
     void zoomIn_button();
     void zoomOut_button();
     void setCrsList(QComboBox *comboBox);
     DataManager dataManager;
+    QgsMapToolIdentify* identifyTool = nullptr;
+    QgsMapTool* defaultTool = nullptr;
+
 
 private slots:
+    //Save the current project to a .sigm4 file
     void saveProject();
+    //No parameters -slot for the "Open" button in UI
     void loadProject();
 };
-
 #endif // MAINWINDOW_H
