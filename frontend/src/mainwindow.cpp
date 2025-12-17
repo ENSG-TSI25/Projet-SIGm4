@@ -336,10 +336,7 @@ Project *MainWindow::getCurrentProject() { return currentProject; }
 
 void MainWindow::setNewProject()
 {
-    //Reset the canvas
-    carte->clearUserLayers();
-    //Clear the layers list in the UI
-    ui->layersList->clear();
+
     
     QDialog chosingCRSDialog(this);
     chosingCRSDialog.setWindowTitle("Nouveau projet");
@@ -416,6 +413,11 @@ void MainWindow::setNewProject()
         qDebug() << "Création de projet annulée.";
         return;
     }
+
+    //Reset the canvas if the dialog is not cancelled
+    carte->clearUserLayers();
+    //Clear the layers list in the UI
+    ui->layersList->clear();
 
     QString projectName = nameTextZone->text().trimmed();
     QString selectedCrs = crsList->currentText().trimmed();
