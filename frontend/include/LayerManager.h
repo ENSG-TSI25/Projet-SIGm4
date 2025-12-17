@@ -34,6 +34,11 @@ public:
 
     void duplicateLayer(Dialog* dialog);
     void renameLayer(Dialog* dialog);
+    void deleteLayer();
+    void changeLayerColor(const QColor& color);
+    QColor getLayerColor();
+    
+    bool isLayerNameUnique(const QString& name);
     
     void loadRasterLayerFromFile(const QString& file);
     void loadVectorLayerFromFile(const QString& file);
