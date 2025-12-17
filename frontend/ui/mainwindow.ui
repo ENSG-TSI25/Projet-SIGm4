@@ -60,7 +60,7 @@
             </property>
            </widget>
           </item>
-          <item>
+          <!-- <item>
            <widget class="QLabel" name="label_2">
             <property name="maximumSize">
              <size>
@@ -72,14 +72,7 @@
              <string>Dimension</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="dimensionCombo">
-            <property name="placeholderText">
-             <string>Dimension...</string>
-            </property>
-           </widget>
-          </item>
+          </item> -->
           <item>
            <widget class="QPushButton" name="addToMapBtn">
             <property name="text">
@@ -228,6 +221,13 @@
            <widget class="QPushButton" name="btnSave">
             <property name="text">
              <string>Enregistrer</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnIdentify">
+            <property name="text">
+             <string>i</string>
             </property>
            </widget>
           </item>
