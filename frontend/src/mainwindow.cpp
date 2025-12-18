@@ -334,6 +334,180 @@ Project *MainWindow::getCurrentProject() { return currentProject; }
 
 
 
+// void MainWindow::setNewProject()
+// {
+//     //Reset the canvas
+//     carte->clearUserLayers();
+//     //Clear the layers list in the UI
+//     ui->layersList->clear();
+    
+//     QDialog chosingCRSDialog(this);
+//     chosingCRSDialog.setWindowTitle("Nouveau projet");
+//     QVBoxLayout *layout = new QVBoxLayout(&chosingCRSDialog);
+
+//     QLabel *dialogText = new QLabel(
+//         "Choisissez un CRS et une époque pour votre projet",
+//         &chosingCRSDialog
+//     );
+
+//     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
+
+
+//     QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
+//     nameTextZone->setPlaceholderText("Entrez le nom du projet");
+
+
+//     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
+//     crsList->setPlaceholderText("Choisissez un CRS");
+//     setCrsList(crsList);
+
+//     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
+//     epochTextZone->setPlaceholderText("Ex : 2025.22");
+//     epochTextZone->setLocale(QLocale::c());
+
+//     QDoubleValidator *epochValidator = new QDoubleValidator(0, 3000, 6, &chosingCRSDialog);
+//     epochValidator->setNotation(QDoubleValidator::StandardNotation);
+//     epochTextZone->setValidator(epochValidator);
+
+
+//     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
+//     // QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
+
+//     // Met à jour epochTextZone quand on clique sur le calendrier
+//     getCalendarDays(calendar, epochTextZone);
+
+//     // Met à jour le calendrier quand on tape une epoch
+//     connect(epochTextZone, &QLineEdit::editingFinished, this, [=]() {
+//         bool ok = false;
+//         double epoch = QLocale::c().toDouble(epochTextZone->text(), &ok);
+//         if (!ok || epoch <= 0) return;
+
+//         int year = static_cast<int>(epoch);
+//         double frac = epoch - year;
+
+//         int daysInYear = QDate::isLeapYear(year) ? 366 : 365;
+//         int dayOfYear = static_cast<int>(frac * daysInYear);
+
+//         QDate date(year, 1, 1);
+//         date = date.addDays(dayOfYear);
+
+//         if (date.isValid())
+//             calendar->setSelectedDate(date);
+//     });
+
+ 
+//     connect(acceptationButton, &QPushButton::clicked,
+//             &chosingCRSDialog, &QDialog::accept);
+
+//     connect(crsList, &QComboBox::currentTextChanged,
+//             this, [this, crsList]() {
+//             });
+
+
+//     layout->addWidget(dialogText);
+//     layout->addWidget(nameTextZone);
+//     layout->addWidget(crsList);
+//     layout->addWidget(epochTextZone);
+//     layout->addWidget(calendar);
+//     layout->addWidget(acceptationButton);
+
+//     if (chosingCRSDialog.exec() != QDialog::Accepted)
+//     {
+//         qDebug() << "Création de projet annulée.";
+//         return;
+//     }
+
+//     QString projectName = nameTextZone->text().trimmed();
+//     QString selectedCrs = crsList->currentText().trimmed();
+
+//     bool epochOk = false;
+//     double epoch = QLocale::c().toDouble(epochTextZone->text(), &epochOk);
+
+
+//     if (projectName.isEmpty())
+//     {
+//         QMessageBox::warning(this, "Erreur",
+//                              "Veuillez saisir un nom de projet.");
+//         return;
+//     }
+
+//     if (selectedCrs.isEmpty())
+//     {
+//         QMessageBox::warning(this, "Erreur",
+//                              "Veuillez sélectionner un CRS.");
+//         return;
+//     }
+
+//     if (!epochOk || epoch <= 0)
+//     {
+//         QMessageBox::warning(this, "Erreur",
+//                              "Veuillez saisir une époque valide.\n"
+//                              "Exemple : 2025.22");
+//         return;
+//     }
+
+//     // Extraire EPSG si nécessaire
+//     QRegExp rx("\\((\\d+)\\)");
+//     if (rx.indexIn(selectedCrs) != -1)
+//     {
+//         selectedCrs = "EPSG:" + rx.cap(1);
+//     }
+
+//     Project *newProject = new Project(
+//         projectName.toStdString(),
+//         epoch,
+//         selectedCrs.toStdString()
+//     );
+
+//     currentProject = newProject;
+//     setProjectActionsEnabled(true);
+
+//     QgsCoordinateReferenceSystem projectCrs(
+//         QString::fromStdString(currentProject->getCrs())
+//     );
+
+//     if (!projectCrs.isValid())
+//     {
+//         QMessageBox::critical(
+//             this,
+//             "CRS invalide",
+//             "Le CRS sélectionné est invalide."
+//         );
+//         return;
+//     }
+
+//     QgsProject::instance()->setCrs(projectCrs);
+//     carte->getCanvas()->setDestinationCrs(projectCrs);
+
+//     QgsRectangle defaultExtent;
+//     //If it is a projected CRS, wit need to use adequate coordinates
+//     if (selectedCrs == QString("EPSG::9794") || selectedCrs == QString("EPSG::10674")){
+//         defaultExtent = QgsRectangle(-500000, 5000000, 1200000, 6500000);
+//     }
+//     //else lat/lon for geographic CRS
+//     else{
+//         defaultExtent = QgsRectangle(-5.0, 41.0, 10.0, 51.0);
+//     }
+//     qDebug() << selectedCrs;
+//     carte->getCanvas()->setExtent(defaultExtent);
+//     carte->getCanvas()->refresh();
+
+//     qDebug() << "Nouveau projet créé :";
+//     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
+//     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
+//     qDebug() << "  Époque :" << currentProject->getEpoch0();
+
+//     //Updating the display of the project
+//     projectDisplay->updateDisplayName();
+//     projectDisplay->updateDisplayCRS();
+//     projectDisplay->updateDisplayEpoch0();
+// }
+
+
+
+
+
+
 void MainWindow::setNewProject()
 {
 
@@ -349,14 +523,42 @@ void MainWindow::setNewProject()
 
     QPushButton *acceptationButton = new QPushButton("OK", &chosingCRSDialog);
 
-
     QLineEdit *nameTextZone = new QLineEdit(&chosingCRSDialog);
     nameTextZone->setPlaceholderText("Entrez le nom du projet");
-
 
     QComboBox *crsList = new QComboBox(&chosingCRSDialog);
     crsList->setPlaceholderText("Choisissez un CRS");
     setCrsList(crsList);
+
+    // ========================================
+    // NOUVEAU : Widget de modèles de déformation
+    // ========================================
+    DeformationModelWidget *deformWidget = new DeformationModelWidget(&chosingCRSDialog);
+    
+    // Connexion : quand le CRS change, mettre à jour les modèles
+    connect(crsList, &QComboBox::currentTextChanged, 
+            this, [deformWidget, crsList]() {
+        QString selectedCrs = crsList->currentText().trimmed();
+        
+        // Extraire le code EPSG du texte (ex: "ITRF2014 (9000)" -> 9000)
+        QRegExp rx("\\((\\d+)\\)");
+        if (rx.indexIn(selectedCrs) != -1) {
+            int epsgCode = rx.cap(1).toInt();
+            deformWidget->updateForEPSG(epsgCode);
+            qDebug() << "Modèles mis à jour pour EPSG:" << epsgCode;
+        }
+    });
+    
+    // Initialiser avec le premier CRS si disponible
+    if (crsList->count() > 0) {
+        QString initialCrs = crsList->itemText(0);
+        QRegExp rx("\\((\\d+)\\)");
+        if (rx.indexIn(initialCrs) != -1) {
+            int epsgCode = rx.cap(1).toInt();
+            deformWidget->updateForEPSG(epsgCode);
+        }
+    }
+    // ========================================
 
     QLineEdit *epochTextZone = new QLineEdit(&chosingCRSDialog);
     epochTextZone->setPlaceholderText("Ex : 2025.22");
@@ -366,9 +568,7 @@ void MainWindow::setNewProject()
     epochValidator->setNotation(QDoubleValidator::StandardNotation);
     epochTextZone->setValidator(epochValidator);
 
-
     QCalendarWidget *calendar = new QCalendarWidget(&chosingCRSDialog);
-    // QLabel *decimalDate = new QLabel("Date décimale : ", &chosingCRSDialog);
 
     // Met à jour epochTextZone quand on clique sur le calendrier
     getCalendarDays(calendar, epochTextZone);
@@ -392,18 +592,14 @@ void MainWindow::setNewProject()
             calendar->setSelectedDate(date);
     });
 
- 
     connect(acceptationButton, &QPushButton::clicked,
             &chosingCRSDialog, &QDialog::accept);
 
-    connect(crsList, &QComboBox::currentTextChanged,
-            this, [this, crsList]() {
-            });
-
-
+    // Ajout des widgets au layout
     layout->addWidget(dialogText);
     layout->addWidget(nameTextZone);
     layout->addWidget(crsList);
+    layout->addWidget(deformWidget);  // ← NOUVEAU : Widget de modèles
     layout->addWidget(epochTextZone);
     layout->addWidget(calendar);
     layout->addWidget(acceptationButton);
@@ -425,6 +621,18 @@ void MainWindow::setNewProject()
     bool epochOk = false;
     double epoch = QLocale::c().toDouble(epochTextZone->text(), &epochOk);
 
+    // ========================================
+    // NOUVEAU : Récupération du modèle de déformation
+    // ========================================
+    QString selectedModel = deformWidget->getSelectedModel();
+    bool hasDeformationModel = deformWidget->hasModel();
+    
+    if (hasDeformationModel) {
+        qDebug() << "Modèle de déformation sélectionné:" << selectedModel;
+    } else {
+        qDebug() << "Aucun modèle de déformation pour ce CRS";
+    }
+    // ========================================
 
     if (projectName.isEmpty())
     {
@@ -460,6 +668,14 @@ void MainWindow::setNewProject()
         epoch,
         selectedCrs.toStdString()
     );
+
+    // ========================================
+    // TODO : Stocker le modèle de déformation dans le projet
+    // Si votre classe Project a un champ pour ça, ajoutez :
+    if (hasDeformationModel) {
+        newProject->setDeformationModel(selectedModel.toStdString());
+    }
+    // ========================================
 
     currentProject = newProject;
     setProjectActionsEnabled(true);
@@ -498,6 +714,9 @@ void MainWindow::setNewProject()
     qDebug() << "  Nom :" << QString::fromStdString(currentProject->getName());
     qDebug() << "  CRS :" << QString::fromStdString(currentProject->getCrs());
     qDebug() << "  Époque :" << currentProject->getEpoch0();
+    if (hasDeformationModel) {
+        qDebug() << "  Modèle de déformation :" << selectedModel;
+    }
 
     //Updating the display of the project
     projectDisplay->updateDisplayName();
