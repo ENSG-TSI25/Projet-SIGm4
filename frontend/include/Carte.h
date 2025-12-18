@@ -45,7 +45,7 @@ private:
     QgsRasterLayer* satLayer;
     bool osmVisible;
 
-    // UI (facultatif si tu veux mettre les boutons ailleurs)
+    // UI 
 
     QPushButton* toggleBasemap;
     std::string carteEpsg;

@@ -14,13 +14,13 @@ void DeformationModelWidget::setupUI()
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     
-    // Label pour affichage d'un modèle unique
+    // Label to show single model
     modelLabel = new QLabel(this);
     modelLabel->setStyleSheet("QLabel { color: #0066cc; font-weight: bold; }");
     modelLabel->hide();
     layout->addWidget(modelLabel);
     
-    // ComboBox pour choix multiple
+    // ComboBox to show multiple models
     modelCombo = new QComboBox(this);
     modelCombo->hide();
     connect(modelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -35,26 +35,26 @@ void DeformationModelWidget::updateForEPSG(int epsgCode)
     currentEPSG = epsgCode;
     QStringList models = getDeformationModels(epsgCode);
     
-    // Cache tout par défaut
+    // hide both initially
     modelLabel->hide();
     modelCombo->hide();
     selectedModel.clear();
     
     if (models.isEmpty())
     {
-        // Aucun modèle : on n'affiche rien
+        // If no models available
         return;
     }
     else if (models.size() == 1)
     {
-        // Un seul modèle : affichage en label
+        // If only one model, show as label
         modelLabel->setText(QString("Modèle de déformation: %1").arg(models.first()));
         modelLabel->show();
         selectedModel = models.first();
     }
     else
     {
-        // Plusieurs modèles : liste déroulante
+        // If multiple models, show in combo box
         modelCombo->clear();
         modelCombo->addItems(models);
         modelCombo->show();
@@ -85,7 +85,7 @@ QStringList DeformationModelWidget::getDeformationModels(int epsgCode)
 {
     QStringList models;
     
-    // Recherche dans le registre 2D
+    // Search in 2D registry
     const auto& reg2D = GeodeticTransformer::getRegistry2D();
     auto it2D = reg2D.find(epsgCode);
     if (it2D != reg2D.end())
@@ -98,8 +98,8 @@ QStringList DeformationModelWidget::getDeformationModels(int epsgCode)
             }
         }
     }
-    
-    // Recherche dans le registre 3D
+
+    // Search in the 3D registry
     const auto& reg3D = GeodeticTransformer::getRegistry3D();
     auto it3D = reg3D.find(epsgCode);
     if (it3D != reg3D.end())
@@ -112,8 +112,8 @@ QStringList DeformationModelWidget::getDeformationModels(int epsgCode)
             }
         }
     }
-    
-    // Recherche dans le registre projeté
+
+    // Search in the projected registry
     const auto& regProj = GeodeticTransformer::getRegistryProjected();
     auto itProj = regProj.find(epsgCode);
     if (itProj != regProj.end())

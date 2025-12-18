@@ -18,13 +18,13 @@ class DeformationModelWidget : public QWidget
 public:
     explicit DeformationModelWidget(QWidget *parent = nullptr);
     
-    // Met à jour l'affichage en fonction du code EPSG sélectionné
+    // Update the widget based on the provided EPSG code
     void updateForEPSG(int epsgCode);
     
-    // Retourne le modèle sélectionné (vide si aucun)
+    // Return the currently selected deformation model
     QString getSelectedModel() const;
     
-    // Vérifie si un modèle est disponible/sélectionné
+    // Check if a deformation model is selected
     bool hasModel() const;
 
 signals:
@@ -36,7 +36,7 @@ private slots:
 private:
     void setupUI();
     
-    // Récupère les modèles de déformation pour un EPSG donné
+    // Retrieve the deformation models for a given EPSG code
     QStringList getDeformationModels(int epsgCode);
 
     QLabel *modelLabel;

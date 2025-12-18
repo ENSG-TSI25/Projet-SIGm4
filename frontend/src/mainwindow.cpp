@@ -667,13 +667,11 @@ void MainWindow::setNewProject()
         selectedCrs.toStdString()
     );
 
-    // ========================================
-    // TODO : Stocker le modèle de déformation dans le projet
-    // Si votre classe Project a un champ pour ça, ajoutez :
+
     if (hasDeformationModel) {
         newProject->setDeformationModel(selectedModel.toStdString());
     }
-    // ========================================
+
 
     currentProject = newProject;
     setProjectActionsEnabled(true);
@@ -745,7 +743,7 @@ void MainWindow::getCalendarDays(
     // Initialisation
     updateFromCalendar();
 
-    // Connexion calendrier et epoch
+    // Connexion calendrier and epoch
     connect(calendar, &QCalendarWidget::selectionChanged,
             this, updateFromCalendar);
 }
@@ -792,7 +790,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
         model->appendRow(new QStandardItem(item));
     }
     
-    // Catégorie 2D
+    //2D Category
     QStandardItem *cat2D = new QStandardItem("2D");
     cat2D->setFlags(cat2D->flags() & ~Qt::ItemIsEnabled);
     cat2D->setFont(font);
@@ -815,7 +813,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
         model->appendRow(new QStandardItem(item));
     }
     
-    // Catégorie Projeté
+    // Projected Category
     QStandardItem *catProj = new QStandardItem("Projeté");
     catProj->setFlags(catProj->flags() & ~Qt::ItemIsEnabled);
     catProj->setFont(font);
@@ -830,7 +828,7 @@ void MainWindow::setCrsList(QComboBox *comboBox){
     }
     
     comboBox->setModel(model);
-    comboBox->setCurrentIndex(1); // Sélectionne le premier item sélectionnable
+    comboBox->setCurrentIndex(1); 
 }
 
 

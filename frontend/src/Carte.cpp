@@ -64,7 +64,7 @@ void Carte::initLayers()
 
 
     // ============================
-    //      AJOUT AU CANVAS
+    //      ADD BASE LAYER
     // ============================
     osmVisible = true;
     canvas->setLayers({osmLayer});
