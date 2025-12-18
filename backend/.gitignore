@@ -1,0 +1,97 @@
+.env
+.vscode/
+./src/proj_test.cpp
+./include/proj_test.hpp
+data/*.gpkg
+# Build directories
+build/
+build-*/
+cmake-build-*/
+out/
+bin/
+lib/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+_deps/
+
+# Compiled binaries and objects
+*.exe
+*.out
+*.app
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+
+# Testing directories and files
+Testing/
+CTestTestfile.cmake
+DartConfiguration.tcl
+*_tests
+!tests/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Coverage reports
+*.gcov
+*.gcda
+*.gcno
+coverage/
+*.info
+
+# Valgrind and profiling
+*.log
+callgrind.out.*
+massif.out.*
+
+# Dependencies
+*.d
+
+# Backup files
+*.bak
+*.tmp
+
+build/
+cmake-build-*/
+out/
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+backend_app
+backend_tests
+
+Testing/
+CTestTestfile.cmake
+
+compile_commands.json
+.clangd/
+.cache/
+
+*.gcda
+*.gcno
+*.gcov
+coverage/
